@@ -44,25 +44,21 @@ const statusConfig = {
   OPEN: {
     label: 'Open',
     variant: 'secondary' as const,
-    className: 'bg-secondary text-secondary-foreground',
     icon: Circle,
   },
   IN_PROGRESS: {
     label: 'In Progress',
-    variant: 'outline' as const,
-    className: 'bg-blue-500 text-white hover:bg-blue-600 border-transparent',
+    variant: 'info' as const,
     icon: Clock,
   },
   READY_FOR_REVIEW: {
     label: 'Ready for Review',
-    variant: 'outline' as const,
-    className: 'bg-yellow-500 text-white hover:bg-yellow-600 border-transparent',
+    variant: 'warning' as const,
     icon: AlertCircle,
   },
   DONE: {
     label: 'Done',
-    variant: 'outline' as const,
-    className: 'bg-green-500 text-white hover:bg-green-600 border-transparent',
+    variant: 'success' as const,
     icon: CheckCircle2,
   },
 } as const;

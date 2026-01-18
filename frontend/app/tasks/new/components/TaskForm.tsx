@@ -206,7 +206,7 @@ export function TaskForm({ users }: TaskFormProps) {
           )}
         />
 
-        <div className="flex gap-4">
+        <div className="flex gap-6">
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? 'Creating...' : 'Create Task'}

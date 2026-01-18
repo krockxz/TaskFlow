@@ -55,10 +55,10 @@ export function OAuthButtons({ redirectTo }: OAuthButtonsProps) {
             onClick={() => handleSocialLogin(provider)}
             variant="outline"
             type="button"
-            className="w-full"
+            className="w-full gap-2"
           >
             {config.icon}
-            <span className="ml-2">Continue with {config.name}</span>
+            <span>Continue with {config.name}</span>
           </Button>
         );
       })}

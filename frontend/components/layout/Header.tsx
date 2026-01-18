@@ -75,7 +75,7 @@ export function Header({ userEmail, title, description, actions }: HeaderProps) 
             ) : (
               <Link
                 href="/dashboard"
-                className="text-xl font-semibold hover:text-muted-foreground transition-colors"
+                className="text-xl font-semibold hover:text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
               >
                 TaskFlow
               </Link>

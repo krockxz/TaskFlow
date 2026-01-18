@@ -101,6 +101,10 @@ export function useTaskPresence(taskId: string, currentUserId: string | undefine
     };
   }, [taskId, currentUserId, supabase]);
 
-  // Filter out current user from returned presences
-  return presences.filter(p => p.userId !== currentUserId);
+  // Filter out current user and deduplicate by userId
+  return presences
+    .filter(p => p.userId !== currentUserId)
+    .filter((p, index, self) =>
+      index === self.findIndex((t) => t.userId === p.userId)
+    );
 }
