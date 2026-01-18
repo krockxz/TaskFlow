@@ -15,8 +15,11 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useSession } from '@/lib/hooks/useSession';
+import { useTaskPresence } from '@/lib/hooks/usePresence';
 
 interface TaskDetailProps {
   task: Task;
@@ -50,8 +53,18 @@ const eventTypeLabels: Record<string, string> = {
   PRIORITY_CHANGED: 'changed priority',
 };
 
+const getInitials = (email: string): string => {
+  const parts = email.split('@')[0].split('.');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return email.substring(0, 2).toUpperCase();
+};
+
 export function TaskDetail({ task, currentUserId }: TaskDetailProps) {
   const queryClient = useQueryClient();
+  const { user } = useSession();
+  const presences = useTaskPresence(task.id, user?.id);
 
   const { mutate } = useMutation({
     mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
@@ -109,6 +122,24 @@ export function TaskDetail({ task, currentUserId }: TaskDetailProps) {
                   <p className="text-sm text-muted-foreground mt-1">
                     Created by {task.createdBy.email} • {new Date(task.createdAt).toLocaleDateString()}
                   </p>
+                  {presences.length > 0 && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-sm text-muted-foreground">Viewing now:</span>
+                      <div className="flex items-center">
+                        {presences.map((p) => (
+                          <Avatar
+                            key={p.userId}
+                            className="h-7 w-7 border-2 border-background -ml-2 first:ml-0"
+                            title={p.email}
+                          >
+                            <AvatarFallback className="text-xs">
+                              {getInitials(p.email)}
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <Select
