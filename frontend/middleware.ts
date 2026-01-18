@@ -55,4 +55,5 @@ export async function updateSession(request: NextRequest) {
 
 export const config = {
   matcher: ['/dashboard/:path*', '/tasks/:path*', '/login', '/register', '/'],
+  // Note: /auth/callback is intentionally excluded to allow OAuth redirects
 };
