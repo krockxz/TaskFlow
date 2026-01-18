@@ -2,33 +2,38 @@
  * Register Page
  *
  * Server Component for new user registration.
+ * Uses shadcn/ui Card component for layout.
  */
 
 import { AuthForm } from '../login/components/AuthForm';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
 
 export default function RegisterPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="card w-full max-w-md">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">TaskFlow</h1>
-          <p className="text-sm text-gray-600 mt-2">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold">TaskFlow</CardTitle>
+          <p className="text-sm text-muted-foreground">
             Create your account
           </p>
-        </div>
+        </CardHeader>
 
-        <AuthForm mode="register" />
+        <CardContent>
+          <AuthForm mode="register" />
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <a
-            href="/login"
-            className="font-medium text-sky-500 hover:text-sky-600"
-          >
-            Sign in
-          </a>
-        </p>
-      </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link
+              href="/login"
+              className="font-medium text-primary hover:underline"
+            >
+              Sign in
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

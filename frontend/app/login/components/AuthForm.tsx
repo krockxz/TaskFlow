@@ -3,6 +3,7 @@
  *
  * Handles both login and registration forms with client-side interactivity.
  * Includes OAuth buttons for social login.
+ * Uses shadcn/ui components for consistent styling.
  */
 
 'use client';
@@ -10,6 +11,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { OAuthButtons } from './OAuthButtons';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2 } from 'lucide-react';
 
 interface AuthFormProps {
   mode: 'login' | 'register';
@@ -60,42 +67,38 @@ export function AuthForm({ mode, redirectTo }: AuthFormProps) {
       {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300" />
+          <Separator />
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-2 text-gray-500">Or continue with email</span>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
         </div>
       </div>
 
       {/* Email/Password Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-            {error}
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            className="input"
             placeholder="you@example.com"
+            disabled={isLoading}
           />
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
             id="password"
             type="password"
             value={password}
@@ -103,18 +106,15 @@ export function AuthForm({ mode, redirectTo }: AuthFormProps) {
             required
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
             minLength={8}
-            className="input"
             placeholder="••••••••"
+            disabled={isLoading}
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="btn btn-primary w-full"
-        >
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isLoading ? 'Loading...' : mode === 'login' ? 'Sign In' : 'Create Account'}
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -2,9 +2,12 @@
  * Login Page
  *
  * Server Component for user authentication.
+ * Uses shadcn/ui Card component for layout.
  */
 
 import { AuthForm } from './components/AuthForm';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
 
 export default async function LoginPage({
   searchParams,
@@ -13,27 +16,29 @@ export default async function LoginPage({
 }) {
   const redirect = await searchParams;
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="card w-full max-w-md">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">TaskFlow</h1>
-          <p className="text-sm text-gray-600 mt-2">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-2xl font-bold">TaskFlow</CardTitle>
+          <p className="text-sm text-muted-foreground">
             Sign in to your account
           </p>
-        </div>
+        </CardHeader>
 
-        <AuthForm mode="login" redirectTo={redirect.redirect} />
+        <CardContent>
+          <AuthForm mode="login" redirectTo={redirect.redirect} />
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don&apos;t have an account?{' '}
-          <a
-            href="/register"
-            className="font-medium text-sky-500 hover:text-sky-600"
-          >
-            Sign up
-          </a>
-        </p>
-      </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="/register"
+              className="font-medium text-primary hover:underline"
+            >
+              Sign up
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
