@@ -9,16 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-
-/**
- * Presence state for tracking users viewing a task.
- */
-export interface PresenceState {
-  userId: string;
-  email: string;
-  taskId: string;
-  lastSeen: number;
-}
+import type { PresenceState } from '@/lib/types';
 
 /**
  * Track multi-user presence for a specific task.
