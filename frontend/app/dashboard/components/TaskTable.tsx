@@ -3,6 +3,7 @@
  *
  * Client Component with TanStack Query for data fetching and caching.
  * Includes optimistic updates and realtime subscriptions.
+ * Uses shadcn Table, Badge, Avatar, and Select components.
  */
 
 'use client';
@@ -11,30 +12,90 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import type { Task } from '@/lib/types';
-
-const statusColors: Record<string, string> = {
-  OPEN: 'badge-open',
-  IN_PROGRESS: 'badge-in-progress',
-  READY_FOR_REVIEW: 'badge-ready-for-review',
-  DONE: 'badge-done',
-};
-
-const priorityColors: Record<string, string> = {
-  LOW: 'priority-low',
-  MEDIUM: 'priority-medium',
-  HIGH: 'priority-high',
-};
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge, badgeVariants } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Avatar,
+  AvatarFallback,
+} from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react';
 
 interface TaskTableProps {
   initialTasks: Task[];
 }
+
+// Status configuration
+const statusConfig = {
+  OPEN: {
+    label: 'Open',
+    variant: 'secondary' as const,
+    className: 'bg-secondary text-secondary-foreground',
+    icon: Circle,
+  },
+  IN_PROGRESS: {
+    label: 'In Progress',
+    variant: 'outline' as const,
+    className: 'bg-blue-500 text-white hover:bg-blue-600 border-transparent',
+    icon: Clock,
+  },
+  READY_FOR_REVIEW: {
+    label: 'Ready for Review',
+    variant: 'outline' as const,
+    className: 'bg-yellow-500 text-white hover:bg-yellow-600 border-transparent',
+    icon: AlertCircle,
+  },
+  DONE: {
+    label: 'Done',
+    variant: 'outline' as const,
+    className: 'bg-green-500 text-white hover:bg-green-600 border-transparent',
+    icon: CheckCircle2,
+  },
+} as const;
+
+// Priority badge variant
+const getPriorityVariant = (priority: string): 'default' | 'secondary' | 'outline' => {
+  switch (priority) {
+    case 'HIGH':
+      return 'default';
+    case 'MEDIUM':
+      return 'secondary';
+    case 'LOW':
+      return 'outline';
+    default:
+      return 'secondary';
+  }
+};
+
+// Get initials from email
+const getInitials = (email: string): string => {
+  const parts = email.split('@')[0].split('.');
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return email.substring(0, 2).toUpperCase();
+};
 
 export function TaskTable({ initialTasks }: TaskTableProps) {
   const queryClient = useQueryClient();
   const supabase = createClient();
 
   // Fetch tasks with TanStack Query
-  const { data: tasks = initialTasks } = useQuery<Task[]>({
+  const { data: tasks = initialTasks, isLoading } = useQuery<Task[]>({
     queryKey: ['tasks'],
     queryFn: async () => {
       const res = await fetch('/api/queries/tasks');
@@ -46,7 +107,7 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
   });
 
   // Mutation for status updates
-  const { mutate } = useMutation({
+  const { mutate: updateStatus } = useMutation({
     mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
       fetch('/api/tasks/update-status', {
         method: 'POST',
@@ -100,11 +161,21 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
     };
   }, [supabase, queryClient]);
 
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-16 w-full" />
+        ))}
+      </div>
+    );
+  }
+
   if (tasks.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-lg text-gray-500">No tasks yet.</p>
-        <p className="text-sm text-gray-400 mt-2">
+        <p className="text-lg text-muted-foreground">No tasks yet.</p>
+        <p className="text-sm text-muted-foreground mt-2">
           Create your first task to get started.
         </p>
       </div>
@@ -112,65 +183,78 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead>
-          <tr className="bg-gray-50">
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Title
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Status
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Priority
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Assigned To
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Updated
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {tasks.map((task) => (
-            <tr key={task.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Title</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Priority</TableHead>
+          <TableHead>Assigned To</TableHead>
+          <TableHead>Updated</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {tasks.map((task) => {
+          const statusInfo = statusConfig[task.status] || statusConfig.OPEN;
+          const StatusIcon = statusInfo.icon;
+
+          return (
+            <TableRow key={task.id}>
+              <TableCell>
                 <a
                   href={`/tasks/${task.id}`}
-                  className="text-sm font-medium text-sky-500 hover:text-sky-600"
+                  className="font-medium text-primary hover:underline"
                 >
                   {task.title}
                 </a>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <select
+              </TableCell>
+              <TableCell>
+                <Select
                   value={task.status.toLowerCase()}
-                  onChange={(e) => mutate({ taskId: task.id, status: e.target.value })}
-                  className={`text-xs font-medium px-2 py-1 rounded border-0 cursor-pointer ${statusColors[task.status]}`}
+                  onValueChange={(value) =>
+                    updateStatus({ taskId: task.id, status: value })
+                  }
                 >
-                  <option value="open">Open</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="ready_for_review">Ready for Review</option>
-                  <option value="done">Done</option>
-                </select>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`text-sm capitalize ${priorityColors[task.priority]}`}>
+                  <SelectTrigger className="h-7 w-fit gap-1.5">
+                    <StatusIcon className="h-3.5 w-3.5" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="open">Open</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="ready_for_review">Ready for Review</SelectItem>
+                    <SelectItem value="done">Done</SelectItem>
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell>
+                <Badge variant={getPriorityVariant(task.priority)} className="capitalize">
                   {task.priority.toLowerCase()}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                {task.assignedToUser?.email || 'Unassigned'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {task.assignedToUser ? (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="text-xs">
+                        {getInitials(task.assignedToUser.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm text-muted-foreground hidden sm:inline">
+                      {task.assignedToUser.email}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Unassigned</span>
+                )}
+              </TableCell>
+              <TableCell className="text-sm text-muted-foreground">
                 {new Date(task.updatedAt).toLocaleDateString()}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 }

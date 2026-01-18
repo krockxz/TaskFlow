@@ -1,20 +1,22 @@
 /**
  * NewTaskButton Component
  *
- * Simple button to create a new task.
+ * Simple button to create a new task using shadcn Button.
  */
 
 'use client';
 
 import Link from 'next/link';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function NewTaskButton() {
   return (
-    <Link
-      href="/tasks/new"
-      className="btn btn-primary"
-    >
-      New Task
-    </Link>
+    <Button asChild>
+      <Link href="/tasks/new">
+        <Plus className="h-4 w-4" />
+        New Task
+      </Link>
+    </Button>
   );
 }
