@@ -16,7 +16,7 @@ interface TaskFormProps {
 
 export function TaskForm({ users }: TaskFormProps) {
   const router = useRouter();
-  const [error, setError] = useState<string | null);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

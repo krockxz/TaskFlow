@@ -30,7 +30,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
       createdBy: { select: { id: true, email: true } },
       assignedToUser: { select: { id: true, email: true } },
       events: {
-        include: { changedBy: { select: { email: true } } },
+        include: { changedBy: { select: { id: true, email: true } } },
         orderBy: { createdAt: 'desc' },
       },
     },
@@ -40,6 +40,17 @@ export default async function TaskPage({ params }: TaskPageProps) {
   if (!task || (task.createdById !== user.id && task.assignedTo !== user.id)) {
     notFound();
   }
+
+  // Convert Date objects to strings for type compatibility
+  const serializedTask = {
+    ...task,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+    events: task.events.map((event) => ({
+      ...event,
+      createdAt: event.createdAt.toISOString(),
+    })),
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,7 +69,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
       </header>
 
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <TaskDetail task={task} currentUserId={user.id} />
+        <TaskDetail task={serializedTask} currentUserId={user.id} />
       </main>
     </div>
   );

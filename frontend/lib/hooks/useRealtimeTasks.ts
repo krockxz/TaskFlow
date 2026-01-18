@@ -38,6 +38,8 @@ export function useRealtimeTasks() {
         }
       });
 
-    return () => supabase.removeChannel(channel);
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [supabase, queryClient]);
 }

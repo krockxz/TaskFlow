@@ -4,22 +4,13 @@
 
 /* Custom base styles */
 @layer base {
-  :root {
-    --color-primary: #0ea5e9;
-    --color-primary-dark: #0284c7;
-  }
-
-  * {
-    @apply border-border;
-  }
-
   body {
     @apply bg-gray-50 text-gray-900;
   }
 
   /* Focus visible styles for accessibility */
   *:focus-visible {
-    @apply outline-none ring-2 ring-primary ring-offset-2;
+    @apply outline-none ring-2 ring-sky-500 ring-offset-2;
   }
 }
 
@@ -29,12 +20,12 @@
   .btn {
     @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium;
     @apply transition-colors duration-200;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2;
     @apply disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-primary {
-    @apply bg-primary text-white hover:bg-primary-dark;
+    @apply bg-sky-500 text-white hover:bg-sky-600;
   }
 
   .btn-secondary {
@@ -49,7 +40,7 @@
   .input {
     @apply block w-full rounded-md border border-gray-300 px-3 py-2 text-sm;
     @apply placeholder:text-gray-400;
-    @apply focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary;
+    @apply focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
   }
 

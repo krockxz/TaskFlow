@@ -6,11 +6,12 @@
 
 import { AuthForm } from './components/AuthForm';
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { redirect?: string };
+  searchParams: Promise<{ redirect?: string }>;
 }) {
+  const redirect = await searchParams;
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="card w-full max-w-md">
@@ -21,13 +22,13 @@ export default function LoginPage({
           </p>
         </div>
 
-        <AuthForm mode="login" redirectTo={searchParams.redirect} />
+        <AuthForm mode="login" redirectTo={redirect.redirect} />
 
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <a
             href="/register"
-            className="font-medium text-primary hover:text-primary-dark"
+            className="font-medium text-sky-500 hover:text-sky-600"
           >
             Sign up
           </a>

@@ -33,6 +33,13 @@ export default async function DashboardPage() {
     orderBy: { updatedAt: 'desc' },
   });
 
+  // Convert Date objects to strings for type compatibility
+  const serializedTasks = tasks.map((task) => ({
+    ...task,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+  }));
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200">
@@ -55,7 +62,7 @@ export default async function DashboardPage() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="card">
-          <TaskTable initialTasks={tasks} />
+          <TaskTable initialTasks={serializedTasks} />
         </div>
       </main>
     </div>

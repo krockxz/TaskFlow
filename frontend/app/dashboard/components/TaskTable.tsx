@@ -95,7 +95,9 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
       })
       .subscribe();
 
-    return () => supabase.removeChannel(channel);
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [supabase, queryClient]);
 
   if (tasks.length === 0) {
@@ -137,7 +139,7 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
               <td className="px-6 py-4 whitespace-nowrap">
                 <a
                   href={`/tasks/${task.id}`}
-                  className="text-sm font-medium text-primary hover:text-primary-dark"
+                  className="text-sm font-medium text-sky-500 hover:text-sky-600"
                 >
                   {task.title}
                 </a>
