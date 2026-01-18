@@ -2,6 +2,7 @@
  * Task Detail Page
  *
  * Shows full task details with event history.
+ * Uses shadcn/ui components via TaskDetail component.
  */
 
 import { redirect } from 'next/navigation';
@@ -53,21 +54,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4">
-            <a
-              href="/dashboard"
-              className="text-sm text-gray-600 hover:text-gray-900"
-            >
-              ← Back to Dashboard
-            </a>
-            <h1 className="text-xl font-semibold text-gray-900">Task Details</h1>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-background">
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <TaskDetail task={serializedTask} currentUserId={user.id} />
       </main>
