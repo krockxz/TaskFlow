@@ -34,7 +34,7 @@ TaskFlow is an open source, self-hostable task management tool designed for dist
 
 ```bash
 git clone https://github.com/your-username/taskflow.git
-cd taskflow/frontend
+cd taskflow
 docker build -t taskflow .
 docker run -p 3000:3000 --env-file .env.local taskflow
 ```
@@ -43,7 +43,7 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
 
 ## Environment Variables
 
-Create a `.env.local` file in the `frontend/` directory:
+Create a `.env.local` file in the project root:
 
 ```bash
 # Supabase (Required)
@@ -58,13 +58,12 @@ DIRECT_URL=postgresql://...supabase.co:5432/postgres
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-For a complete list, see [`frontend/.env.example`](frontend/.env.example).
+For a complete list, see [`.env.example`](.env.example).
 
 ## Development
 
 ```bash
 # Install dependencies
-cd frontend
 npm install
 
 # Set up environment
@@ -83,9 +82,10 @@ Visit [http://localhost:3000](http://localhost:3000).
 
 ## Documentation
 
+- [Architecture Overview](docs/architecture/overview.md) — System architecture and design
+- [API Specification](docs/api/specification.md) — API endpoints and usage
 - [Deployment Guide](DEPLOYMENT.md) — Vercel and Docker deployment
-- [Contributing](#contributing) — How to contribute
-- [Changelog](frontend/docs/CHANGELOG.md) — Version history
+- [Changelog](docs/changelog.md) — Version history
 
 ## Contributing
 
