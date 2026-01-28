@@ -23,13 +23,13 @@ import {
 import type { TaskStatus, TaskPriority, DateRangePreset } from '@/lib/types';
 
 interface DashboardPageProps {
-  searchParams: {
+  searchParams: Promise<{
     status?: string;
     priority?: string;
     assignedTo?: string;
     dateRange?: string;
     search?: string;
-  };
+  }>;
 }
 
 /**
@@ -61,12 +61,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     redirect('/login');
   }
 
+  // Await searchParams for Next.js 15+
+  const params = await searchParams;
+
   // Parse filters from searchParams
-  const statusFilter = searchParams.status?.split(',').filter(Boolean) as TaskStatus[] | undefined;
-  const priorityFilter = searchParams.priority?.split(',').filter(Boolean) as TaskPriority[] | undefined;
-  const assignedTo = searchParams.assignedTo;
-  const dateRange = searchParams.dateRange as DateRangePreset | undefined;
-  const search = searchParams.search;
+  const statusFilter = params.status?.split(',').filter(Boolean) as TaskStatus[] | undefined;
+  const priorityFilter = params.priority?.split(',').filter(Boolean) as TaskPriority[] | undefined;
+  const assignedTo = params.assignedTo;
+  const dateRange = params.dateRange as DateRangePreset | undefined;
+  const search = params.search;
 
   // Build where clause with filters
   const where: Record<string, unknown> = {
