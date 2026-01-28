@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import type { Task } from '@/lib/types';
@@ -33,10 +33,13 @@ import {
   AvatarFallback,
 } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Checkbox } from '@/components/ui/checkbox';
+import { BulkActionBar } from './BulkActionBar';
 import { CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react';
 
 interface TaskTableProps {
   initialTasks: Task[];
+  users: { id: string; email: string }[];
 }
 
 // Status configuration
@@ -86,7 +89,7 @@ const getInitials = (email: string): string => {
   return email.substring(0, 2).toUpperCase();
 };
 
-export function TaskTable({ initialTasks }: TaskTableProps) {
+export function TaskTable({ initialTasks, users }: TaskTableProps) {
   const queryClient = useQueryClient();
   const supabase = createClient();
 
@@ -101,6 +104,30 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
     initialData: initialTasks,
     staleTime: 5000,
   });
+
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleRow = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const toggleAll = () => {
+    if (selectedIds.size === tasks.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(tasks.map(t => t.id)));
+    }
+  };
+
+  const isAllSelected = tasks.length > 0 && selectedIds.size === tasks.length;
+  const isSomeSelected = selectedIds.size > 0 && !isAllSelected;
 
   // Mutation for status updates
   const { mutate: updateStatus } = useMutation({
@@ -179,78 +206,107 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Title</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Priority</TableHead>
-          <TableHead>Assigned To</TableHead>
-          <TableHead>Updated</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {tasks.map((task) => {
-          const statusInfo = statusConfig[task.status] || statusConfig.OPEN;
-          const StatusIcon = statusInfo.icon;
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {/* Checkbox column */}
+            <TableHead className="w-12">
+              <Checkbox
+                checked={isAllSelected}
+                onCheckedChange={toggleAll}
+                aria-label="Select all tasks"
+              />
+            </TableHead>
+            <TableHead>Title</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Priority</TableHead>
+            <TableHead>Assigned To</TableHead>
+            <TableHead>Updated</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {tasks.map((task) => {
+            const isSelected = selectedIds.has(task.id);
+            const statusInfo = statusConfig[task.status] || statusConfig.OPEN;
+            const StatusIcon = statusInfo.icon;
 
-          return (
-            <TableRow key={task.id}>
-              <TableCell>
-                <a
-                  href={`/tasks/${task.id}`}
-                  className="font-medium text-primary hover:underline"
-                >
-                  {task.title}
-                </a>
-              </TableCell>
-              <TableCell>
-                <Select
-                  value={task.status.toLowerCase()}
-                  onValueChange={(value) =>
-                    updateStatus({ taskId: task.id, status: value })
-                  }
-                >
-                  <SelectTrigger className="h-7 w-fit gap-1.5">
-                    <StatusIcon className="h-3.5 w-3.5" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="ready_for_review">Ready for Review</SelectItem>
-                    <SelectItem value="done">Done</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableCell>
-              <TableCell>
-                <Badge variant={getPriorityVariant(task.priority)} className="capitalize">
-                  {task.priority.toLowerCase()}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {task.assignedToUser ? (
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="text-xs">
-                        {getInitials(task.assignedToUser.email)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-muted-foreground hidden sm:inline">
-                      {task.assignedToUser.email}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Unassigned</span>
-                )}
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                {new Date(task.updatedAt).toLocaleDateString()}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+            return (
+              <TableRow
+                key={task.id}
+                className={isSelected ? 'bg-muted/50' : undefined}
+              >
+                {/* Checkbox cell */}
+                <TableCell>
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => toggleRow(task.id)}
+                    aria-label={`Select task ${task.title}`}
+                  />
+                </TableCell>
+                <TableCell>
+                  <a
+                    href={`/tasks/${task.id}`}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {task.title}
+                  </a>
+                </TableCell>
+                <TableCell>
+                  <Select
+                    value={task.status.toLowerCase()}
+                    onValueChange={(value) =>
+                      updateStatus({ taskId: task.id, status: value })
+                    }
+                  >
+                    <SelectTrigger className="h-7 w-fit gap-1.5">
+                      <StatusIcon className="h-3.5 w-3.5" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="open">Open</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="ready_for_review">Ready for Review</SelectItem>
+                      <SelectItem value="done">Done</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={getPriorityVariant(task.priority)} className="capitalize">
+                    {task.priority.toLowerCase()}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {task.assignedToUser ? (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs">
+                          {getInitials(task.assignedToUser.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-muted-foreground hidden sm:inline">
+                        {task.assignedToUser.email}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Unassigned</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {new Date(task.updatedAt).toLocaleDateString()}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedIds={Array.from(selectedIds)}
+        users={users}
+        onClearSelection={() => setSelectedIds(new Set())}
+      />
+    </>
   );
 }

@@ -48,6 +48,12 @@ export default async function DashboardPage() {
     updatedAt: task.updatedAt.toISOString(),
   }));
 
+  // Fetch all users for bulk reassign functionality
+  const users = await prisma.user.findMany({
+    select: { id: true, email: true },
+    orderBy: { email: 'asc' },
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Header
@@ -66,7 +72,7 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TaskTable initialTasks={serializedTasks} />
+            <TaskTable initialTasks={serializedTasks} users={users} />
           </CardContent>
         </Card>
       </main>
