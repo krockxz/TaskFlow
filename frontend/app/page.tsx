@@ -2,13 +2,13 @@
  * Landing Page Component
  *
  * Public homepage for TaskFlow - async team coordination hub
- * Features hero section, features showcase, how it works, pricing, and footer
+ * Features hero section, features showcase, how it works, and footer
  */
 
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Check, Bell, BarChart3, Filter, Users, Globe, Zap } from 'lucide-react';
+import { ArrowRight, Check, Bell, BarChart3, Filter, Users, Globe, Zap, Github } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 export default function LandingPage() {
@@ -259,109 +259,35 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+      {/* GitHub/Community Section */}
+      <section className="py-24 px-6 bg-white/5">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="bg-gradient-to-r from-sky-500/10 via-indigo-500/10 to-purple-500/10 rounded-3xl p-12 border border-white/10">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Simple, transparent pricing
+              Open Source & Self-Hosted
             </h2>
-            <p className="text-xl text-slate-400">
-              Start free, scale as you grow
+            <p className="text-xl text-slate-400 mb-8">
+              TaskFlow is open source. Deploy it yourself, or try our hosted version.
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                name: 'Free',
-                price: '$0',
-                period: 'forever',
-                description: 'Perfect for small teams getting started',
-                features: [
-                  'Up to 5 team members',
-                  'Unlimited tasks',
-                  'Real-time notifications',
-                  'Basic analytics',
-                  'Email support',
-                ],
-                cta: 'Get Started',
-                highlighted: false,
-              },
-              {
-                name: 'Pro',
-                price: '$12',
-                period: '/user/month',
-                description: 'For growing teams that need more',
-                features: [
-                  'Up to 50 team members',
-                  'Everything in Free',
-                  'Advanced analytics',
-                  'Bulk operations',
-                  'Priority support',
-                  'Custom workflows',
-                ],
-                cta: 'Start Trial',
-                highlighted: true,
-              },
-              {
-                name: 'Enterprise',
-                price: 'Custom',
-                period: '',
-                description: 'For large organizations with specific needs',
-                features: [
-                  'Unlimited team members',
-                  'Everything in Pro',
-                  'SSO & advanced security',
-                  'Dedicated support',
-                  'Custom integrations',
-                  'SLA guarantee',
-                ],
-                cta: 'Contact Sales',
-                highlighted: false,
-              },
-            ].map((plan, index) => (
-              <div
-                key={index}
-                className={`relative rounded-3xl p-8 border transition-all hover:scale-105 ${
-                  plan.highlighted
-                    ? 'bg-gradient-to-b from-sky-500/20 to-indigo-500/20 border-sky-500/50 shadow-2xl shadow-sky-500/20'
-                    : 'bg-white/5 border-white/10 hover:border-white/20'
-                }`}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a
+                href="https://github.com/kunal/TaskFlow"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-900 rounded-xl font-semibold text-lg hover:scale-105 transition-all hover:shadow-2xl hover:shadow-white/20"
               >
-                {plan.highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-sky-400 to-indigo-400 text-white text-sm font-semibold rounded-full">
-                    Most Popular
-                  </div>
-                )}
-                <div className="pt-4">
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold text-white">{plan.price}</span>
-                    <span className="text-slate-400">{plan.period}</span>
-                  </div>
-                  <p className="text-slate-400 mb-6">{plan.description}</p>
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-center gap-3 text-slate-300">
-                        <Check className="w-5 h-5 text-sky-400 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href="/register"
-                    className={`block text-center px-6 py-3 rounded-xl font-semibold transition-all ${
-                      plan.highlighted
-                        ? 'bg-white text-slate-900 hover:bg-slate-100'
-                        : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
-                    }`}
-                  >
-                    {plan.cta}
-                  </Link>
-                </div>
-              </div>
-            ))}
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 9.805-.026 15.51-6.488 15.791H4c1.443 0 2.817-.406 3.965-1.108.274-.55.536-.954.868-1.374.954-.355.24-.707.654-1.017-.965.321-.64.643-1.082 1.065-1.525 1.525-.244.244-.48.383-.718.718-.718 1.471 0 2.582 1.106 3.032 2.53.45.536.776.98 1.432.98 2.272 0 .364 0 .716.108 1.065.293.35.55.648.992.1.31 1.457 2.11l2.69 2.69c.876.876 2.294.876 3.117 0 .822-.406 1.592-.982 1.592-2.11V10c0-1.836-1.457-3.393-3.244-3.393-.512 0-.994-.382-1.957-1.07-2.715-.242-.757-.382-1.609-.382-2.529 0-.822.406-1.592.982-1.592 2.11 0 1.836 1.457 3.393 3.244 3.393.512 0 .994.382 1.957 1.07 2.715.242.757.382 1.609.382 2.529 0 .822-.406 1.592-.982 1.592-2.11V12c0-4.97-4.03-9-9-9-9s9 4.03 9 9c0 2.176.588 4.194 1.535 5.711l2.964 2.964c.876.876 2.294.876 3.117 0 .822-.406 1.592-.982 1.592-2.11z"/>
+                </svg>
+                Star on GitHub
+              </a>
+              <Link
+                href="/dashboard"
+                className="px-8 py-4 text-white font-semibold text-lg rounded-xl border border-white/20 hover:bg-white/5 transition-all hover:scale-105"
+              >
+                View Demo
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -374,71 +300,54 @@ export default function LandingPage() {
               Ready to coordinate across timezones?
             </h2>
             <p className="text-xl text-slate-400 mb-8">
-              Join hundreds of teams already using TaskFlow to stay aligned.
+              Self-hosted and open source. Take control of your team's workflow.
             </p>
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-900 rounded-xl font-semibold text-lg hover:scale-105 transition-all hover:shadow-2xl hover:shadow-white/20"
-            >
-              Start your free trial
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-900 rounded-xl font-semibold text-lg hover:scale-105 transition-all hover:shadow-2xl hover:shadow-white/20"
+              >
+                Get started free
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <a
+                href="https://github.com/kunal/TaskFlow"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 text-white rounded-xl font-semibold text-lg hover:bg-white/20 transition-all border border-white/20"
+              >
+                <Github className="w-5 h-5" />
+                View on GitHub
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-500 flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg font-bold text-white">TaskFlow</span>
-              </div>
-              <p className="text-slate-500 text-sm">
-                Coordinate work across timezones with ease.
-              </p>
+      {/* Footer - Minimal for open source */}
+      <footer className="border-t border-white/10 py-8 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-gradient-to-br from-sky-500 to-indigo-500 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" />
             </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
-              <ul className="space-y-2">
-                <li><Link href="#features" className="text-slate-400 hover:text-white transition-colors text-sm">Features</Link></li>
-                <li><Link href="#pricing" className="text-slate-400 hover:text-white transition-colors text-sm">Pricing</Link></li>
-                <li><Link href="#security" className="text-slate-400 hover:text-white transition-colors text-sm">Security</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2">
-                <li><Link href="#about" className="text-slate-400 hover:text-white transition-colors text-sm">About</Link></li>
-                <li><Link href="#blog" className="text-slate-400 hover:text-white transition-colors text-sm">Blog</Link></li>
-                <li><Link href="#careers" className="text-slate-400 hover:text-white transition-colors text-sm">Careers</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li><Link href="#privacy" className="text-slate-400 hover:text-white transition-colors text-sm">Privacy</Link></li>
-                <li><Link href="#terms" className="text-slate-400 hover:text-white transition-colors text-sm">Terms</Link></li>
-                <li><Link href="#contact" className="text-slate-400 hover:text-white transition-colors text-sm">Contact</Link></li>
-              </ul>
-            </div>
+            <span className="text-sm text-slate-400">
+              TaskFlow — Open source under MIT License
+            </span>
           </div>
-          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-6">
+            <a
+              href="https://github.com/kunal/TaskFlow"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm"
+            >
+              <Github className="w-4 h-4" />
+              GitHub
+            </a>
             <p className="text-slate-500 text-sm">
-              © {new Date().getFullYear()} TaskFlow. All rights reserved.
+              © {new Date().getFullYear()}
             </p>
-            <div className="flex items-center gap-4">
-              <a href="#" className="text-slate-400 hover:text-white transition-colors">
-                <Globe className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-slate-400 hover:text-white transition-colors">
-                <Users className="w-5 h-5" />
-              </a>
-            </div>
           </div>
         </div>
       </footer>
