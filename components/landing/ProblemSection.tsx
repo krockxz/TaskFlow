@@ -20,7 +20,7 @@ export function ProblemSection() {
             Async teamwork is broken
           </h2>
           <p className="text-lg text-[#8b949e] max-w-2xl mx-auto">
-            Modern tools weren't built for distributed teams. See the difference.
+            Modern tools weren&apos;t built for distributed teams. See the difference.
           </p>
         </div>
 

@@ -31,7 +31,7 @@ export function CTASection() {
           transition={{ delay: 0.1 }}
           className="text-lg text-[#8b949e] mb-8 max-w-2xl mx-auto"
         >
-          Self-hosted and open source. Take control of your team's workflow.
+          Self-hosted and open source. Take control of your team&apos;s workflow.
         </motion.p>
 
         <motion.div
