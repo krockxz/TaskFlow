@@ -10,15 +10,9 @@ import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { CommandSnippet } from './CommandSnippet';
-import { StatGrid } from './';
+
 
 export function HeroSection() {
-  const stats = [
-    { label: 'GitHub Stars', value: '2.4k' },
-    { label: 'Active Teams', value: '500+' },
-    { label: 'Open Issues', value: '12' },
-  ];
-
   return (
     <section className="relative min-h-screen bg-[#0d1117] flex items-center">
       <div className="max-w-6xl mx-auto px-6 py-20 w-full">
@@ -77,15 +71,6 @@ export function HeroSection() {
               transition={{ delay: 0.3 }}
             >
               <CommandSnippet command="npm install taskflow" />
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              <StatGrid stats={stats} />
             </motion.div>
           </motion.div>
 

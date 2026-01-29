@@ -8,6 +8,6 @@ export * from './Navigation';
 export * from './ProblemSection';
 export * from './SolutionSection';
 export * from './SplitView';
-export * from './StatGrid';
-export * from './StatsSection';
 export * from './ValueGrid';
+
+

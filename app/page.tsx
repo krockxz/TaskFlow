@@ -10,7 +10,6 @@ import {
   ProblemSection,
   SolutionSection,
   FeaturesSection,
-  StatsSection,
   CTASection,
   Footer,
 } from '@/components/landing';
@@ -22,7 +21,6 @@ export default function LandingPage() {
 
       <main>
         <HeroSection />
-        <StatsSection />
         <ProblemSection />
         <SolutionSection />
         <FeaturesSection />

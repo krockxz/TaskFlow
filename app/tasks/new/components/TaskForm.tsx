@@ -67,7 +67,7 @@ export function TaskForm({ users }: TaskFormProps) {
     defaultValues: {
       title: '',
       description: '',
-      assignedTo: '',
+      assignedTo: 'unassigned',
       priority: 'MEDIUM',
     },
   });
@@ -83,7 +83,7 @@ export function TaskForm({ users }: TaskFormProps) {
         body: JSON.stringify({
           title: values.title,
           description: values.description || undefined,
-          assignedTo: values.assignedTo || undefined,
+          assignedTo: values.assignedTo && values.assignedTo !== 'unassigned' ? values.assignedTo : undefined,
           priority: values.priority,
         }),
       });
@@ -166,7 +166,7 @@ export function TaskForm({ users }: TaskFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
                   {users.map((user) => (
                     <SelectItem key={user.id} value={user.id}>
                       {user.email}
