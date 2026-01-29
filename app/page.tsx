@@ -5,7 +5,6 @@
  */
 
 import {
-  Navigation,
   HeroSection,
   ProblemSection,
   SolutionSection,
@@ -16,9 +15,7 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0d1117]">
-      <Navigation />
-
+    <div className="min-h-screen bg-background">
       <main>
         <HeroSection />
         <ProblemSection />
