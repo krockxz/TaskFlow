@@ -1,101 +1,71 @@
-// Prisma Schema for TaskFlow
-// Database: PostgreSQL (Supabase)
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-// ============================================================================
-// SUPABASE AUTH MODELS (Managed by Supabase - don't modify)
-// ============================================================================
-// Note: When using Supabase Auth, auth tables are managed automatically
-// This User model references Supabase Auth users (id matches auth.uid())
-
-// ============================================================================
-// TASKFLOW MODELS
-// ============================================================================
-
 model Task {
-  id          String      @id @default(uuid())
-  title       String
-  description String?     @db.Text
-  status      TaskStatus  @default(OPEN)
-  priority    TaskPriority @default(MEDIUM)
-
-  // Foreign keys
-  createdById String
-  assignedTo  String?
-
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title         String
+  description   String?
+  status        TaskStatus?    @default(OPEN) @map("status")
+  priority      TaskPriority?  @default(MEDIUM) @map("priority")
+  createdById   String         @map("created_by_id") @db.Uuid
+  assignedTo    String?        @map("assigned_to") @db.Uuid
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
   // Relations
   createdBy   User         @relation("CreatedBy", fields: [createdById], references: [id])
   assignedToUser User?     @relation("AssignedTo", fields: [assignedTo], references: [id])
   events      TaskEvent[]
   notifications Notification[]
 
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
-
-  @@index([assignedTo])
-  @@index([status])
-  @@index([createdById])
+  @@index([status], map: "idx_tasks_status")
   @@map("tasks")
 }
 
 model TaskEvent {
-  id        String   @id @default(uuid())
-  taskId    String
-  eventType EventType
-
-  oldStatus String?  @map("old_status")
-  newStatus String?  @map("new_status")
-
-  changedById String
-  changedBy   User    @relation(fields: [changedById], references: [id])
-
-  createdAt DateTime @default(now()) @map("created_at")
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId        String     @map("task_id") @db.Uuid
+  eventType     EventType  @map("event_type")
+  oldStatus     String?    @map("old_status")
+  newStatus     String?    @map("new_status")
+  changedById   String     @map("changed_by_id") @db.Uuid
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
 
   // Relations
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  changedBy   User    @relation(fields: [changedById], references: [id])
 
-  @@index([taskId])
-  @@index([changedById])
   @@map("task_events")
 }
 
 model Notification {
-  id        String   @id @default(uuid())
-  userId    String
-  taskId    String
-
-  message   String   @db.Text
-  read      Boolean  @default(false)
-
-  createdAt DateTime @default(now()) @map("created_at")
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  taskId    String    @map("task_id") @db.Uuid
+  message   String
+  read      Boolean   @default(false)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
-  @@index([userId, read])
-  @@index([createdAt])
+  @@index([createdAt], map: "idx_notifications_created_at")
   @@map("notifications")
 }
 
-// ============================================================================
-// USER MODEL (References Supabase Auth users)
-// ============================================================================
-
 model User {
-  id            String    @id // Matches Supabase Auth user.id
+  id            String    @id @db.Uuid
   email         String    @unique
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
   createdTasks  Task[]    @relation("CreatedBy")
@@ -106,27 +76,26 @@ model User {
   @@map("users")
 }
 
-// ============================================================================
-// ENUMS
-// ============================================================================
-
-enum TaskStatus {
-  OPEN
-  IN_PROGRESS
-  READY_FOR_REVIEW
-  DONE
-}
-
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
 enum EventType {
   CREATED
   ASSIGNED
   STATUS_CHANGED
   COMPLETED
   PRIORITY_CHANGED
+  @@map("event_type")
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  @@map("task_priority")
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  READY_FOR_REVIEW
+  DONE
+  @@map("task_status")
 }
