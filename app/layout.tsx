@@ -2,11 +2,12 @@
  * Root Layout
  *
  * The main layout wrapper for the entire application.
- * Includes AppHeader, Providers, and global styles.
+ * Includes AppHeader, Providers, Command Palette, and global styles.
  */
 
 import { Providers } from './providers';
 import { AppHeader } from '@/components/layout/AppHeader';
+import TaskFlowCommandPalette from '@/components/ui/command-palette';
 import './globals.css';
 
 export const metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
         <Providers>
           <AppHeader />
+          <TaskFlowCommandPalette />
           {children}
         </Providers>
       </body>

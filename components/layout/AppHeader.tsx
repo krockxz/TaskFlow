@@ -31,6 +31,20 @@ function Logo({ href }: { href: string }) {
     );
 }
 
+// Command Palette keyboard shortcut hint
+function CommandKHint() {
+    return (
+        <button
+            onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }))}
+            className="hidden sm:flex items-center gap-1 rounded-md border bg-muted px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            title="Press ⌘K to open command palette"
+        >
+            <span className="font-medium">⌘</span>
+            <span>K</span>
+        </button>
+    );
+}
+
 export function AppHeader() {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -93,6 +107,7 @@ export function AppHeader() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-6">
+                        <CommandKHint />
                         {isAuthenticated ? (
                             <>
                                 <ThemeToggle className="text-muted-foreground hover:text-foreground p-2" />

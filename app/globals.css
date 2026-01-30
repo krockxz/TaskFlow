@@ -25,7 +25,7 @@
   :root {
     /* Vercel monochrome palette */
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
@@ -49,10 +49,13 @@
     --chart-4: 0 0% 30%;
     --chart-5: 0 0% 50%;
     --radius: 0.375rem;
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
   }
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
     --card: 0 0% 4%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 4%;

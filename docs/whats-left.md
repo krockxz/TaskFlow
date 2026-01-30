@@ -75,7 +75,60 @@
 
 ---
 
-## Priority 5: Nice to Have (Post-MVP)
+## Priority 5: High Impact Additions (Viral Features)
+
+> These features have high "viral coefficient" potential - power users love them and they drive word-of-mouth growth.
+
+### Command Palette (Cmd+K)
+| Task | Effort | Description |
+|------|--------|-------------|
+| Install `cmdk` package | 15 min | Add pacocoursey/cmdk dependency |
+| Create CommandDialog component | 2 hours | Base dialog with shadcn/ui patterns |
+| Global state management | 1 hour | Context/store for open/close state |
+| Action registry system | 2 hours | Dynamic action registration from pages |
+| Navigation actions | 1 hour | Home, Dashboard, Settings shortcuts |
+| Theme toggle action | 30 min | Light/dark mode from palette |
+| Create Task action | 1 hour | Opens task creation modal |
+| Context-aware actions | 2 hours | Task page: Change Status, Assign, Delete |
+| Task search | 2 hours | Filter tasks within palette |
+| Keyboard navigation | 1 hour | Arrow keys, Enter to execute |
+
+**Goal:** Linear-style keyboard control for power users.
+
+**Library:** `cmdk` (by pacocoursey) + `lucide-react` icons.
+
+**Scope:**
+- Global hotkey (`Cmd+K` / `Ctrl+K`) to open
+- Actions: Navigation (Home, Dashboard), Theme Toggle, Create Task
+- Context-aware: On task pages → "Change Status", "Assign", "Delete"
+- Search: Basic task filtering within palette
+
+**Total Estimate:** 12-14 hours
+
+---
+
+### GitHub Sync Integration
+| Task | Effort | Description |
+|------|--------|-------------|
+| GitHub App setup | 2 hours | Create GitHub App for OAuth |
+| OAuth flow | 3 hours | Connect GitHub account to TaskFlow |
+| Import Issues as Tasks | 3 hours | Bulk import from repo |
+| Link Task ↔ PR | 2 hours | Store PR URL on task |
+| Webhook listener | 3 hours | PR merge → Task to "Done" |
+| Sync status UI | 1 hour | Show sync state on task |
+
+**Goal:** Bi-directional sync for developer teams.
+
+**Scope:**
+- Import GitHub Issues as Tasks
+- Link a Task to a GitHub Pull Request (store PR URL)
+- Webhook: When PR merges → Auto-move Task to "Done"
+
+**Total Estimate:** 14-16 hours
+
+---
+
+## Priority 6: Nice to Have (Post-MVP)
 
 ### Task Features
 | Feature | Effort | Description |
@@ -111,7 +164,7 @@
 
 ---
 
-## Priority 6: Future Enhancements
+## Priority 7: Future Enhancements
 
 | Feature | Effort | Value |
 |---------|--------|-------|
@@ -136,8 +189,9 @@
 | 2 - UI Polish | 1 hour | Notification bell, header |
 | 3 - Testing | 5 hours | E2E + accessibility |
 | 4 - Deployment | 2 hours | Vercel + monitoring |
-| 5 - Nice to Have | 40+ hours | Comments, files, templates |
-| 6 - Future | 100+ hours | Mobile, advanced features |
+| 5 - Viral Features | 26-30 hours | **Command Palette**, GitHub Sync |
+| 6 - Nice to Have | 40+ hours | Comments, files, templates |
+| 7 - Future | 100+ hours | Mobile, advanced features |
 
 **Time to Production:** ~8 hours of focused work (excluding OAuth manual config)
 
