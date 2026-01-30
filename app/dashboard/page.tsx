@@ -8,10 +8,8 @@
 import { redirect } from 'next/navigation';
 import { getAuthUser } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
-import { TaskTable } from './components/TaskTable';
-import { NewTaskDialog } from './components/NewTaskDialog';
-import FilterChips from './components/FilterChips';
 import { DashboardSidebar } from './components/DashboardSidebar';
+import { DashboardView } from './components/DashboardView';
 import type { TaskStatus, TaskPriority, DateRangePreset } from '@/lib/types';
 
 interface DashboardPageProps {
@@ -126,18 +124,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   return (
     <DashboardSidebar users={users} userEmail={user.email ?? 'Unknown'}>
-      <header className="border-b px-6 py-4 flex items-center justify-between bg-background sticky top-0 z-10">
-        <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Manage your tasks and track progress</p>
-        </div>
-        <NewTaskDialog users={users} />
-      </header>
-
-      <div className="p-6">
-        <FilterChips users={users} />
-        <TaskTable initialTasks={serializedTasks} users={users} />
-      </div>
+      <DashboardView
+        initialTasks={serializedTasks}
+        users={users}
+        userEmail={user.email ?? 'Unknown'}
+      />
     </DashboardSidebar>
   );
 }

@@ -37,7 +37,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BulkActionBar } from './BulkActionBar';
-import { CheckCircle2, Circle, Clock, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, AlertCircle, Github } from 'lucide-react';
 
 interface TaskTableProps {
   initialTasks: Task[];
@@ -285,12 +285,25 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
                   />
                 </TableCell>
                 <TableCell>
-                  <a
-                    href={`/tasks/${task.id}`}
-                    className="font-medium text-primary hover:underline"
-                  >
-                    {task.title}
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`/tasks/${task.id}`}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      {task.title}
+                    </a>
+                    {(task as any).github_issue_url && (
+                      <a
+                        href={(task as any).github_issue_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                        title="Linked to GitHub Issue"
+                      >
+                        <Github className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <Select

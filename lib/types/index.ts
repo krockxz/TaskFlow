@@ -197,3 +197,54 @@ export interface CommandContextValue {
   registerAction: (action: CommandAction) => void;
   unregisterAction: (id: string) => void;
 }
+
+// ============================================================================
+// GitHub Types
+// ============================================================================
+
+export interface GitHubRepo {
+  id: number;
+  name: string;
+  full_name: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+  description: string | null;
+  private: boolean;
+  html_url: string;
+}
+
+export interface GitHubIssue {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: 'open' | 'closed';
+  html_url: string;
+  user: {
+    login: string;
+    avatar_url: string;
+  };
+  labels: {
+    name: string;
+    color: string;
+  }[];
+  created_at: string;
+  updated_at: string;
+  pull_request?: {
+    html_url: string;
+  };
+}
+
+export interface GitHubToken {
+  access_token: string;
+  token_type: string;
+  scope: string;
+}
+
+export interface GitHubSyncConfig {
+  repoFullName: string | null;
+  lastSyncedAt: string | null;
+  autoSyncEnabled: boolean;
+}

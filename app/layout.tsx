@@ -8,6 +8,7 @@
 import { Providers } from './providers';
 import { AppHeader } from '@/components/layout/AppHeader';
 import TaskFlowCommandPalette from '@/components/ui/command-palette';
+import { CommandProvider } from '@/components/command/CommandContext';
 import './globals.css';
 
 export const metadata = {
@@ -23,11 +24,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
-        <Providers>
-          <AppHeader />
-          <TaskFlowCommandPalette />
-          {children}
-        </Providers>
+        <CommandProvider>
+          <Providers>
+            <AppHeader />
+            <TaskFlowCommandPalette />
+            {children}
+          </Providers>
+        </CommandProvider>
       </body>
     </html>
   );

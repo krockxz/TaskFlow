@@ -9,16 +9,22 @@ datasource db {
 }
 
 model Task {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  title         String
-  description   String?
-  status        TaskStatus?    @default(OPEN) @map("status")
-  priority      TaskPriority?  @default(MEDIUM) @map("priority")
-  createdById   String         @map("created_by_id") @db.Uuid
-  assignedTo    String?        @map("assigned_to") @db.Uuid
-  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  description       String?
+  status            TaskStatus?    @default(OPEN) @map("status")
+  priority          TaskPriority?  @default(MEDIUM) @map("priority")
+  createdById       String         @map("created_by_id") @db.Uuid
+  assignedTo        String?        @map("assigned_to") @db.Uuid
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // GitHub Integration
+  githubIssueUrl    String?        @map("github_issue_url") @db.Text
+  githubIssueNumber Int?          @map("github_issue_number") @db.Integer
+  githubPrUrl       String?        @map("github_pr_url") @db.Text
+  githubRepo        String?        @map("github_repo") @db.Text
+
   // Relations
   createdBy   User         @relation("CreatedBy", fields: [createdById], references: [id])
   assignedToUser User?     @relation("AssignedTo", fields: [assignedTo], references: [id])
@@ -26,6 +32,7 @@ model Task {
   notifications Notification[]
 
   @@index([status], map: "idx_tasks_status")
+  @@index([githubRepo], map: "idx_tasks_github_repo")
   @@map("tasks")
 }
 

@@ -18,11 +18,13 @@ import {
   LogOut,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useCommand } from "@/components/command/CommandContext";
+import * as LucideIcons from "lucide-react";
 
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
 // Define types for our items
-type CommandCategory = "Navigation" | "System" | "Tasks";
+type CommandCategory = "Navigation" | "System" | "Tasks" | "Actions";
 
 type CommandSection = "favorites" | "recents" | "all";
 
@@ -52,6 +54,7 @@ interface TaskFlowCommandPaletteProps {
 export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowCommandPaletteProps) {
   const router = useRouter();
   const { setTheme, theme } = useTheme();
+  const { actions: dynamicActions } = useCommand();
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [commandHistory, setCommandHistory] = useState<CommandHistory[]>(() => {
@@ -62,6 +65,8 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
   const ref = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [isTaskSearch, setIsTaskSearch] = useState(false);
 
   // Function to record command usage in history
   const recordCommandUsage = useCallback((commandId: string) => {
@@ -88,6 +93,23 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
       return limitedHistory;
     });
   }, []);
+
+  // Convert dynamic actions to command items
+  const dynamicCommandItems = useMemo(() => {
+    return dynamicActions.map((action) => ({
+      id: action.id,
+      title: action.label,
+      description: action.context === "task" ? "Task Action" : action.context === "dashboard" ? "Dashboard Action" : "Action",
+      category: (action.context === "task" ? "Tasks" : action.context === "dashboard" ? "Navigation" : "Actions") as CommandCategory,
+      section: "all" as const,
+      icon: React.createElement(action.icon, { className: "h-4 w-4" }),
+      action: () => {
+        action.onSelect();
+        setOpen(false);
+      },
+      keywords: action.keywords || [action.label.toLowerCase()],
+    }));
+  }, [dynamicActions]);
 
   // Define TaskFlow-specific commands
   const allCommandItems: CommandItem[] = useMemo(() => [
@@ -151,6 +173,20 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
     },
     // Tasks commands
     {
+      id: "task-search",
+      title: "Search Tasks...",
+      description: "Search and navigate to tasks",
+      category: "Tasks",
+      section: "favorites",
+      icon: <Search className="h-4 w-4" />,
+      action: () => {
+        setIsTaskSearch(true);
+        setSearchTerm("");
+      },
+      shortcut: "⌘/",
+      keywords: ["search", "find", "tasks"],
+    },
+    {
       id: "task-create",
       title: "Create New Task",
       description: "Create a new task",
@@ -166,29 +202,34 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
       shortcut: "⌘N",
       keywords: ["create", "new", "task", "add"],
     },
-  ], [theme]);
+    ], [theme]);
+
+  // Combine static and dynamic commands
+  const combinedCommandItems = useMemo(() => {
+    return [...allCommandItems, ...dynamicCommandItems];
+  }, [allCommandItems, dynamicCommandItems]);
 
   // Get recent commands based on history
   const getRecentCommands = useCallback(() => {
     return commandHistory
       .slice(0, 5)
       .map((historyItem) => {
-        const command = allCommandItems.find((cmd) => cmd.id === historyItem.id);
+        const command = combinedCommandItems.find((cmd) => cmd.id === historyItem.id);
         return command ? { ...command, section: "recents" as const } : null;
       })
       .filter((cmd): cmd is CommandItem & { section: "recents" } => cmd !== null);
-  }, [commandHistory, allCommandItems]);
+  }, [commandHistory, combinedCommandItems]);
 
   // Get favorite commands
   const getFavoriteCommands = useCallback(() => {
-    return allCommandItems.filter((cmd) => cmd.section === "favorites");
-  }, [allCommandItems]);
+    return combinedCommandItems.filter((cmd) => cmd.section === "favorites");
+  }, [combinedCommandItems]);
 
   // Filter commands based on search term
   const getFilteredCommands = useCallback(() => {
     const searchLower = searchTerm.toLowerCase();
 
-    return allCommandItems.filter((cmd) => {
+    return combinedCommandItems.filter((cmd) => {
       if (searchLower) {
         const matchesTitle = cmd.title.toLowerCase().includes(searchLower);
         const matchesDescription = cmd.description.toLowerCase().includes(searchLower);
@@ -201,7 +242,7 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
 
       return true;
     });
-  }, [searchTerm, allCommandItems]);
+  }, [searchTerm, combinedCommandItems]);
 
   // Combine all commands for display
   const commandItems = useCallback(() => {
@@ -226,8 +267,41 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
     ];
   }, [getRecentCommands, getFavoriteCommands, getFilteredCommands, searchTerm]);
 
+  // Fetch tasks when searching
+  useEffect(() => {
+    if (!isTaskSearch) return;
+
+    const fetchTasks = async () => {
+      if (searchTerm.trim().length < 2) {
+        setTasks([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/tasks?search=${encodeURIComponent(searchTerm)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setTasks(data.tasks || []);
+        }
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchTasks, 200);
+    return () => clearTimeout(debounceTimer);
+  }, [searchTerm, isTaskSearch]);
+
+  // Reset task search mode when closing
+  useEffect(() => {
+    if (!open) {
+      setIsTaskSearch(false);
+      setSearchTerm("");
+    }
+  }, [open]);
+
   // Get all available categories
-  const categories = [...new Set(allCommandItems.map((cmd) => cmd.category))];
+  const categories = [...new Set(combinedCommandItems.map((cmd) => cmd.category))];
 
   // Keyboard handler
   useEffect(() => {
@@ -353,8 +427,19 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
                 <input
                   className="h-12 w-full border-0 bg-transparent placeholder:text-muted-foreground focus:outline-none focus:ring-0"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Type a command or search..."
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    if (isTaskSearch && e.target.value === "") {
+                      setIsTaskSearch(false);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape" && isTaskSearch) {
+                      setIsTaskSearch(false);
+                      setSearchTerm("");
+                    }
+                  }}
+                  placeholder={isTaskSearch ? "Search tasks..." : "Type a command or search..."}
                   autoFocus
                 />
                 <kbd className="ml-2 rounded border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
@@ -364,7 +449,62 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
 
               {/* Commands List */}
               <div className="max-h-[60vh] overflow-auto py-2">
-                {getFilteredCommands().length === 0 ? (
+                {isTaskSearch ? (
+                  <>
+                    <div className="px-2 py-1">
+                      <div className="px-2 text-xs font-medium text-muted-foreground flex items-center justify-between">
+                        <span>Tasks</span>
+                        {searchTerm && <span className="text-muted-foreground/50">{tasks.length} results</span>}
+                      </div>
+                    </div>
+                    {searchTerm.length < 2 ? (
+                      <div className="mx-2 my-8 flex flex-col items-center justify-center text-center">
+                        <Search className="mb-2 h-5 w-5 text-muted-foreground/30" />
+                        <p className="text-sm text-muted-foreground/50">Type at least 2 characters to search</p>
+                      </div>
+                    ) : tasks.length === 0 ? (
+                      <div className="mx-2 my-8 flex flex-col items-center justify-center text-center">
+                        <Search className="mb-2 h-5 w-5 text-muted-foreground/30" />
+                        <p className="text-sm text-muted-foreground/50">No tasks found for &quot;{searchTerm}&quot;</p>
+                      </div>
+                    ) : (
+                      <div className="px-2 py-1">
+                        {tasks.map((task, idx) => (
+                          <div
+                            key={task.id}
+                            ref={(el) => setItemRef(el, idx)}
+                            className={`mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2 transition-colors ${
+                              selectedIndex === idx ? "bg-accent text-accent-foreground" : "hover:bg-accent/50"
+                            }`}
+                            onClick={() => {
+                              router.push(`/tasks/${task.id}`);
+                              setOpen(false);
+                              setIsTaskSearch(false);
+                            }}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <div className={`flex h-8 w-8 items-center justify-center rounded-md border ${
+                                task.status === 'done' ? 'bg-green-500/10 border-green-500/20' :
+                                task.status === 'in-progress' ? 'bg-blue-500/10 border-blue-500/20' :
+                                'bg-gray-500/10 border-gray-500/20'
+                              }`}>
+                                <div className={`h-2 w-2 rounded-full ${
+                                  task.status === 'done' ? 'bg-green-500' :
+                                  task.status === 'in-progress' ? 'bg-blue-500' :
+                                  'bg-gray-500'
+                                }`} />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium">{task.title}</span>
+                                <span className="text-xs text-muted-foreground">{task.status} • {task.priority || 'No priority'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : getFilteredCommands().length === 0 ? (
                   <div className="mx-2 my-8 flex flex-col items-center justify-center text-center">
                     <Search className="mb-2 h-5 w-5 text-muted-foreground/30" />
                     <p className="text-sm text-muted-foreground/50">No commands found for &quot;{searchTerm}&quot;</p>
@@ -401,7 +541,7 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
                                   <span className="text-xs text-muted-foreground">{item.description}</span>
                                 </div>
                               </div>
-                              {item.shortcut && (
+                              {'shortcut' in item && item.shortcut && (
                                 <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                                   {item.shortcut}
                                 </kbd>
@@ -442,7 +582,7 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
                                   <span className="text-xs text-muted-foreground">{item.description}</span>
                                 </div>
                               </div>
-                              {item.shortcut && (
+                              {'shortcut' in item && item.shortcut && (
                                 <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
                                   {item.shortcut}
                                 </kbd>

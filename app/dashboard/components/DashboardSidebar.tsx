@@ -14,6 +14,8 @@ import {
     CheckCircle2,
     Users,
     Loader2,
+    Settings,
+    Github,
 } from "lucide-react";
 import { useTaskFilters } from "@/app/dashboard/hooks/useTaskFilters";
 import { cn } from "@/lib/utils";
@@ -170,6 +172,7 @@ function IconNavigation({
     const navItems = [
         { id: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
         { id: "filters", icon: <Filter size={20} />, label: "Filters" },
+        { id: "settings", icon: <Settings size={20} />, label: "Settings" },
     ];
 
     return (
@@ -473,6 +476,21 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                                 { label: "Last 7 days", onClick: () => actions.setDateRange("last_7_days"), isActive: filters.dateRange === 'last_7_days' },
                                 { label: "Last 30 days", onClick: () => actions.setDateRange("last_30_days"), isActive: filters.dateRange === 'last_30_days' },
                             ]
+                        }
+                    ]
+                }
+            ]
+        },
+        settings: {
+            title: "Settings",
+            sections: [
+                {
+                    title: "Integrations",
+                    items: [
+                        {
+                            label: "GitHub",
+                            icon: <Github size={18} />,
+                            isActive: false,
                         }
                     ]
                 }
