@@ -89,21 +89,10 @@ export function HeroSection() {
             <div className="rounded-xl bg-card border border-border overflow-hidden">
               {/* Screenshot placeholder */}
               <div className="aspect-[4/3] bg-gradient-to-br from-background to-secondary flex items-center justify-center p-8">
-                <div className="w-full">
-                  {/* Browser chrome */}
-                  <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
-                    <div className="flex gap-1.5">
-                      <div className="w-3 h-3 rounded-full bg-foreground/20" />
-                      <div className="w-3 h-3 rounded-full bg-foreground/20" />
-                      <div className="w-3 h-3 rounded-full bg-foreground/20" />
-                    </div>
-                    <div className="flex-1 mx-4 h-2 bg-foreground/10 rounded-full max-w-xs" />
-                  </div>
-                  {/* Dashboard preview using NotificationsDemo */}
-                  <div className="space-y-3 relative h-[300px] overflow-hidden">
-                    <NotificationsDemo className="scale-90 origin-top p-0 bg-transparent min-h-0" />
-                    <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-                  </div>
+                {/* Dashboard preview using NotificationsDemo */}
+                <div className="space-y-3 relative h-[300px] overflow-hidden w-full">
+                  <NotificationsDemo className="scale-90 origin-top p-0 bg-transparent min-h-0" />
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
                 </div>
               </div>
             </div>
