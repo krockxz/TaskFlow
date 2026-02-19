@@ -11,6 +11,7 @@ import {
   FeaturesSection,
   CTASection,
   Footer,
+  FloatingDock,
 } from '@/components/landing';
 
 export default function LandingPage() {
@@ -28,6 +29,9 @@ export default function LandingPage() {
       </main>
 
       <Footer />
+
+      {/* Floating Dock */}
+      <FloatingDock />
     </div>
   );
 }

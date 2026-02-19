@@ -20,9 +20,6 @@ const nextConfig: NextConfig = {
   experimental: {
     // Optimize package imports for smaller bundle size
     optimizePackageImports: ['lucide-react', 'recharts'],
-    serverActions: {
-      allowedOrigins: ["localhost:3000"],
-    },
   },
   async headers() {
     return [

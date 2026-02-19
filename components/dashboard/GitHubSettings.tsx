@@ -15,10 +15,6 @@ export function GitHubSettings() {
   const [syncResult, setSyncResult] = useState<{ created: number; updated: number; errors: string[] } | null>(null);
 
   // Check GitHub connection status on mount
-  useEffect(() => {
-    checkConnection();
-  }, []);
-
   const checkConnection = async () => {
     try {
       const response = await fetch('/api/github/connect');
@@ -33,6 +29,11 @@ export function GitHubSettings() {
       console.error('Failed to check GitHub connection:', error);
     }
   };
+
+  useEffect(() => {
+    checkConnection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchRepos = async () => {
     setLoading(true);

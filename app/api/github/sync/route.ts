@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await importGitHubIssues(repoOwner, repoName, githubToken);
+    const result = await importGitHubIssues(repoOwner, repoName, githubToken, user.id);
 
     return NextResponse.json({
       success: true,

@@ -60,6 +60,15 @@ export const env = createEnv({
      * Must be 32+ bytes for AES-256-GCM encryption.
      */
     ENCRYPTION_KEY: z.string().min(32),
+
+    /**
+     * Supabase service role key.
+     * Get from: Supabase Dashboard → Settings → API
+     *
+     * IMPORTANT: This key bypasses RLS policies. Only use for trusted server-side
+     * operations like webhooks and background jobs. NEVER expose to clients.
+     */
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   },
 
   /**
@@ -107,6 +116,7 @@ export const env = createEnv({
     DIRECT_URL: process.env.DIRECT_URL,
     GITHUB_WEBHOOK_SECRET: process.env.GITHUB_WEBHOOK_SECRET,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
 
     // Client variables (also available on server)
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,

@@ -9,3 +9,4 @@ export * from './SolutionSection';
 export * from './SplitView';
 export * from './ScrollReveal';
 export * from './FloatingElement';
+export * from './FloatingDock';
