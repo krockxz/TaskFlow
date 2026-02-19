@@ -14,6 +14,10 @@
 
 TaskFlow is a self-hostable task management tool designed for distributed teams. Track tasks, get real-time notifications, and coordinate work across time zones.
 
+## Demo
+
+<video src="public/demo.mp4" controls width="100%"></video>
+
 ## Features
 
 - Real-time task updates via Supabase Realtime
