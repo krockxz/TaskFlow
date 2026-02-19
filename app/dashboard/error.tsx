@@ -79,7 +79,7 @@ export default function DashboardError({ error, reset }: DashboardErrorProps) {
           <div className="rounded-lg border bg-muted/50 p-4">
             <p className="text-sm font-medium">What you can try:</p>
             <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <li>• Click "Try Again" to reload the dashboard</li>
+              <li>• Click &quot;Try Again&quot; to reload the dashboard</li>
               <li>• Check your internet connection</li>
               <li>• Clear your browser cache and try again</li>
               <li>• Go back to the home page and navigate again</li>
