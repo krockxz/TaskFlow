@@ -6,6 +6,12 @@ import { Check, X, AlertCircle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// Event handlers that conflict with Framer Motion
+type ConflictingEventHandlers =
+  | 'onDragStart' | 'onDragEnd' | 'onDrag' | 'onDragEnter' | 'onDragExit' | 'onDragOver' | 'onDrop'
+  | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
+  | 'onTransitionStart' | 'onTransitionEnd' | 'onTransitionCancel'
+
 /**
  * SuccessCheckmark - Animated success checkmark indicator
  */
@@ -49,7 +55,7 @@ export const SuccessCheckmark = React.forwardRef<
           style={{ backgroundColor: `${color}15` }}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay, type: "spring", stiffness: 200, damping: 15 }}
+          transition={{ delay, type: "spring" as const, stiffness: 200, damping: 15 }}
         />
       )}
 
@@ -124,7 +130,7 @@ export const ErrorX = React.forwardRef<HTMLDivElement, ErrorXProps>(
             style={{ backgroundColor: `${color}15` }}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay, type: "spring", stiffness: 200, damping: 15 }}
+            transition={{ delay, type: "spring" as const, stiffness: 200, damping: 15 }}
           />
         )}
 
@@ -213,14 +219,22 @@ export const ShakeAnimation = React.forwardRef<
   }, [trigger])
 
   // Generate shake keyframes
-  const shakeKeyframes = React.useMemo(() => {
-    const frames: { x: number }[] = [{ x: 0 }]
+  const shakeAnimation = React.useMemo(() => {
+    // Create a sequence of keyframes for x position
+    const frames: number[] = []
+
+    frames.push(0)
+
     for (let i = 0; i < cycles; i++) {
-      frames.push({ x: -intensity })
-      frames.push({ x: intensity })
+      frames.push(-intensity)
+      frames.push(intensity)
     }
-    frames.push({ x: 0 })
-    return frames
+
+    frames.push(0)
+
+    return {
+      x: frames,
+    }
   }, [intensity, cycles])
 
   return (
@@ -228,7 +242,7 @@ export const ShakeAnimation = React.forwardRef<
       ref={ref}
       key={key}
       className={cn("inline-block", className)}
-      animate={shakeKeyframes}
+      animate={shakeAnimation as any}
       transition={{ duration: duration / (cycles * 2) }}
     >
       {children}
@@ -332,7 +346,7 @@ export const SlideInToast = React.forwardRef<HTMLDivElement, SlideInToastProps>(
             animate="visible"
             exit="hidden"
             variants={variants}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
             className={cn(
               "fixed z-50 flex max-w-md items-start gap-3 rounded-lg border p-4 shadow-lg",
               variantStyles[variant],
@@ -405,7 +419,7 @@ export const ProgressToast = React.forwardRef<HTMLDivElement, ProgressToastProps
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
             className={cn(
               "fixed z-50 w-80 rounded-lg border bg-background p-4 shadow-lg",
               positionClasses[position],
@@ -424,7 +438,7 @@ export const ProgressToast = React.forwardRef<HTMLDivElement, ProgressToastProps
                 style={{ backgroundColor: color }}
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
-                transition={{ type: "spring", stiffness: 100, damping: 15 }}
+                transition={{ type: "spring" as const, stiffness: 100, damping: 15 }}
               />
             </div>
             {description && (
@@ -513,7 +527,7 @@ export const Confetti = React.forwardRef<HTMLDivElement, ConfettiProps>(
               exit={{ opacity: 0 }}
               transition={{
                 duration,
-                ease: [0.25, 0.1, 0.25, 1],
+                ease: [0.25, 0.1, 0.25, 1] as const,
               }}
               style={{
                 backgroundColor: particle.color,
@@ -558,7 +572,7 @@ export const BounceIn = React.forwardRef<HTMLDivElement, BounceInProps>(
         transition={{
           delay,
           duration,
-          type: "spring",
+          type: "spring" as const,
           stiffness: 200,
           damping: 15,
         }}

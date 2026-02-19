@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { motion, type Transition, type MotionProps } from "motion/react"
+import { motion, type Transition } from "motion/react"
 
 import { cn } from "@/lib/utils"
 import {
@@ -13,7 +13,13 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export interface AnimatedCardProps extends React.HTMLAttributes<HTMLDivElement> {
+// Event handlers that conflict with Framer Motion
+type ConflictingEventHandlers =
+  | 'onDragStart' | 'onDragEnd' | 'onDrag' | 'onDragEnter' | 'onDragExit' | 'onDragOver' | 'onDrop'
+  | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
+  | 'onTransitionStart' | 'onTransitionEnd' | 'onTransitionCancel'
+
+export interface AnimatedCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers> {
   /**
    * Vertical lift amount on hover in pixels
    * @default -8
@@ -103,44 +109,44 @@ export const AnimatedCard = React.forwardRef<HTMLDivElement, AnimatedCardProps>(
     ref
   ) => {
     const transition: Transition = {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 300,
       damping: 25,
     }
 
     const hoverAnimation = animateHover
       ? {
-          y: hoverLift,
-          scale: hoverScale,
-        }
+        y: hoverLift,
+        scale: hoverScale,
+      }
       : undefined
 
     const tapAnimation = animateTap ? { scale: 0.98 } : undefined
 
     const containerVariants = staggerChildren
       ? {
-          hidden: {},
-          visible: {
-            transition: {
-              staggerChildren: 0.1,
-            },
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: 0.1,
           },
-        }
+        },
+      }
       : undefined
 
     const itemVariants = staggerChildren
       ? {
-          hidden: { opacity: 0, y: 20 },
-          visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-              type: "spring",
-              stiffness: 300,
-              damping: 24,
-            },
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            type: "spring" as const,
+            stiffness: 300,
+            damping: 24,
           },
-        }
+        },
+      }
       : undefined
 
     const cardContent = (
@@ -199,7 +205,7 @@ AnimatedCard.displayName = "AnimatedCard"
  */
 export const AnimatedCardHeader = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
+  Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers> & {
     delay?: number
   }
 >(({ className, children, delay = 0, ...props }, ref) => {
@@ -208,7 +214,7 @@ export const AnimatedCardHeader = React.forwardRef<
       ref={ref}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay, type: "spring", stiffness: 200, damping: 20 }}
+      transition={{ delay, type: "spring" as const, stiffness: 200, damping: 20 }}
       className={cn(className)}
       {...props}
     >
@@ -224,7 +230,7 @@ AnimatedCardHeader.displayName = "AnimatedCardHeader"
  */
 export const AnimatedCardTitle = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
+  Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers> & {
     delay?: number
   }
 >(({ className, children, delay = 0.1, ...props }, ref) => {
@@ -249,7 +255,7 @@ AnimatedCardTitle.displayName = "AnimatedCardTitle"
  */
 export const AnimatedCardContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
+  Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers> & {
     delay?: number
   }
 >(({ className, children, delay = 0.15, ...props }, ref) => {
@@ -258,7 +264,7 @@ export const AnimatedCardContent = React.forwardRef<
       ref={ref}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, type: "spring", stiffness: 200, damping: 20 }}
+      transition={{ delay, type: "spring" as const, stiffness: 200, damping: 20 }}
       className={cn(className)}
       {...props}
     >
@@ -274,7 +280,7 @@ AnimatedCardContent.displayName = "AnimatedCardContent"
  */
 export const AnimatedCardFooter = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
+  Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers> & {
     delay?: number
   }
 >(({ className, children, delay = 0.2, ...props }, ref) => {
@@ -283,7 +289,7 @@ export const AnimatedCardFooter = React.forwardRef<
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, type: "spring", stiffness: 200, damping: 20 }}
+      transition={{ delay, type: "spring" as const, stiffness: 200, damping: 20 }}
       className={cn(className)}
       {...props}
     >
@@ -352,7 +358,7 @@ export const ExpandableCard = React.forwardRef<
         <div className="overflow-hidden">
           <motion.div
             animate={{ height }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
           >
             <div ref={contentHeight}>
               {collapsedContent && !isExpanded && collapsedContent}
@@ -370,7 +376,7 @@ export const ExpandableCard = React.forwardRef<
         >
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            transition={{ type: "spring" as const, stiffness: 300, damping: 20 }}
             className="flex items-center justify-center gap-1"
           >
             <span>{isExpanded ? "Show less" : "Show more"}</span>
@@ -386,7 +392,7 @@ ExpandableCard.displayName = "ExpandableCard"
 /**
  * CardGrid - Grid container with staggered card animations
  */
-export interface CardGridProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface CardGridProps extends Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers> {
   /**
    * Number of columns (responsive)
    * @default 3
@@ -438,7 +444,7 @@ export const CardGrid = React.forwardRef<HTMLDivElement, CardGridProps>(
         opacity: 1,
         y: 0,
         transition: {
-          type: "spring",
+          type: "spring" as const,
           stiffness: 300,
           damping: 24,
         },

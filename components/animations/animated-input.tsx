@@ -1,12 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { motion, type MotionConfig, type Transition } from "motion/react"
+import { motion, AnimatePresence, type Transition } from "motion/react"
 
 import { cn } from "@/lib/utils"
 
+// Event handlers that conflict with Framer Motion
+type ConflictingEventHandlers =
+  | 'onDragStart' | 'onDragEnd' | 'onDrag' | 'onDragEnter' | 'onDragExit' | 'onDragOver' | 'onDrop'
+  | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
+  | 'onTransitionStart' | 'onTransitionEnd' | 'onTransitionCancel'
+
 export interface AnimatedInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, ConflictingEventHandlers> {
   /**
    * Color of the focus ring
    * @default "ring-ring"
@@ -92,7 +98,7 @@ export const AnimatedInput = React.forwardRef<HTMLInputElement, AnimatedInputPro
     const [isFocused, setIsFocused] = React.useState(false)
 
     const transition: Transition = {
-      type: "tween",
+      type: "tween" as const,
       duration: animationDuration,
       ease: "easeOut",
     }
@@ -209,7 +215,7 @@ AnimatedInput.displayName = "AnimatedInput"
  * AnimatedTextarea - Textarea variant with the same focus animation
  */
 export interface AnimatedTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, ConflictingEventHandlers> {
   label?: string
   error?: string
   helperText?: string
@@ -247,7 +253,7 @@ export const AnimatedTextarea = React.forwardRef<
     const [isFocused, setIsFocused] = React.useState(false)
 
     const transition: Transition = {
-      type: "tween",
+      type: "tween" as const,
       duration: animationDuration,
       ease: "easeOut",
     }
@@ -339,7 +345,7 @@ AnimatedTextarea.displayName = "AnimatedTextarea"
 /**
  * FloatingLabelInput - Input with animated floating label
  */
-export interface FloatingLabelInputProps extends AnimatedInputProps {
+export interface FloatingLabelInputProps extends Omit<AnimatedInputProps, ConflictingEventHandlers> {
   /**
    * Label always floats or only on focus/value
    * @default "auto"
@@ -390,7 +396,7 @@ export const FloatingLabelInput = React.forwardRef<
             top: shouldFloat ? "4px" : "50%",
             fontSize: shouldFloat ? "10px" : "14px",
           }}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          transition={{ type: "spring" as const, stiffness: 500, damping: 30 }}
           style={{
             transformOrigin: "left top",
           }}
@@ -403,6 +409,3 @@ export const FloatingLabelInput = React.forwardRef<
 })
 
 FloatingLabelInput.displayName = "FloatingLabelInput"
-
-// Re-export for internal use
-const AnimatePresence = motion.div

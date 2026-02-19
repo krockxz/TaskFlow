@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { motion, AnimatePresence, type Variants } from "framer-motion"
+import { motion, AnimatePresence, type Variants } from "motion/react"
 import { X, Mail, ArrowRight, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { signInWithOAuth, signInWithMagicLink, type OAuthProvider } from "@/lib/auth/oauth-helpers"

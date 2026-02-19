@@ -45,7 +45,7 @@ const barVariants = {
     opacity: 0,
     transition: {
       duration: 0.25,
-      ease: [0.4, 0, 0.2, 1],
+      ease: [0.4, 0, 0.2, 1] as const,
     },
   },
   visible: {
@@ -53,7 +53,7 @@ const barVariants = {
     opacity: 1,
     transition: {
       duration: 0.3,
-      ease: [0.4, 0, 0.2, 1],
+      ease: [0.4, 0, 0.2, 1] as const,
     },
   },
   exit: {
@@ -61,7 +61,7 @@ const barVariants = {
     opacity: 0,
     transition: {
       duration: 0.2,
-      ease: [0.4, 0, 1, 1],
+      ease: [0.4, 0, 1, 1] as const,
     },
   },
 };
@@ -77,7 +77,7 @@ const contentVariants = {
     y: 0,
     transition: {
       duration: 0.2,
-      ease: [0.4, 0, 0.2, 1],
+      ease: [0.4, 0, 0.2, 1] as const,
       delay: 0.05,
     },
   },

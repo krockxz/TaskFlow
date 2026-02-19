@@ -7,10 +7,16 @@
 
 'use client';
 
-import { motion, useInView, UseInViewOptions } from 'motion/react';
+import { motion, useInView, UseInViewOptions, type Transition } from 'motion/react';
 import { useRef, ReactNode } from 'react';
 
-export interface ScrollRevealProps {
+// Event handlers that conflict with Framer Motion
+type ConflictingEventHandlers =
+  | 'onDragStart' | 'onDragEnd' | 'onDrag' | 'onDragEnter' | 'onDragExit' | 'onDragOver' | 'onDrop'
+  | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
+  | 'onTransitionStart' | 'onTransitionEnd' | 'onTransitionCancel';
+
+export interface ScrollRevealProps extends Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers> {
   children: ReactNode;
   /**
    * Animation delay in seconds
@@ -59,8 +65,8 @@ export interface ScrollRevealProps {
 }
 
 const getVariants = (direction: ScrollRevealProps['direction'], distance: number) => {
-  const hidden: any = { opacity: 0 };
-  const visible: any = { opacity: 1 };
+  const hidden: Record<string, number> = { opacity: 0 };
+  const visible: Record<string, number> = { opacity: 1 };
 
   switch (direction) {
     case 'up':
@@ -97,6 +103,7 @@ export function ScrollReveal({
   inline = false,
   staggerIndex,
   staggerDelay = 0.1,
+  ...props
 }: ScrollRevealProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, viewOptions);
@@ -106,6 +113,12 @@ export function ScrollReveal({
     ? delay + (staggerIndex * staggerDelay)
     : delay;
 
+  const transition: Transition = {
+    duration,
+    delay: actualDelay,
+    ease: [0.25, 0.1, 0.25, 1] as const, // Custom easing for smooth feel
+  };
+
   const MotionComponent = inline ? motion.span : motion.div;
 
   return (
@@ -114,12 +127,9 @@ export function ScrollReveal({
       initial="hidden"
       animate={isInView ? 'visible' : 'hidden'}
       variants={variants}
-      transition={{
-        duration,
-        delay: actualDelay,
-        ease: [0.25, 0.1, 0.25, 1], // Custom easing for smooth feel
-      }}
+      transition={transition}
       className={className}
+      {...props}
     >
       {children}
     </MotionComponent>
@@ -131,7 +141,7 @@ export function ScrollReveal({
  *
  * Wraps multiple children to animate them sequentially.
  */
-export interface ScrollRevealStaggerProps {
+export interface ScrollRevealStaggerProps extends Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers> {
   children: ReactNode;
   /**
    * Delay between each child animation
@@ -159,6 +169,7 @@ export function ScrollRevealStagger({
   initialDelay = 0,
   viewOptions = { once: true, margin: '-50px' },
   className = '',
+  ...props
 }: ScrollRevealStaggerProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, viewOptions);
@@ -180,7 +191,7 @@ export function ScrollRevealStagger({
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.25, 0.1, 0.25, 1],
+        ease: [0.25, 0.1, 0.25, 1] as const,
       },
     },
   };
@@ -192,6 +203,7 @@ export function ScrollRevealStagger({
       animate={isInView ? 'visible' : 'hidden'}
       variants={containerVariants}
       className={className}
+      {...props}
     >
       {Array.isArray(children)
         ? children.map((child, index) => (

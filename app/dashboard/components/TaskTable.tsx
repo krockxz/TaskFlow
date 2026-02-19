@@ -99,14 +99,14 @@ const rowVariants = {
   hidden: {
     opacity: 0,
     x: -8,
-    transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const },
   },
   visible: (i: number) => ({
     opacity: 1,
     x: 0,
     transition: {
       duration: 0.3,
-      ease: [0.4, 0, 0.2, 1],
+      ease: [0.4, 0, 0.2, 1] as const,
       delay: Math.min(i * 0.03, 0.3), // Stagger with max delay cap
     },
   }),
@@ -122,7 +122,7 @@ const emptyStateVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const },
   },
 };
 

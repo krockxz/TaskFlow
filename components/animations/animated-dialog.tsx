@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, motion, type Transition } from "motion/react"
 
 import { cn } from "@/lib/utils"
 
@@ -14,6 +14,12 @@ const DialogTrigger = DialogPrimitive.Trigger
 const DialogPortal = DialogPrimitive.Portal
 
 const DialogClose = DialogPrimitive.Close
+
+// Event handlers that conflict with Framer Motion
+type ConflictingEventHandlers =
+  | 'onDragStart' | 'onDragEnd' | 'onDrag' | 'onDragEnter' | 'onDragExit' | 'onDragOver' | 'onDrop'
+  | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
+  | 'onTransitionStart' | 'onTransitionEnd' | 'onTransitionCancel'
 
 /**
  * AnimatedDialogOverlay - Overlay with backdrop blur effect
@@ -44,7 +50,7 @@ const AnimatedDialogOverlay = React.forwardRef<
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
       className="absolute inset-0 backdrop-blur-sm"
-      style={{ backdropBlur: `${blurAmount}px` }}
+      style={{ backdropFilter: `blur(${blurAmount}px)` }}
     />
   </DialogPrimitive.Overlay>
 ))
@@ -55,7 +61,7 @@ AnimatedDialogOverlay.displayName = DialogPrimitive.Overlay.displayName
  */
 const AnimatedDialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+  Omit<React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>, ConflictingEventHandlers> & {
     /**
      * Animation type variant
      * @default "scale"
@@ -87,8 +93,8 @@ const AnimatedDialogContent = React.forwardRef<
     },
   }
 
-  const transition = {
-    type: "spring",
+  const transition: Transition = {
+    type: "spring" as const,
     stiffness: 300,
     damping: 30,
   }
@@ -127,7 +133,7 @@ AnimatedDialogContent.displayName = DialogPrimitive.Content.displayName
 const AnimatedDialogHeader = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
+}: Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers>) => (
   <motion.div
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -144,7 +150,7 @@ AnimatedDialogHeader.displayName = "AnimatedDialogHeader"
 const AnimatedDialogFooter = ({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
+}: Omit<React.HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers>) => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -269,7 +275,7 @@ export const SlideOverDialog = React.forwardRef<
                 animate="open"
                 exit="closed"
                 variants={variants[side]}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
                 className="h-full"
               >
                 {children}
@@ -346,7 +352,7 @@ export const BottomSheetDialog = React.forwardRef<
               animate="open"
               exit="closed"
               variants={sheetVariants}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={0.2}
@@ -422,7 +428,7 @@ export const AnimatedAlertDialog = React.forwardRef<
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
           >
             <AnimatedDialogHeader>
               <AnimatedDialogTitle>{title}</AnimatedDialogTitle>

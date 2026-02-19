@@ -7,7 +7,7 @@
 'use client';
 
 import { Bell, BarChart3, Users, Zap, Search, LayoutDashboard, CheckSquare, Settings, Moon, MoreHorizontal } from 'lucide-react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { motion, useInView, AnimatePresence } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
 
 const containerVariants = {

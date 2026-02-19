@@ -7,10 +7,16 @@
 
 'use client';
 
-import { motion, MotionProps } from 'motion/react';
-import { useRef, ReactNode, HTMLAttributes } from 'react';
+import { motion } from 'motion/react';
+import { ReactNode, HTMLAttributes } from 'react';
 
-export interface FloatingElementProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+// Event handlers that conflict with Framer Motion
+type ConflictingEventHandlers =
+  | 'onDragStart' | 'onDragEnd' | 'onDrag' | 'onDragEnter' | 'onDragExit' | 'onDragOver' | 'onDrop'
+  | 'onAnimationStart' | 'onAnimationEnd' | 'onAnimationIteration'
+  | 'onTransitionStart' | 'onTransitionEnd' | 'onTransitionCancel';
+
+export interface FloatingElementProps extends Omit<HTMLAttributes<HTMLDivElement>, ConflictingEventHandlers | 'onChange'> {
   children: ReactNode;
   /**
    * Float animation type
@@ -64,15 +70,15 @@ export interface FloatingElementProps extends Omit<HTMLAttributes<HTMLDivElement
 
 const floatAnimations = {
   gentle: {
-    y: [0, -10, 0],
+    y: [0, -10, 0] as const,
   },
   bounce: {
-    y: [0, -15, 0, -5, 0],
+    y: [0, -15, 0, -5, 0] as const,
   },
   pulse: {
-    scale: [1, 1.05, 1],
+    scale: [1, 1.05, 1] as const,
   },
-  none: {},
+  none: {} as Record<string, never>,
 };
 
 export function FloatingElement({
@@ -92,13 +98,26 @@ export function FloatingElement({
   const MotionComponent = inline ? motion.span : motion.div;
 
   // Adjust float distance based on type
-  const animation = { ...floatAnimations[floatType] };
-  if (floatType === 'gentle' || floatType === 'bounce') {
-    animation.y = animation.y.map((val: number) => val * (distance / 10));
-  }
-  if (floatType === 'pulse') {
-    animation.scale = [1, pulseScale, 1];
-  }
+  const getAnimation = () => {
+    if (floatType === 'gentle') {
+      return {
+        y: [0, -distance, 0] as unknown as number[],
+      };
+    }
+    if (floatType === 'bounce') {
+      return {
+        y: [0, -distance * 1.5, 0, -distance * 0.5, 0] as unknown as number[],
+      };
+    }
+    if (floatType === 'pulse') {
+      return {
+        scale: [1, pulseScale, 1] as unknown as number[],
+      };
+    }
+    return {};
+  };
+
+  const animation = getAnimation();
 
   return (
     <MotionComponent
@@ -234,7 +253,7 @@ export function ShimmerEffect({
       <motion.div
         className="h-full bg-gradient-to-r from-transparent via-foreground/10 to-transparent"
         animate={{
-          x: ['-100%', '100%'],
+          x: ['-100%', '100%'] as const,
         }}
         transition={{
           duration: 1.5,

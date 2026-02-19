@@ -156,16 +156,12 @@ export const TransitionDirection = React.forwardRef<
     "forward"
   )
 
-  React.useEffect(() => {
-    // Simple depth comparison
-    const prevDepth = prevPathname?.split("/").length ?? 0
-    const currentDepth = pathname.split("/").length
-    setDirection(currentDepth >= prevDepth ? "forward" : "backward")
-  }, [pathname])
-
   // Store previous path for comparison
   const prevPathname = React.useRef(pathname)
   React.useEffect(() => {
+    const prevDepth = prevPathname.current?.split("/").length ?? 0
+    const currentDepth = pathname.split("/").length
+    setDirection(currentDepth >= prevDepth ? "forward" : "backward")
     prevPathname.current = pathname
   }, [pathname])
 

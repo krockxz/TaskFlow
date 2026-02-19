@@ -34,7 +34,7 @@ const chipVariants = {
     y: 0,
     transition: {
       duration: 0.25,
-      ease: [0.4, 0, 0.2, 1],
+      ease: [0.4, 0, 0.2, 1] as const,
       delay: i * 0.05,
     },
   }),
@@ -44,13 +44,13 @@ const chipVariants = {
     x: -8,
     transition: {
       duration: 0.2,
-      ease: [0.4, 0, 1, 1],
+      ease: [0.4, 0, 1, 1] as const,
     },
   },
   hover: {
     scale: 1.02,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 400,
       damping: 17,
     },
@@ -58,7 +58,7 @@ const chipVariants = {
   tap: {
     scale: 0.98,
     transition: {
-      type: 'spring',
+      type: 'spring' as const,
       stiffness: 500,
       damping: 15,
     },

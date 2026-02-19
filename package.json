@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npx -y kill-port 3000 || true",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
