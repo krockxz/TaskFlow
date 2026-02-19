@@ -2,16 +2,17 @@
  * GitHub Sync API
  *
  * Manually triggers a sync from GitHub Issues to TaskFlow tasks.
+ * Uses encrypted server-side storage for tokens.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { importGitHubIssues } from '@/lib/github/sync';
-import { createClient } from '@/lib/supabase/client';
+import { getAuthUser } from '@/lib/supabase/server';
+import { getGitHubToken } from '@/lib/github/service';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser();
 
     if (!user) {
       return NextResponse.json(
@@ -30,8 +31,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get GitHub access token from user metadata
-    const githubToken = user.user_metadata?.github_access_token;
+    // Get GitHub access token from encrypted storage
+    const githubToken = await getGitHubToken(user.id);
     if (!githubToken) {
       return NextResponse.json(
         { error: 'GitHub not connected. Please connect your account first.' },

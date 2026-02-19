@@ -7,6 +7,7 @@
 'use client';
 
 import { Bell, BarChart3, Users, Zap, Search, LayoutDashboard, CheckSquare, Settings, Moon, MoreHorizontal } from 'lucide-react';
+import { NumberTicker } from '@/components/ui/number-ticker';
 import { motion, useInView, AnimatePresence } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
 
@@ -70,7 +71,7 @@ const PriorityIndicator = ({ priority }: { priority: string }) => {
         "low": "bg-foreground/20"
     };
     return (
-        <div className="flex gap-0.5">
+        <div className="flex gap-0.5 flex-shrink-0">
             {[1, 2].map((i) => (
                 <motion.div
                     key={i}
@@ -92,16 +93,17 @@ const AnimatedTaskRow = ({ task, index }: { task: typeof taskPool[0]; index: num
         animate="visible"
         exit={{ opacity: 0, x: -50 }}
         transition={{ delay: index * 0.1 }}
-        className="flex items-center px-4 h-12 hover:bg-secondary/50 transition-colors"
+        className="flex flex-wrap md:flex-nowrap items-center px-4 py-2 md:h-12 gap-x-2 gap-y-1 hover:bg-secondary/50 transition-colors"
     >
         <motion.div
             className="w-4 h-4 rounded border border-border mr-3 flex-shrink-0"
             whileHover={{ scale: 1.1 }}
         />
         <StatusBadge status={task.status} />
-        <span className="flex-1 ml-3 text-sm truncate pr-4">{task.title}</span>
-        <PriorityIndicator priority={task.priority} />
-        <div className="flex items-center gap-2 mr-3">
+        <span className="flex-1 min-w-[8rem] md:min-w-0 ml-3 text-sm truncate pr-4">{task.title}</span>
+        <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+            <PriorityIndicator priority={task.priority} />
+            <div className="flex items-center gap-2 mr-1">
             <motion.div
                 className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center text-background text-[10px] font-medium"
                 whileHover={{ scale: 1.1 }}
@@ -114,8 +116,9 @@ const AnimatedTaskRow = ({ task, index }: { task: typeof taskPool[0]; index: num
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity, delay: index * 0.2 }}
             />
+            </div>
+            <span className="text-xs text-muted-foreground w-16 text-right">{task.due}</span>
         </div>
-        <span className="text-xs text-muted-foreground w-16 text-right">{task.due}</span>
     </motion.div>
 );
 
@@ -143,7 +146,7 @@ const StatCard = ({ label, value, change, icon: Icon, delay }: any) => (
             viewport={{ once: true }}
             transition={{ type: "spring", stiffness: 150, delay: delay + 0.2 }}
         >
-            {value}
+            <NumberTicker value={typeof value === 'number' ? value : parseInt(value) || 0} />
         </motion.div>
         <div className="text-xs text-muted-foreground mt-1.5 relative">{change}</div>
     </motion.div>

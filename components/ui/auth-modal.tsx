@@ -29,62 +29,62 @@ function AuthModal({
 }: AuthModalProps) {
     const [isOpen, setIsOpen] = React.useState(false)
     const [email, setEmail] = React.useState("")
-    const [isLoading, setIsLoading] = React.useState(false)
+    const [isLoading, setIsLoading] = React.useState<string | null>(null)
     const [error, setError] = React.useState<string | null>(null)
     const [message, setMessage] = React.useState<string | null>(null)
 
     const container: Variants = {
-        hidden: { opacity: 0, scale: 0.95 },
+        hidden: { opacity: 0, scale: 0.96, y: 10 },
         show: {
             opacity: 1,
             scale: 1,
+            y: 0,
             transition: {
-                duration: 0.3,
-                ease: "easeInOut",
-                staggerChildren: 0.05
+                duration: 0.25,
+                ease: [0.4, 0, 0.2, 1]
             }
         },
         exit: {
             opacity: 0,
-            scale: 0.95,
+            scale: 0.96,
+            y: 10,
             transition: {
                 duration: 0.2,
-                ease: "easeInOut"
+                ease: [0.4, 0, 1, 1]
             }
         }
     }
 
     const item = {
-        hidden: { opacity: 0, y: 20 },
+        hidden: { opacity: 0, y: 10 },
         show: { opacity: 1, y: 0 }
     }
 
     const socialButtons = [
-        { icon: GitHubIcon, provider: "github" as OAuthProvider },
+        { icon: GitHubIcon, provider: "github" as OAuthProvider, label: "GitHub" },
     ]
 
     const handleOAuthLogin = async (provider: OAuthProvider) => {
-        setIsLoading(true)
+        setIsLoading(provider)
         setError(null)
 
         const { error } = await signInWithOAuth(provider, { redirectTo })
 
         if (error) {
             setError(error)
-            setIsLoading(false)
+            setIsLoading(null)
         }
-        // OAuth redirect happens automatically
     }
 
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault()
-        setIsLoading(true)
+        setIsLoading("email")
         setError(null)
         setMessage(null)
 
         if (!email || !email.includes("@")) {
             setError("Please enter a valid email address")
-            setIsLoading(false)
+            setIsLoading(null)
             return
         }
 
@@ -93,10 +93,10 @@ function AuthModal({
         if (error) {
             setError(error)
         } else {
-            setMessage("Check your email for the magic link!")
+            setMessage("Check your inbox for the magic link!")
             setEmail("")
         }
-        setIsLoading(false)
+        setIsLoading(null)
     }
 
     return (
@@ -104,7 +104,7 @@ function AuthModal({
             <button
                 onClick={() => setIsOpen(true)}
                 className={cn(
-                    "inline-flex h-10 items-center justify-center rounded-full bg-primary px-8 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+                    "inline-flex h-10 items-center justify-center rounded-lg bg-foreground px-6 text-sm font-medium text-background transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
                     triggerClassName
                 )}
             >
@@ -113,124 +113,164 @@ function AuthModal({
 
             <AnimatePresence>
                 {isOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+                    <>
+                        {/* Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
                             onClick={() => setIsOpen(false)}
-                            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+                            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
                         />
 
-                        <motion.div
-                            variants={container}
-                            initial="hidden"
-                            animate="show"
-                            exit="exit"
-                            className="relative w-full max-w-[360px] overflow-hidden rounded-3xl bg-background p-6 shadow-2xl border border-border"
-                        >
-                            <div className="absolute right-4 top-4">
+                        {/* Modal */}
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <motion.div
+                                variants={container}
+                                initial="hidden"
+                                animate="show"
+                                exit="exit"
+                                onClick={(e) => e.stopPropagation()}
+                                className="relative w-full max-w-[380px] overflow-hidden rounded-2xl bg-background border border-border shadow-xl"
+                            >
+                                {/* Close button */}
                                 <button
                                     onClick={() => setIsOpen(false)}
-                                    className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    className="absolute right-4 top-4 z-10 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                                 >
                                     <X className="h-4 w-4" />
                                 </button>
-                            </div>
 
-                            <motion.div variants={item} className="mb-8 text-center">
-                                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                                    Welcome to TaskFlow
-                                </h2>
-                                <p className="mt-2 text-sm text-muted-foreground">
-                                    Sign in to your account to continue
-                                </p>
-                            </motion.div>
+                                <div className="p-8">
+                                    {/* Header */}
+                                    <motion.div variants={item} className="mb-8 text-center">
+                                        <h2 className="text-xl font-semibold tracking-tight text-foreground">
+                                            Get started with TaskFlow
+                                        </h2>
+                                        <p className="mt-1.5 text-sm text-muted-foreground">
+                                            Sign in to track your team&apos;s handoffs
+                                        </p>
+                                    </motion.div>
 
-                            {error && (
-                                <motion.div variants={item} className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                                    <p className="text-sm text-destructive">{error}</p>
-                                </motion.div>
-                            )}
-
-                            {message && (
-                                <motion.div variants={item} className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                                    <p className="text-sm text-green-600 dark:text-green-400">{message}</p>
-                                </motion.div>
-                            )}
-
-                            <motion.div variants={item} className="grid grid-cols-2 gap-3 mb-8">
-                                {socialButtons.map((btn) => (
-                                    <button
-                                        key={btn.provider}
-                                        onClick={() => handleOAuthLogin(btn.provider)}
-                                        disabled={isLoading}
-                                        className={cn(
-                                            "flex aspect-square items-center justify-center rounded-2xl border border-border bg-card transition-all hover:scale-105 active:scale-95 hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-                                        )}
-                                        aria-label={`Sign in with ${btn.provider}`}
-                                    >
-                                        {isLoading ? (
-                                            <Loader2 className="h-5 w-5 animate-spin" />
-                                        ) : (
-                                            <btn.icon className="h-5 w-5" />
-                                        )}
-                                    </button>
-                                ))}
-                            </motion.div>
-
-                            <motion.div variants={item} className="relative mb-8">
-                                <div className="absolute inset-0 flex items-center">
-                                    <span className="w-full border-t border-border" />
-                                </div>
-                                <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-background px-2 text-muted-foreground">
-                                        Or continue with email
-                                    </span>
-                                </div>
-                            </motion.div>
-
-                            <motion.div variants={item}>
-                                <form onSubmit={handleEmailAuth}>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="name@example.com"
-                                            disabled={isLoading}
-                                            className="h-10 w-full rounded-full border border-input bg-background pl-10 pr-10 text-sm outline-none transition-all focus:border-ring focus:ring-1 focus:ring-ring disabled:opacity-50"
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={isLoading || !email}
-                                            className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full h-8 w-8 flex items-center justify-center bg-primary text-primary-foreground transition-transform hover:scale-95 active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    {/* Error message */}
+                                    {error && (
+                                        <motion.div
+                                            variants={item}
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20"
                                         >
-                                            {isLoading ? (
+                                            <p className="text-sm text-destructive">{error}</p>
+                                        </motion.div>
+                                    )}
+
+                                    {/* Success message */}
+                                    {message && (
+                                        <motion.div
+                                            variants={item}
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20"
+                                        >
+                                            <p className="text-sm text-green-600 dark:text-green-400">{message}</p>
+                                        </motion.div>
+                                    )}
+
+                                    {/* Social login - centered single button */}
+                                    <motion.div variants={item} className="flex justify-center mb-6">
+                                        <button
+                                            onClick={() => handleOAuthLogin("github")}
+                                            disabled={isLoading !== null}
+                                            className={cn(
+                                                "flex w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium transition-all hover:bg-muted hover:border-border/80 active:scale-[0.98]",
+                                                isLoading !== null && "opacity-50 cursor-not-allowed"
+                                            )}
+                                        >
+                                            {isLoading === "github" ? (
                                                 <Loader2 className="h-4 w-4 animate-spin" />
                                             ) : (
-                                                <ArrowRight className="h-4 w-4" />
+                                                <GitHubIcon className="h-4 w-4" />
                                             )}
+                                            <span>Continue with GitHub</span>
                                         </button>
-                                    </div>
-                                </form>
-                            </motion.div>
+                                    </motion.div>
 
-                            <motion.div variants={item} className="mt-8 text-center">
-                                <p className="text-xs text-muted-foreground">
-                                    By clicking continue, you agree to our{" "}
-                                    <a href="#" className="underline hover:text-foreground">
-                                        Terms of Service
-                                    </a>{" "}
-                                    and{" "}
-                                    <a href="#" className="underline hover:text-foreground">
-                                        Privacy Policy
-                                    </a>
-                                </p>
+                                    {/* Divider */}
+                                    <motion.div variants={item} className="relative mb-6">
+                                        <div className="absolute inset-0 flex items-center">
+                                            <span className="w-full border-t border-border" />
+                                        </div>
+                                        <div className="relative flex justify-center text-xs uppercase">
+                                            <span className="bg-background px-2.5 text-muted-foreground/70">
+                                                or
+                                            </span>
+                                        </div>
+                                    </motion.div>
+
+                                    {/* Email input */}
+                                    <motion.div variants={item}>
+                                        <form onSubmit={handleEmailAuth}>
+                                            <div className="relative group">
+                                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-foreground" />
+                                                <input
+                                                    type="email"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    placeholder="Enter your email"
+                                                    disabled={isLoading !== null}
+                                                    autoFocus
+                                                    className={cn(
+                                                        "h-12 w-full rounded-xl border border-input bg-background pl-11 pr-14 text-sm",
+                                                        "outline-none transition-all",
+                                                        "focus:border-ring focus:ring-2 focus:ring-ring/20",
+                                                        "placeholder:text-muted-foreground/50",
+                                                        "disabled:opacity-50"
+                                                    )}
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={isLoading !== null || !email}
+                                                    className={cn(
+                                                        "absolute right-2 top-1/2 -translate-y-1/2",
+                                                        "rounded-lg h-8 px-3",
+                                                        "flex items-center justify-center gap-1.5",
+                                                        "bg-foreground text-background text-sm font-medium",
+                                                        "transition-all",
+                                                        "hover:opacity-90 active:scale-95",
+                                                        "disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+                                                    )}
+                                                >
+                                                    {isLoading === "email" ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <>
+                                                            <span>Continue</span>
+                                                            <ArrowRight className="h-3.5 w-3.5" />
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </motion.div>
+
+                                    {/* Terms */}
+                                    <motion.div variants={item} className="mt-6 text-center">
+                                        <p className="text-xs text-muted-foreground/60">
+                                            By continuing, you agree to our{" "}
+                                            <a href="#" className="underline hover:text-foreground transition-colors">
+                                                Terms
+                                            </a>{" "}
+                                            and{" "}
+                                            <a href="#" className="underline hover:text-foreground transition-colors">
+                                                Privacy Policy
+                                            </a>
+                                        </p>
+                                    </motion.div>
+                                </div>
                             </motion.div>
-                        </motion.div>
-                    </div>
+                        </div>
+                    </>
                 )}
             </AnimatePresence>
         </>

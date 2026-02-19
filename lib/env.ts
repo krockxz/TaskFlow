@@ -43,6 +43,23 @@ export const env = createEnv({
      * Format: postgresql://postgres:PASSWORD@db.REF.supabase.co:5432/postgres
      */
     DIRECT_URL: z.string().url(),
+
+    /**
+     * GitHub webhook secret for signature verification.
+     * Get from: GitHub Repository → Settings → Webhooks → Secret
+     *
+     * IMPORTANT: This must match the secret configured in your GitHub webhook.
+     * The signature is sent as x-hub-signature-256 header.
+     */
+    GITHUB_WEBHOOK_SECRET: z.string().min(1),
+
+    /**
+     * Encryption key for sensitive data (GitHub tokens, etc.).
+     *
+     * Generate with: openssl rand -base64 32
+     * Must be 32+ bytes for AES-256-GCM encryption.
+     */
+    ENCRYPTION_KEY: z.string().min(32),
   },
 
   /**
@@ -88,6 +105,8 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     DATABASE_URL: process.env.DATABASE_URL,
     DIRECT_URL: process.env.DIRECT_URL,
+    GITHUB_WEBHOOK_SECRET: process.env.GITHUB_WEBHOOK_SECRET,
+    ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
 
     // Client variables (also available on server)
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,

@@ -2,18 +2,19 @@
  * Problem Section - Vercel Design System
  *
  * Before/After comparison with monochrome palette and subtle borders.
- * Now with scroll-triggered animations.
+ * Now with blur fade scroll animations.
  */
 
 'use client';
 
-import { SplitView, ScrollReveal } from '.';
+import { SplitView } from './SplitView';
+import { BlurFade } from '@/components/ui/blur-fade';
 
 export function ProblemSection() {
   return (
     <section className="py-32 px-6 bg-secondary/50">
       <div className="max-w-6xl mx-auto">
-        <ScrollReveal>
+        <BlurFade inView delay={0} duration={0.5}>
           <div className="text-center mb-16">
             <span className="inline-block px-3 py-1.5 rounded-full bg-secondary border border-border text-foreground/60 text-xs font-medium tracking-tight-vercel mb-6">
               The Problem
@@ -25,9 +26,9 @@ export function ProblemSection() {
               Modern tools weren&apos;t built for distributed teams. See the difference.
             </p>
           </div>
-        </ScrollReveal>
+        </BlurFade>
 
-        <ScrollReveal delay={0.2} direction="up" distance={20}>
+        <BlurFade inView delay={0.15} duration={0.6}>
           <SplitView
             beforeLabel="Without TaskFlow"
             beforeCode={`// Lost in Slack threads
@@ -47,7 +48,7 @@ console.log(task.handoffTo);  // "yuki@"
 
 // Result: instant clarity`}
           />
-        </ScrollReveal>
+        </BlurFade>
       </div>
     </section>
   );

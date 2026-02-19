@@ -54,3 +54,18 @@ export const DATE_RANGE_LABELS: Record<string, string> = {
   last_30_days: 'Last 30 days',
   last_90_days: 'Last 90 days',
 } as const;
+
+/**
+ * Normalize status string to uppercase enum value.
+ * Handles both uppercase and lowercase inputs from UI components.
+ */
+export function normalizeStatus(status: string): TaskStatus {
+  const upperStatus = status.toUpperCase();
+  // Validate it's a valid TaskStatus
+  const validStatuses: TaskStatus[] = ['OPEN', 'IN_PROGRESS', 'READY_FOR_REVIEW', 'DONE'];
+  if (validStatuses.includes(upperStatus as TaskStatus)) {
+    return upperStatus as TaskStatus;
+  }
+  // Default to OPEN if invalid
+  return 'OPEN';
+}

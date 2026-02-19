@@ -2,14 +2,14 @@
  * Solution Section - Vercel Design System
  *
  * Simplified, focused explanation with monochrome palette.
- * Now with proper scroll-triggered Framer Motion animations.
+ * Now with blur fade scroll animations.
  */
 
 'use client';
 
 import { motion } from 'motion/react';
 import { Check } from 'lucide-react';
-import { ScrollReveal } from '.';
+import { BlurFade } from '@/components/ui/blur-fade';
 
 export function SolutionSection() {
   const benefits = [
@@ -27,7 +27,7 @@ export function SolutionSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left: Content */}
           <div>
-            <ScrollReveal>
+            <BlurFade inView delay={0} duration={0.5}>
               <div>
                 <span className="inline-block px-3 py-1.5 rounded-full bg-secondary border border-border text-foreground/60 text-xs font-medium tracking-tight-vercel mb-6">
                   The Solution
@@ -39,17 +39,16 @@ export function SolutionSection() {
                   TaskFlow gives your distributed team a single source of truth. No more digging through chat, no more confusion about ownership.
                 </p>
               </div>
-            </ScrollReveal>
+            </BlurFade>
 
             {/* Benefits list with stagger animation */}
             <div>
               {benefits.map((benefit, index) => (
-                <ScrollReveal
+                <BlurFade
                   key={benefit}
-                  staggerIndex={index}
-                  staggerDelay={0.08}
-                  direction="left"
-                  distance={20}
+                  inView
+                  delay={0.1 + (index * 0.08)}
+                  duration={0.4}
                   className="flex items-center gap-3 text-foreground mb-4 last:mb-0"
                 >
                   <motion.div
@@ -62,13 +61,13 @@ export function SolutionSection() {
                     <Check className="w-3 h-3 text-background" strokeWidth={3} />
                   </motion.div>
                   {benefit}
-                </ScrollReveal>
+                </BlurFade>
               ))}
             </div>
           </div>
 
           {/* Right: Workflow visual */}
-          <ScrollReveal delay={0.15} direction="right" distance={30}>
+          <BlurFade inView delay={0.2} duration={0.6} direction="right">
             <div className="flex items-center justify-center gap-4 flex-wrap">
               {workflowSteps.map((step, i) => (
                 <div key={step} className="flex items-center">
@@ -95,7 +94,7 @@ export function SolutionSection() {
                 </div>
               ))}
             </div>
-          </ScrollReveal>
+          </BlurFade>
         </div>
       </div>
     </section>

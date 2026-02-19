@@ -3,6 +3,7 @@
  *
  * Returns tasks for the current authenticated user.
  * Supports filtering by status, priority, assignedTo, dateRange, and search.
+ * Supports pagination with take/skip parameters.
  * Used by TanStack Query for client-side data fetching.
  */
 
@@ -10,6 +11,14 @@ import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import type { TaskStatus, TaskPriority, DateRangePreset } from '@/lib/types';
+
+interface TasksResponse {
+  tasks: unknown[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
 
 /**
  * Calculates the date filter object based on a preset range.
@@ -42,6 +51,14 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
+
+  // Parse pagination parameters
+  const pageParam = searchParams.get('page');
+  const pageSizeParam = searchParams.get('pageSize');
+
+  const page = Math.max(1, parseInt(pageParam || '1', 10));
+  const pageSize = Math.min(100, Math.max(1, parseInt(pageSizeParam || '20', 10)));
+  const skip = (page - 1) * pageSize;
 
   // Parse filter parameters
   const statusParam = searchParams.get('status');
@@ -90,14 +107,28 @@ export async function GET(req: Request) {
     }
   }
 
-  const tasks = await prisma.task.findMany({
-    where,
-    include: {
-      createdBy: { select: { id: true, email: true } },
-      assignedToUser: { select: { id: true, email: true } },
-    },
-    orderBy: { updatedAt: 'desc' },
-  });
+  // Execute queries in parallel for better performance
+  const [tasks, total] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      include: {
+        createdBy: { select: { id: true, email: true } },
+        assignedToUser: { select: { id: true, email: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: pageSize,
+      skip,
+    }),
+    prisma.task.count({ where }),
+  ]);
 
-  return NextResponse.json(tasks);
+  const response: TasksResponse = {
+    tasks,
+    total,
+    page,
+    pageSize,
+    totalPages: Math.ceil(total / pageSize),
+  };
+
+  return NextResponse.json(response);
 }

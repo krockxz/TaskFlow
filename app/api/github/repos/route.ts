@@ -2,15 +2,16 @@
  * GitHub Repos API
  *
  * Fetches user's GitHub repositories.
+ * Uses encrypted server-side storage for tokens.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/client';
+import { getAuthUser } from '@/lib/supabase/server';
+import { fetchGitHubAPI } from '@/lib/github/service';
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getAuthUser();
 
     if (!user) {
       return NextResponse.json(
@@ -19,23 +20,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get GitHub access token from user metadata
-    const githubToken = user.user_metadata?.github_access_token;
-    if (!githubToken) {
-      return NextResponse.json(
-        { error: 'GitHub not connected. Please connect your account first.' },
-        { status: 400 }
-      );
-    }
-
-    // Fetch repos from GitHub
-    const response = await fetch('https://api.github.com/user/repos?sort=updated&per_page=100', {
-      headers: {
-        'Authorization': `Bearer ${githubToken}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
-    });
+    // Fetch repos from GitHub using the service
+    const response = await fetchGitHubAPI(
+      user.id,
+      '/user/repos?sort=updated&per_page=100'
+    );
 
     if (!response.ok) {
       if (response.status === 403) {
@@ -74,8 +63,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('GitHub repos error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch repositories' },
-      { status: 500 }
+      { error: error instanceof Error ? error.message : 'Failed to fetch repositories' },
+      { status: error instanceof Error && error.message.includes('not connected') ? 400 : 500 }
     );
   }
 }

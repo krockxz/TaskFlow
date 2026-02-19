@@ -2,11 +2,17 @@
  * Authentication Middleware Utilities
  *
  * Reusable authentication helpers for API routes.
+ * These are re-exported from lib/supabase/server for consistency.
+ *
+ * All authentication logic should use the central auth module in lib/supabase/server.ts.
  */
 
-import { createClient } from '@/lib/supabase/server';
+// Re-export core auth functions from the central auth module
+export { getAuthUser, requireAuth } from '@/lib/supabase/server';
+
 import { NextResponse } from 'next/server';
 import type { User } from '@supabase/supabase-js';
+import { requireAuth as _requireAuth } from '@/lib/supabase/server';
 
 /**
  * Authentication error class for throwing in protected routes.
@@ -16,48 +22,6 @@ export class AuthError extends Error {
     super(message);
     this.name = 'AuthError';
   }
-}
-
-/**
- * Require authentication for an API route.
- * Returns the authenticated user or throws AuthError.
- *
- * @example
- * ```ts
- * export async function GET(req: Request) {
- *   const user = await requireAuth();
- *   // user is guaranteed to be non-null here
- * }
- * ```
- */
-export async function requireAuth(): Promise<User> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new AuthError();
-  }
-
-  return user;
-}
-
-/**
- * Get the current user, returning null if not authenticated.
- *
- * @example
- * ```ts
- * export async function GET(req: Request) {
- *   const user = await getAuthUser();
- *   if (!user) {
- *     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
- *   }
- * }
- * ```
- */
-export async function getAuthUser(): Promise<User | null> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user;
 }
 
 /**
@@ -84,7 +48,7 @@ export function withAuth<T>(
 ): (req: Request) => Promise<NextResponse> {
   return async (req: Request) => {
     try {
-      const user = await requireAuth();
+      const user = await _requireAuth();
       const result = await handler(req, user);
       return result as NextResponse;
     } catch (error) {

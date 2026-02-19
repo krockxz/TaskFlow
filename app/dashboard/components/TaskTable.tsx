@@ -6,11 +6,12 @@
  * Uses shadcn Table, Badge, Avatar, and Select components.
  * Supports filter-aware query keys for proper cache management.
  * Enhanced with smooth animations for row entrance, hover effects, and interactions.
+ * Includes pagination for performance with large datasets.
  */
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -37,14 +38,23 @@ import {
 } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { BulkActionBar } from './BulkActionBar';
-import { CheckCircle2, Circle, Clock, AlertCircle, Github, Inbox } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, AlertCircle, Github, Inbox, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import { STATUS_LABELS } from '@/lib/constants/filters';
+import { STATUS_LABELS, normalizeStatus } from '@/lib/constants/filters';
 
 interface TaskTableProps {
   initialTasks: Task[];
   users: { id: string; email: string }[];
+}
+
+interface TasksResponse {
+  tasks: Task[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 // Status configuration with icons and variants (labels from shared constants)
@@ -126,10 +136,16 @@ const emptyStateVariants = {
   },
 };
 
+// Pagination settings
+const ITEMS_PER_PAGE = 25;
+
 export function TaskTable({ initialTasks, users }: TaskTableProps) {
   const queryClient = useQueryClient();
   const supabase = createClient();
   const searchParams = useSearchParams();
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Build filters from URL
   const filters: TaskFilters = useMemo(() => {
@@ -156,42 +172,62 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
     if (filters.assignedTo) params.set('assignedTo', filters.assignedTo);
     if (filters.dateRange) params.set('dateRange', filters.dateRange);
     if (filters.search) params.set('search', filters.search);
+    // Add pagination params
+    params.set('page', currentPage.toString());
+    params.set('pageSize', ITEMS_PER_PAGE.toString());
     return params.toString();
-  }, [filters]);
+  }, [filters, currentPage]);
 
   // Fetch tasks with TanStack Query - filter-aware query key
-  const { data: tasks = initialTasks, isLoading } = useQuery<Task[]>({
-    queryKey: ['tasks', filters],
+  const { data: response = { tasks: initialTasks, total: initialTasks.length, page: 1, pageSize: ITEMS_PER_PAGE, totalPages: 1 }, isLoading } = useQuery<TasksResponse>({
+    queryKey: ['tasks', filters, currentPage],
     queryFn: async () => {
-      const url = queryString ? `/api/queries/tasks?${queryString}` : '/api/queries/tasks';
+      const url = `/api/queries/tasks?${queryString}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch tasks');
       return res.json();
     },
-    initialData: initialTasks,
+    initialData: { tasks: initialTasks, total: initialTasks.length, page: 1, pageSize: ITEMS_PER_PAGE, totalPages: 1 },
     staleTime: 5000,
   });
+
+  const tasks = response.tasks;
+  const totalPages = response.totalPages;
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const toggleRow = (id: string) => {
-    const next = new Set(selectedIds);
-    if (next.has(id)) {
-      next.delete(id);
-    } else {
-      next.add(id);
-    }
-    setSelectedIds(next);
-  };
+  // Memoized handlers with useCallback
+  const toggleRow = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
 
-  const toggleAll = () => {
-    if (selectedIds.size === tasks.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(tasks.map(t => t.id)));
-    }
-  };
+  const toggleAll = useCallback(() => {
+    setSelectedIds(prev => {
+      if (prev.size === tasks.length) {
+        return new Set();
+      } else {
+        return new Set(tasks.map(t => t.id));
+      }
+    });
+  }, [tasks]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
 
   const isAllSelected = tasks.length > 0 && selectedIds.size === tasks.length;
   const isSomeSelected = selectedIds.size > 0 && !isAllSelected;
@@ -202,28 +238,30 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
       fetch('/api/tasks/update-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ taskId, status }),
+        // Normalize status to uppercase enum value
+        body: JSON.stringify({ taskId, status: normalizeStatus(status) }),
       }).then((res) => res.json()),
 
     // Optimistic update
     onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: ['tasks', filters] });
-      const previous = queryClient.getQueryData(['tasks', filters]);
+      await queryClient.cancelQueries({ queryKey: ['tasks', filters, currentPage] });
+      const previous = queryClient.getQueryData(['tasks', filters, currentPage]);
 
-      queryClient.setQueryData(['tasks', filters], (old: Task[]) =>
-        old.map((t) =>
+      queryClient.setQueryData(['tasks', filters, currentPage], (old: TasksResponse) => ({
+        ...old,
+        tasks: old.tasks.map((t) =>
           t.id === variables.taskId
             ? { ...t, status: variables.status.toUpperCase() as Task['status'] }
             : t
-        )
-      );
+        ),
+      }));
 
       return { previous };
     },
 
     // Rollback on error
     onError: (err, variables, context) => {
-      queryClient.setQueryData(['tasks', filters], context?.previous);
+      queryClient.setQueryData(['tasks', filters, currentPage], context?.previous);
     },
 
     // Always refetch after settle
@@ -235,7 +273,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
   // Realtime subscription - FETCH-ON-EVENT PATTERN with filter-aware key
   useEffect(() => {
     const channel = supabase
-      .channel('tasks-changes')
+      .channel(`tasks-changes-${Date.now()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -318,6 +356,35 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
     );
   }
 
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
   return (
     <>
       <Table>
@@ -363,11 +430,59 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
         </TableBody>
       </Table>
 
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2 py-4">
+          <div className="text-sm text-muted-foreground">
+            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, response.total)} of {response.total} tasks
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <div className="flex items-center gap-1">
+              {getPageNumbers().map((pageNum, i) => (
+                typeof pageNum === 'number' ? (
+                  <Button
+                    key={i}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    className="w-9 h-9"
+                    onClick={() => setCurrentPage(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                ) : (
+                  <span key={i} className="px-2 text-muted-foreground">...</span>
+                )
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="gap-1"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Bulk Action Bar */}
       <BulkActionBar
         selectedIds={Array.from(selectedIds)}
         users={users}
-        onClearSelection={() => setSelectedIds(new Set())}
+        onClearSelection={clearSelection}
       />
     </>
   );

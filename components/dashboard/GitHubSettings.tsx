@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Github, RefreshCw, Link as LinkIcon, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createClient } from '@/lib/supabase/client';
 import type { GitHubRepo } from '@/lib/types';
 
 export function GitHubSettings() {
@@ -14,25 +13,26 @@ export function GitHubSettings() {
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ created: number; updated: number; errors: string[] } | null>(null);
-  const supabase = createClient();
 
-  // Check GitHub connection status
+  // Check GitHub connection status on mount
   useEffect(() => {
-    const checkConnection = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.user_metadata?.github_access_token) {
+    checkConnection();
+  }, []);
+
+  const checkConnection = async () => {
+    try {
+      const response = await fetch('/api/github/connect');
+      const data = await response.json();
+      if (data.connected && data.githubUser) {
         setIsConnected(true);
-        setGithubUser({
-          login: user.user_metadata.github_login,
-          avatar_url: user.user_metadata.github_avatar,
-        });
+        setGithubUser(data.githubUser);
         // Fetch repos
         fetchRepos();
       }
-    };
-    checkConnection();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    } catch (error) {
+      console.error('Failed to check GitHub connection:', error);
+    }
+  };
 
   const fetchRepos = async () => {
     setLoading(true);
@@ -93,6 +93,8 @@ export function GitHubSettings() {
         setGithubUser(null);
         setRepos([]);
         setSelectedRepo(null);
+      } else {
+        alert(data.error || 'Failed to disconnect GitHub');
       }
     } catch (error) {
       alert('Failed to disconnect GitHub');
