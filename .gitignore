@@ -56,3 +56,6 @@ CLAUDE.md
 # IDE
 .vscode/
 .idea/
+
+# Internal Documentation
+docs/
