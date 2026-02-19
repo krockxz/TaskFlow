@@ -20,6 +20,7 @@ export interface Task {
   description: string | null;
   status: TaskStatus;
   priority: TaskPriority;
+  dueDate: string | null;
   createdById: string;
   assignedTo: string | null;
   createdAt: string;
@@ -108,6 +109,7 @@ export interface CreateTaskInput {
   description?: string;
   priority: TaskPriority;
   assignedTo?: string;
+  dueDate?: string;
 }
 
 export interface UpdateTaskStatusInput {

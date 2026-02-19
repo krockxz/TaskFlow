@@ -33,6 +33,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { useToast } from '@/lib/hooks/use-toast';
+import { DatePicker } from '@/components/ui/date-picker';
 
 // Zod validation schema for task creation
 const taskSchema = z.object({
@@ -48,6 +50,7 @@ const taskSchema = z.object({
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH'], {
     required_error: 'Please select a priority',
   }),
+  dueDate: z.string().optional(),
 });
 
 type TaskFormValues = z.infer<typeof taskSchema>;
@@ -60,6 +63,7 @@ interface TaskFormProps {
 
 export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
   const router = useRouter();
+  const { success, error: toastError } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,6 +75,7 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
       description: '',
       assignedTo: 'unassigned',
       priority: 'MEDIUM',
+      dueDate: '',
     },
   });
 
@@ -87,6 +92,7 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
           description: values.description || undefined,
           assignedTo: values.assignedTo && values.assignedTo !== 'unassigned' ? values.assignedTo : undefined,
           priority: values.priority,
+          dueDate: values.dueDate || undefined,
         }),
       });
 
@@ -96,6 +102,9 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
         throw new Error(data.error || 'Failed to create task');
       }
 
+      // Show success toast
+      success('Task created successfully');
+
       if (onSuccess) {
         onSuccess();
       } else {
@@ -103,7 +112,10 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
       }
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      // Show error toast
+      toastError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -207,6 +219,23 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
                   <SelectItem value="HIGH">High</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="dueDate"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Due Date</FormLabel>
+              <DatePicker
+                date={field.value ? new Date(field.value) : undefined}
+                onChange={(date) => field.onChange(date ? date.toISOString() : '')}
+                disabled={isSubmitting}
+                placeholder="Select a due date (optional)"
+              />
               <FormMessage />
             </FormItem>
           )}

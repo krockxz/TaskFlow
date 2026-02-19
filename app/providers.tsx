@@ -4,6 +4,7 @@
  * Wraps the app with all necessary providers:
  * - ThemeProvider (next-themes) for dark/light mode
  * - QueryClientProvider for server state management
+ * - ToastProvider for toast notifications
  */
 
 'use client';
@@ -12,6 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ThemeProvider } from 'next-themes';
 import { useState, type ReactNode } from 'react';
+import { ToastProvider, Toaster } from '@/components/toast/ToastProvider';
 
 export function Providers({ children }: { children: ReactNode }) {
   // Create QueryClient instance once and reuse
@@ -42,21 +44,24 @@ export function Providers({ children }: { children: ReactNode }) {
   );
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <QueryClientProvider client={queryClient}>
-        {children}
-        {process.env.NODE_ENV === 'development' && (
-          <ReactQueryDevtools
-            initialIsOpen={false}
-            position="bottom"
-          />
-        )}
-      </QueryClientProvider>
-    </ThemeProvider>
+    <ToastProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <QueryClientProvider client={queryClient}>
+          {children}
+          {process.env.NODE_ENV === 'development' && (
+            <ReactQueryDevtools
+              initialIsOpen={false}
+              position="bottom"
+            />
+          )}
+        </QueryClientProvider>
+      </ThemeProvider>
+      <Toaster />
+    </ToastProvider>
   );
 }

@@ -14,6 +14,7 @@ model Task {
   description       String?
   status            TaskStatus?    @default(OPEN) @map("status")
   priority          TaskPriority?  @default(MEDIUM) @map("priority")
+  dueDate           DateTime?      @map("due_date") @db.Timestamptz(6)
   createdById       String         @map("created_by_id") @db.Uuid
   assignedTo        String?        @map("assigned_to") @db.Uuid
   createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)

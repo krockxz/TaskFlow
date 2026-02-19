@@ -40,9 +40,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { BulkActionBar } from './BulkActionBar';
-import { CheckCircle2, Circle, Clock, AlertCircle, Github, Inbox, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, AlertCircle, Github, Inbox, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { STATUS_LABELS, normalizeStatus } from '@/lib/constants/filters';
+import { useToast } from '@/lib/hooks/use-toast';
+import { format, formatDistanceToNow, isPast, isToday, differenceInDays } from 'date-fns';
 
 interface TaskTableProps {
   initialTasks: Task[];
@@ -104,6 +106,59 @@ const getInitials = (email: string): string => {
   return email.substring(0, 2).toUpperCase();
 };
 
+// Due date utilities
+const getDueDateInfo = (dueDate: string | null) => {
+  if (!dueDate) return null;
+
+  const date = new Date(dueDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (isPast(date) && !isToday(date)) {
+    return {
+      text: format(date, 'MMM d'),
+      subtitle: `Overdue by ${differenceInDays(today, date)} day${differenceInDays(today, date) > 1 ? 's' : ''}`,
+      variant: 'overdue' as const,
+    };
+  }
+
+  if (isToday(date)) {
+    return {
+      text: 'Today',
+      subtitle: format(date, 'MMM d'),
+      variant: 'today' as const,
+    };
+  }
+
+  const daysUntil = differenceInDays(date, today);
+  if (daysUntil <= 3) {
+    return {
+      text: format(date, 'EEE, MMM d'),
+      subtitle: `In ${daysUntil} day${daysUntil > 1 ? 's' : ''}`,
+      variant: 'soon' as const,
+    };
+  }
+
+  return {
+    text: format(date, 'MMM d'),
+    subtitle: null,
+    variant: 'normal' as const,
+  };
+};
+
+const getDueDateVariant = (variant: 'overdue' | 'today' | 'soon' | 'normal') => {
+  switch (variant) {
+    case 'overdue':
+      return 'text-destructive';
+    case 'today':
+      return 'text-orange-500';
+    case 'soon':
+      return 'text-yellow-500 dark:text-yellow-400';
+    default:
+      return 'text-muted-foreground';
+  }
+};
+
 // Row animation variants - minimal fade/slide
 const rowVariants = {
   hidden: {
@@ -135,6 +190,7 @@ const ITEMS_PER_PAGE = 25;
 export function TaskTable({ initialTasks, users }: TaskTableProps) {
   const queryClient = useQueryClient();
   const supabase = createClient();
+  const { success, error: toastError } = useToast();
   const searchParams = useSearchParams();
 
   // Pagination state
@@ -195,6 +251,9 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  // Track individual task status updates for loading states
+  const [updatingTaskIds, setUpdatingTaskIds] = useState<Set<string>>(new Set());
+
   // Memoized handlers with useCallback
   const toggleRow = useCallback((id: string) => {
     setSelectedIds(prev => {
@@ -237,6 +296,9 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
 
     // Optimistic update
     onMutate: async (variables) => {
+      // Add task to loading state
+      setUpdatingTaskIds(prev => new Set(prev).add(variables.taskId));
+
       await queryClient.cancelQueries({ queryKey: ['tasks', filters, currentPage] });
       const previous = queryClient.getQueryData(['tasks', filters, currentPage]);
 
@@ -255,10 +317,22 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
     // Rollback on error
     onError: (err, variables, context) => {
       queryClient.setQueryData(['tasks', filters, currentPage], context?.previous);
+      toastError('Failed to update task status');
     },
 
-    // Always refetch after settle
-    onSettled: () => {
+    // Show success toast and refetch
+    onSuccess: () => {
+      success('Task status updated');
+    },
+
+    // Always refetch after settle and remove from loading state
+    onSettled: (_data, _error, variables) => {
+      // Remove task from loading state
+      setUpdatingTaskIds(prev => {
+        const next = new Set(prev);
+        next.delete(variables.taskId);
+        return next;
+      });
       queryClient.invalidateQueries({ queryKey: ['tasks', filters] });
     },
   });
@@ -282,25 +356,66 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
     };
   }, [supabase, queryClient, filters]);
 
-  // Enhanced Skeleton Loading
+  // Enhanced Skeleton Loading - matches table structure
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 p-3 rounded-lg border bg-muted/20 animate-pulse"
-            style={{ animationDelay: `${i * 50}ms`, animationDuration: '1.5s' }}
-          >
-            <Skeleton className="h-5 w-5 rounded" />
-            <Skeleton className="h-5 flex-1 max-w-xs" />
-            <Skeleton className="h-6 w-20 rounded-full" />
-            <Skeleton className="h-6 w-16 rounded-full" />
-            <Skeleton className="h-6 w-8 rounded-full" />
-            <Skeleton className="h-4 w-20 ml-auto" />
-          </div>
-        ))}
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12">
+              <Skeleton className="h-5 w-5 rounded" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-5 w-16" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-5 w-16" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-5 w-16" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-5 w-24" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-5 w-20" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-5 w-16" />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {[1, 2, 3, 4, 5].map((i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <Skeleton className="h-5 w-5 rounded" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-48" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-7 w-24 rounded-md" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-16" />
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-6 w-6 rounded-full" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-20" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     );
   }
 
@@ -378,6 +493,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Priority</TableHead>
+            <TableHead>Due Date</TableHead>
             <TableHead>Assigned To</TableHead>
             <TableHead>Updated</TableHead>
           </TableRow>
@@ -400,6 +516,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
                 getInitials={getInitials}
                 updateStatus={updateStatus}
                 onToggle={() => toggleRow(task.id)}
+                isUpdating={updatingTaskIds.has(task.id)}
               />
             );
           })}
@@ -493,6 +610,7 @@ interface AnimatedTableRowProps {
   getInitials: (email: string) => string;
   updateStatus: (params: { taskId: string; status: string }) => void;
   onToggle: () => void;
+  isUpdating: boolean;
 }
 
 function AnimatedTableRow({
@@ -505,6 +623,7 @@ function AnimatedTableRow({
   getInitials,
   updateStatus,
   onToggle,
+  isUpdating,
 }: AnimatedTableRowProps) {
   return (
     <motion.tr
@@ -552,9 +671,14 @@ function AnimatedTableRow({
           onValueChange={(value) =>
             updateStatus({ taskId: task.id, status: value })
           }
+          disabled={isUpdating}
         >
           <SelectTrigger className="h-7 w-fit gap-1.5">
-            <StatusIcon className="h-3.5 w-3.5" />
+            {isUpdating ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+            ) : (
+              <StatusIcon className="h-3.5 w-3.5" />
+            )}
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -570,6 +694,23 @@ function AnimatedTableRow({
         <Badge variant={getPriorityVariant(task.priority)} className="capitalize">
           {task.priority.toLowerCase()}
         </Badge>
+      </TableCell>
+
+      <TableCell>
+        {task.dueDate ? (
+          <div className="flex flex-col">
+            <span className={`text-sm font-medium ${getDueDateVariant(getDueDateInfo(task.dueDate)?.variant || 'normal')}`}>
+              {getDueDateInfo(task.dueDate)?.text}
+            </span>
+            {getDueDateInfo(task.dueDate)?.subtitle && (
+              <span className="text-xs text-muted-foreground">
+                {getDueDateInfo(task.dueDate)?.subtitle}
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-sm text-muted-foreground">-</span>
+        )}
       </TableCell>
 
       <TableCell>

@@ -15,6 +15,7 @@ const createTaskSchema = z.object({
   description: z.string().optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
   assignedTo: z.string().uuid().optional(),
+  dueDate: z.string().datetime().optional(),
 });
 
 export async function POST(request: Request) {
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
           description: input.description,
           priority: input.priority,
           assignedTo: input.assignedTo,
+          dueDate: input.dueDate ? new Date(input.dueDate) : null,
           createdById: user.id,
         },
         include: {
