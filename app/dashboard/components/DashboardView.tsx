@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { LayoutDashboard, Filter, Settings } from 'lucide-react';
 import { TaskTable } from './TaskTable';
 import FilterChips from './FilterChips';
 import { NewTaskDialog } from './NewTaskDialog';
@@ -12,99 +10,74 @@ interface DashboardViewProps {
   initialTasks: Task[];
   users: { id: string; email: string }[];
   userEmail: string;
+  activeView?: 'dashboard' | 'filters' | 'settings';
 }
 
-export function DashboardView({ initialTasks, users, userEmail }: DashboardViewProps) {
-  const [activeView, setActiveView] = useState<'dashboard' | 'filters' | 'settings'>('dashboard');
-
+export function DashboardView({
+  initialTasks,
+  users,
+  activeView = 'dashboard',
+}: DashboardViewProps) {
   return (
-    <>
-      {/* View Switcher (could be moved to sidebar) */}
-      <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit mb-4">
-        <button
-          onClick={() => setActiveView('dashboard')}
-          className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-2 ${
-            activeView === 'dashboard'
-              ? 'bg-background shadow-sm'
-              : 'hover:bg-background/50'
-          }`}
-        >
-          <LayoutDashboard className="h-4 w-4" />
-          Dashboard
-        </button>
-        <button
-          onClick={() => setActiveView('filters')}
-          className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-2 ${
-            activeView === 'filters'
-              ? 'bg-background shadow-sm'
-              : 'hover:bg-background/50'
-          }`}
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-        </button>
-        <button
-          onClick={() => setActiveView('settings')}
-          className={`px-3 py-1.5 rounded-md text-sm flex items-center gap-2 ${
-            activeView === 'settings'
-              ? 'bg-background shadow-sm'
-              : 'hover:bg-background/50'
-          }`}
-        >
-          <Settings className="h-4 w-4" />
-          Settings
-        </button>
-      </div>
-
-      {/* Dashboard View */}
+    <div className="flex flex-col h-full">
       {activeView === 'dashboard' && (
         <>
-          <header className="border-b px-6 py-4 flex items-center justify-between bg-background sticky top-0 z-10">
+          {/* Solid header */}
+          <header className="border-b px-6 py-4 flex items-center justify-between shrink-0 bg-background z-10">
             <div>
-              <h1 className="text-2xl font-semibold">Dashboard</h1>
+              <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
               <p className="text-sm text-muted-foreground">Manage your tasks and track progress</p>
             </div>
             <NewTaskDialog users={users} />
           </header>
 
-          <div className="p-6">
-            <FilterChips users={users} />
-            <TaskTable initialTasks={initialTasks} users={users} />
+          {/* Scrollable content with fade at bottom */}
+          <div className="relative flex-1 min-h-0">
+            <div className="h-full overflow-y-auto px-6 pt-5 pb-16">
+              <FilterChips users={users} />
+              <TaskTable initialTasks={initialTasks} users={users} />
+            </div>
+            {/* Blur fade mask at bottom */}
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
           </div>
         </>
       )}
 
-      {/* Settings View */}
       {activeView === 'settings' && (
         <>
-          <header className="border-b px-6 py-4 bg-background sticky top-0 z-10">
-            <h1 className="text-2xl font-semibold">Settings</h1>
+          <header className="border-b px-6 py-4 shrink-0 bg-background z-10">
+            <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
             <p className="text-sm text-muted-foreground">Manage integrations and preferences</p>
           </header>
 
-          <div className="p-6 max-w-3xl">
-            <GitHubSettings />
+          <div className="relative flex-1 min-h-0">
+            <div className="h-full overflow-y-auto px-6 pt-5 pb-16 max-w-3xl">
+              <GitHubSettings />
+            </div>
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
           </div>
         </>
       )}
 
-      {/* Filters View (same as dashboard for now) */}
       {activeView === 'filters' && (
         <>
-          <header className="border-b px-6 py-4 flex items-center justify-between bg-background sticky top-0 z-10">
+          <header className="border-b px-6 py-4 flex items-center justify-between shrink-0 bg-background z-10">
             <div>
-              <h1 className="text-2xl font-semibold">Filters</h1>
+              <h1 className="text-xl font-semibold tracking-tight">Filters</h1>
               <p className="text-sm text-muted-foreground">Filter and search tasks</p>
             </div>
             <NewTaskDialog users={users} />
           </header>
 
-          <div className="p-6">
-            <FilterChips users={users} />
-            <TaskTable initialTasks={initialTasks} users={users} />
+          <div className="relative flex-1 min-h-0">
+            <div className="h-full overflow-y-auto px-6 pt-5 pb-16">
+              <FilterChips users={users} />
+              <TaskTable initialTasks={initialTasks} users={users} />
+            </div>
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }

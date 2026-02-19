@@ -21,8 +21,8 @@ import { useTaskFilters } from "@/app/dashboard/hooks/useTaskFilters";
 import { signOut } from "@/lib/auth/oauth-helpers";
 import { cn } from "@/lib/utils";
 
-// Softer spring animation curve
-const softSpringEasing = "cubic-bezier(0.25, 1.1, 0.4, 1)";
+// Smooth easing — no overshoot
+const softSpringEasing = "cubic-bezier(0.4, 0, 0.2, 1)";
 
 /* ----------------------------- Brand / Logos ----------------------------- */
 
@@ -500,8 +500,18 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
 
     const currentContent = sidebarContent[activeSection] || sidebarContent.filters;
 
+    // Pass activeSection as activeView to children (DashboardView)
+    const childrenWithProps = React.Children.map(children, (child) => {
+        if (React.isValidElement(child)) {
+            return React.cloneElement(child as React.ReactElement<{ activeView?: string }>, {
+                activeView: activeSection,
+            });
+        }
+        return child;
+    });
+
     return (
-        <div className="flex h-screen w-full bg-black overflow-hidden">
+        <div className="flex h-screen w-full bg-black">
             {/* 1. Icon Rail */}
             <IconNavigation
                 activeSection={activeSection}
@@ -515,9 +525,10 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
             {/* 2. Collapsible Sidebar Panel */}
             <aside
                 className={cn(
-                    "bg-black flex flex-col pt-4 pb-4 transition-all duration-500 ease-[cubic-bezier(0.25,1.1,0.4,1)] overflow-hidden border-r border-neutral-800",
+                    "bg-black flex flex-col pt-4 pb-4 transition-all duration-500 overflow-hidden border-r border-neutral-800",
                     isCollapsed ? "w-0 opacity-0 px-0 border-none" : "w-64 px-4 opacity-100"
                 )}
+                style={{ transitionTimingFunction: softSpringEasing }}
             >
                 <SectionTitle
                     title={currentContent.title}
@@ -544,26 +555,21 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                         />
                     ))}
                 </div>
-            </aside>
 
-            {/* 3. Re-expand Button (if collapsed) */}
-            {isCollapsed && (
-                <div className="absolute top-4 left-[72px] z-50">
+                {/* Re-expand toggle — inline, no absolute overlap */}
+                {isCollapsed && (
                     <button
                         onClick={toggleCollapse}
-                        className="p-2 bg-neutral-800 rounded-md text-neutral-400 hover:text-white"
+                        className="mt-2 mx-auto p-2 rounded-md text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
                     >
                         <ChevronDown size={16} className="-rotate-90" />
                     </button>
-                </div>
-            )}
+                )}
+            </aside>
 
-            {/* 4. Main Content Area */}
-            <main className="flex-1 bg-background rounded-tl-xl my-2 mr-2 overflow-hidden flex flex-col relative shadow-xl border border-border/50">
-                {/* Mobile overlay could go here */}
-                <div className="h-full overflow-y-auto">
-                    {children}
-                </div>
+            {/* 3. Main Content Area */}
+            <main className="flex-1 bg-background rounded-tl-xl my-2 mr-2 flex flex-col overflow-hidden shadow-xl border border-border/50">
+                {childrenWithProps}
             </main>
         </div>
     );
