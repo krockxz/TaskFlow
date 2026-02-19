@@ -64,18 +64,18 @@ For a complete list, see [`.env.example`](.env.example).
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Set up environment
 cp .env.example .env.local
 # Edit .env.local with your credentials
 
 # Push database schema
-npx prisma db push
-npx prisma generate
+bunx prisma db push
+bunx prisma generate
 
 # Run development server
-npm run dev
+bun run dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000).

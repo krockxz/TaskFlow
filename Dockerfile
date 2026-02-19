@@ -1,8 +1,8 @@
 # TaskFlow Dockerfile
 # Multi-stage build for optimized production image using Next.js standalone output
 
-# Stage 1: Base image with dependencies
-FROM node:20-alpine AS base
+# Stage 1: Base image with bun
+FROM oven/bun:1-alpine AS base
 # Install libc6-compat for better compatibility with Prisma and native modules
 RUN apk add --no-cache libc6-compat
 
@@ -11,9 +11,9 @@ WORKDIR /app
 # Stage 2: Install dependencies
 FROM base AS deps
 # Copy package files
-COPY package.json package-lock.json* ./
-# Install dependencies using npm ci for reproducible builds
-RUN npm ci
+COPY package.json bun.lockb* ./
+# Install dependencies using bun for reproducible builds
+RUN bun install --frozen-lockfile
 
 # Stage 3: Build the application
 FROM base AS builder
@@ -23,11 +23,11 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code
 COPY . .
 # Generate Prisma client (required for database access)
-RUN npx prisma generate
+RUN bunx prisma generate
 # Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 # Build the application with standalone output
-RUN npm run build
+RUN bun run build
 
 # Stage 4: Production runner
 FROM base AS runner
