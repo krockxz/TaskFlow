@@ -19,13 +19,18 @@ import { createClient } from '@/lib/supabase/client';
 import { signOut } from '@/lib/auth/oauth-helpers';
 
 // Extracted Logo component (DRY principle)
+// Extracted Logo component (DRY principle)
 function Logo({ href }: { href: string }) {
     return (
-        <Link href={href} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-sky-500 to-violet-500 flex items-center justify-center shadow-sm">
-                <Zap className="w-2.5 h-2.5 text-white" />
+        <Link href={href} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="relative w-8 h-8 rounded-lg overflow-hidden shadow-sm">
+                <img
+                    src="/logo.jpg"
+                    alt="TaskFlow Logo"
+                    className="object-cover w-full h-full"
+                />
             </div>
-            <span className="font-mono-display text-xs font-semibold tracking-tight">TaskFlow</span>
+            <span className="font-mono-display text-lg font-bold tracking-tight">TaskFlow</span>
         </Link>
     );
 }
@@ -139,9 +144,6 @@ export function AppHeader() {
                             </>
                         ) : (
                             <>
-                                <a href="#features" className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-full hover:bg-muted/50">
-                                    Features
-                                </a>
                                 <a
                                     href="https://github.com/kunal/TaskFlow"
                                     target="_blank"
@@ -152,9 +154,6 @@ export function AppHeader() {
                                     <span className="hidden sm:inline">GitHub</span>
                                 </a>
                                 <ThemeToggle className="text-muted-foreground hover:text-foreground p-1.5 rounded-full hover:bg-muted/50 transition-colors" />
-                                <Link href="/login" className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-full hover:bg-muted/50">
-                                    Sign in
-                                </Link>
                                 <Link href="/login">
                                     <Button size="sm" className="h-7 px-3 rounded-full text-[11px] font-medium">
                                         Get started
@@ -212,14 +211,7 @@ export function AppHeader() {
                             ) : (
                                 <>
                                     <a
-                                        href="#features"
-                                        className="block p-2 rounded-xl text-foreground hover:bg-muted/50 transition-colors text-xs"
-                                        onClick={() => setMobileOpen(false)}
-                                    >
-                                        Features
-                                    </a>
-                                    <a
-                                        href="https://github.com/kunal/TaskFlow"
+                                        href="https://github.com/krockxz/TaskFlow"
                                         className="block p-2 rounded-xl text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2 text-xs"
                                         onClick={() => setMobileOpen(false)}
                                     >
@@ -231,13 +223,6 @@ export function AppHeader() {
                                         <span className="text-xs text-muted-foreground">Theme</span>
                                         <ThemeToggle className="text-muted-foreground hover:text-foreground p-1.5" />
                                     </div>
-                                    <Link
-                                        href="/login"
-                                        className="block p-2 rounded-xl text-muted-foreground hover:bg-muted/50 transition-colors text-xs"
-                                        onClick={() => setMobileOpen(false)}
-                                    >
-                                        Sign in
-                                    </Link>
                                     <Link href="/login" onClick={() => setMobileOpen(false)}>
                                         <Button size="sm" className="w-full rounded-xl h-9 text-xs">Get started</Button>
                                     </Link>

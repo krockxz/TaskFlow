@@ -4,18 +4,13 @@
  * Returns task counts grouped by assignee for the current user's accessible tasks.
  */
 
-import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getDateRangeFilter, type DateRangePreset, isValidDateRange } from '../utils';
+import { requireAuth } from '@/lib/middleware/auth';
 
 export async function GET(req: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const user = await requireAuth();
 
   const { searchParams } = new URL(req.url);
   const rangeParam = searchParams.get('range');

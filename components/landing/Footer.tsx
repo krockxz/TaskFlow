@@ -14,7 +14,7 @@ const links = {
     { name: 'Changelog', href: '#' },
   ],
   resources: [
-    { name: 'GitHub', href: 'https://github.com/kunal/TaskFlow' },
+    { name: 'GitHub', href: 'https://github.com/krockxz/TaskFlow' },
     { name: 'Contributing', href: '#' },
     { name: 'License', href: '#' },
   ],
@@ -30,8 +30,12 @@ export function Footer() {
           {/* Brand - monochrome logo */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
-                <Zap className="w-4 h-4 text-background" />
+              <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+                <img
+                  src="/logo.jpg"
+                  alt="TaskFlow Logo"
+                  className="object-cover w-full h-full"
+                />
               </div>
               <span className="font-mono-display text-lg font-semibold text-foreground tracking-tight">
                 TaskFlow
@@ -82,7 +86,7 @@ export function Footer() {
             © {currentYear} TaskFlow
           </p>
           <a
-            href="https://github.com/kunal/TaskFlow"
+            href="https://github.com/krockxz/TaskFlow"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"

@@ -5,7 +5,7 @@ import { motion, AnimatePresence, type Variants } from "framer-motion"
 import { X, Mail, ArrowRight, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { signInWithOAuth, signInWithMagicLink, type OAuthProvider } from "@/lib/auth/oauth-helpers"
-import { GoogleIcon, GitHubIcon } from "@/components/auth/oauth-icons"
+import { GitHubIcon } from "@/components/auth/oauth-icons"
 
 interface AuthModalProps {
     /**
@@ -60,7 +60,6 @@ function AuthModal({
     }
 
     const socialButtons = [
-        { icon: GoogleIcon, provider: "google" as OAuthProvider },
         { icon: GitHubIcon, provider: "github" as OAuthProvider },
     ]
 

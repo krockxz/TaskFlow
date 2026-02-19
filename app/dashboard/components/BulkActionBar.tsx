@@ -21,26 +21,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Loader2 } from 'lucide-react';
-import type { TaskStatus, TaskPriority } from '@/lib/types';
+import { STATUS_OPTIONS, PRIORITY_OPTIONS } from '@/lib/constants/filters';
 
 interface BulkActionBarProps {
   selectedIds: string[];
   users: { id: string; email: string }[];
   onClearSelection: () => void;
 }
-
-const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
-  { value: 'OPEN', label: 'Open' },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'READY_FOR_REVIEW', label: 'Ready for Review' },
-  { value: 'DONE', label: 'Done' },
-];
-
-const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
-  { value: 'HIGH', label: 'High' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'LOW', label: 'Low' },
-];
 
 export function BulkActionBar({ selectedIds, users, onClearSelection }: BulkActionBarProps) {
   const queryClient = useQueryClient();

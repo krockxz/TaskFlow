@@ -5,26 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { X, FilterX } from 'lucide-react';
 import type { TaskStatus, TaskPriority } from '@/lib/types';
-
-const STATUS_LABELS: Record<TaskStatus, string> = {
-  OPEN: 'Open',
-  IN_PROGRESS: 'In Progress',
-  READY_FOR_REVIEW: 'Ready for Review',
-  DONE: 'Done',
-};
-
-const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  HIGH: 'High',
-  MEDIUM: 'Medium',
-  LOW: 'Low',
-};
-
-const DATE_RANGE_LABELS: Record<string, string> = {
-  today: 'Today',
-  last_7_days: 'Last 7 days',
-  last_30_days: 'Last 30 days',
-  last_90_days: 'Last 90 days',
-};
+import { STATUS_LABELS, PRIORITY_LABELS, DATE_RANGE_LABELS } from '@/lib/constants/filters';
 
 interface FilterChipsProps {
   users: { id: string; email: string }[];

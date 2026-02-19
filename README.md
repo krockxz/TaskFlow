@@ -1,4 +1,7 @@
-# TaskFlow
+<div align="center">
+  <img src="public/logo.jpg" alt="TaskFlow Logo" width="120" height="120" />
+  <h1>TaskFlow</h1>
+</div>
 
 > Async team coordination hub for tracking work handoffs across timezones
 

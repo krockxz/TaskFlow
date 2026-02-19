@@ -14,6 +14,9 @@ import './globals.css';
 export const metadata = {
   title: 'TaskFlow - Async Team Coordination',
   description: 'Simple task management and notifications for remote teams',
+  icons: {
+    icon: '/logo.jpg',
+  },
 };
 
 export default function RootLayout({

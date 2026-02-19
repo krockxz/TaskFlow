@@ -6,9 +6,10 @@ import { TaskTable } from './TaskTable';
 import FilterChips from './FilterChips';
 import { NewTaskDialog } from './NewTaskDialog';
 import { GitHubSettings } from '@/components/dashboard/GitHubSettings';
+import type { Task } from '@/lib/types';
 
 interface DashboardViewProps {
-  initialTasks: any[];
+  initialTasks: Task[];
   users: { id: string; email: string }[];
   userEmail: string;
 }

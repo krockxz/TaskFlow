@@ -18,7 +18,6 @@ import {
     Github,
 } from "lucide-react";
 import { useTaskFilters } from "@/app/dashboard/hooks/useTaskFilters";
-import { cn } from "@/lib/utils";
 import { signOut } from "@/lib/auth/oauth-helpers";
 
 // Softer spring animation curve

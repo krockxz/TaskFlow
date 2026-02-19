@@ -8,15 +8,11 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Chrome, Github, Loader2 } from 'lucide-react';
+import { Github, Loader2 } from 'lucide-react';
 import { signInWithOAuth, type OAuthProvider } from '@/lib/auth/oauth-helpers';
 import { useState } from 'react';
 
 const PROVIDERS: Record<OAuthProvider, { name: string; icon: React.ReactNode }> = {
-  google: {
-    name: 'Google',
-    icon: <Chrome className="h-5 w-5" />,
-  },
   github: {
     name: 'GitHub',
     icon: <Github className="h-5 w-5" />,

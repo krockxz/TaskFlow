@@ -15,8 +15,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCommand } from "@/components/command/CommandContext";
-import { createClient } from "@/lib/supabase/client";
-import type { Session } from "@supabase/supabase-js";
+import { useSession } from "@/lib/hooks/useSession";
 
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
@@ -63,31 +62,8 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
     }
   });
 
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Check auth state
-  useEffect(() => {
-    const supabase = createClient();
-
-    // Get initial session
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        setSession(session);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Auth check failed", error);
-        setLoading(false);
-      });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  // Use the existing useSession hook instead of duplicating auth logic
+  const { user, isLoading } = useSession();
 
   const ref = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -330,7 +306,7 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
   // Keyboard handler
   useEffect(() => {
     // Only enable shortcut if authenticated
-    if (!session) return;
+    if (!user) return;
 
     const down = (e: KeyboardEvent) => {
       // Toggle command palette with Cmd/Ctrl+K
@@ -367,7 +343,7 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [open, selectedIndex, commandItems, recordCommandUsage, session]);
+  }, [open, selectedIndex, commandItems, recordCommandUsage, user]);
 
   // Scroll selected item into view
   useEffect(() => {
@@ -407,7 +383,7 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
   }, [commandItems]);
 
   // Don't render anything if not authenticated or loading
-  if (loading || !session) {
+  if (isLoading || !user) {
     return null;
   }
 

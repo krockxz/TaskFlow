@@ -5,7 +5,7 @@
 import { createClient } from '@/lib/supabase/client';
 import type { Provider } from '@supabase/supabase-js';
 
-export type OAuthProvider = 'google' | 'github';
+export type OAuthProvider = 'github';
 
 interface AuthOptions {
   redirectTo?: string;
