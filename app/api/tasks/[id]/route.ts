@@ -7,6 +7,7 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middleware/auth';
+import type { Task, TaskEvent } from '@/lib/types';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -37,7 +38,7 @@ export async function GET(_request: Request, context: RouteContext) {
         events: {
           include: {
             changedBy: {
-              select: { email: true },
+              select: { id: true, email: true },
             },
           },
           orderBy: { createdAt: 'desc' },
@@ -64,7 +65,33 @@ export async function GET(_request: Request, context: RouteContext) {
       );
     }
 
-    return NextResponse.json(task);
+    // Convert Date objects to strings for type compatibility
+    const serializedTask: Task = {
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      status: task.status as any,
+      priority: task.priority as any,
+      dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+      createdById: task.createdById,
+      assignedTo: task.assignedTo,
+      createdAt: task.createdAt.toISOString(),
+      updatedAt: task.updatedAt.toISOString(),
+      createdBy: task.createdBy,
+      assignedToUser: task.assignedToUser,
+      events: task.events.map((event): TaskEvent => ({
+        id: event.id,
+        taskId: event.taskId,
+        eventType: event.eventType as any,
+        oldStatus: event.oldStatus,
+        newStatus: event.newStatus,
+        changedById: event.changedById,
+        createdAt: event.createdAt.toISOString(),
+        changedBy: event.changedBy,
+      })),
+    };
+
+    return NextResponse.json(serializedTask);
   } catch (error) {
     console.error('GET /api/tasks/[id] error:', error);
     return NextResponse.json(

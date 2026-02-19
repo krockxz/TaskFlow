@@ -12,8 +12,10 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import type { TaskStatus, TaskPriority, DateRangePreset } from '@/lib/types';
 
+import type { Task } from '@/lib/types';
+
 interface TasksResponse {
-  tasks: unknown[];
+  tasks: Task[];
   total: number;
   page: number;
   pageSize: number;
@@ -122,8 +124,18 @@ export async function GET(req: Request) {
     prisma.task.count({ where }),
   ]);
 
+  // Convert Date objects to strings for type compatibility
+  const serializedTasks = tasks.map((task) => ({
+    ...task,
+    status: task.status as TaskStatus,
+    priority: task.priority as TaskPriority,
+    dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+    createdAt: task.createdAt.toISOString(),
+    updatedAt: task.updatedAt.toISOString(),
+  }));
+
   const response: TasksResponse = {
-    tasks,
+    tasks: serializedTasks,
     total,
     page,
     pageSize,

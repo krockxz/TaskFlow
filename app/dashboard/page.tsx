@@ -112,6 +112,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     ...task,
     status: task.status as TaskStatus,
     priority: task.priority as TaskPriority,
+    dueDate: task.dueDate ? task.dueDate.toISOString() : null,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
   }));
