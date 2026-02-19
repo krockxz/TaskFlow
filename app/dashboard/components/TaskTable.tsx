@@ -104,26 +104,19 @@ const getInitials = (email: string): string => {
   return email.substring(0, 2).toUpperCase();
 };
 
-// Row animation variants
+// Row animation variants - minimal fade/slide
 const rowVariants = {
   hidden: {
     opacity: 0,
-    x: -8,
-    transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const },
   },
   visible: (i: number) => ({
     opacity: 1,
-    x: 0,
     transition: {
-      duration: 0.3,
+      duration: 0.2,
       ease: [0.4, 0, 0.2, 1] as const,
-      delay: Math.min(i * 0.03, 0.3), // Stagger with max delay cap
+      delay: Math.min(i * 0.02, 0.2),
     },
   }),
-  hover: {
-    backgroundColor: 'hsl(var(--muted) / 0.5)',
-    transition: { duration: 0.15 },
-  },
 };
 
 // Empty state animation variants
@@ -294,12 +287,10 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
     return (
       <div className="space-y-2">
         {[1, 2, 3, 4, 5].map((i) => (
-          <motion.div
+          <div
             key={i}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.05 }}
-            className="flex items-center gap-3 p-3 rounded-lg border bg-muted/20"
+            className="flex items-center gap-3 p-3 rounded-lg border bg-muted/20 animate-pulse"
+            style={{ animationDelay: `${i * 50}ms`, animationDuration: '1.5s' }}
           >
             <Skeleton className="h-5 w-5 rounded" />
             <Skeleton className="h-5 flex-1 max-w-xs" />
@@ -307,13 +298,13 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
             <Skeleton className="h-6 w-16 rounded-full" />
             <Skeleton className="h-6 w-8 rounded-full" />
             <Skeleton className="h-4 w-20 ml-auto" />
-          </motion.div>
+          </div>
         ))}
       </div>
     );
   }
 
-  // Improved Empty State with icon animation
+  // Improved Empty State with minimal animation
   if (tasks.length === 0) {
     const hasActiveFilters = Object.values(filters).some(
       v => v !== undefined && (Array.isArray(v) ? v.length > 0 : true)
@@ -326,32 +317,17 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
         animate="visible"
         className="text-center py-16"
       >
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
-          className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/50 mb-6"
-        >
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/50 mb-6">
           <Inbox className="h-10 w-10 text-muted-foreground" />
-        </motion.div>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-lg font-medium text-foreground"
-        >
+        </div>
+        <p className="text-lg font-medium text-foreground">
           {hasActiveFilters ? 'No tasks match your filters' : 'No tasks yet'}
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto"
-        >
+        </p>
+        <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
           {hasActiveFilters
             ? 'Try adjusting your filters to see more results.'
             : 'Create your first task to get started with TaskFlow.'}
-        </motion.p>
+        </p>
       </motion.div>
     );
   }
@@ -498,17 +474,11 @@ interface AnimatedCheckboxProps {
 
 function AnimatedCheckbox({ checked, indeterminate, onCheckedChange, 'aria-label': ariaLabel }: AnimatedCheckboxProps) {
   return (
-    <motion.div
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-    >
-      <Checkbox
-        checked={checked}
-        onCheckedChange={onCheckedChange}
-        aria-label={ariaLabel}
-      />
-    </motion.div>
+    <Checkbox
+      checked={checked}
+      onCheckedChange={onCheckedChange}
+      aria-label={ariaLabel}
+    />
   );
 }
 
@@ -543,46 +513,35 @@ function AnimatedTableRow({
       variants={rowVariants}
       initial="hidden"
       animate="visible"
-      whileHover="hover"
-      className={`transition-colors ${isSelected ? 'bg-muted/50' : ''}`}
+      className={`transition-colors hover:bg-muted/30 ${isSelected ? 'bg-muted/50' : ''}`}
     >
-      {/* Checkbox cell with animation */}
+      {/* Checkbox cell */}
       <TableCell>
-        <motion.div
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-        >
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={onToggle}
-            aria-label={`Select task ${task.title}`}
-          />
-        </motion.div>
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={onToggle}
+          aria-label={`Select task ${task.title}`}
+        />
       </TableCell>
 
       <TableCell>
         <div className="flex items-center gap-2">
-          <motion.a
+          <a
             href={`/tasks/${task.id}`}
             className="font-medium text-primary hover:underline inline-block"
-            whileHover={{ x: 2 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
             {task.title}
-          </motion.a>
+          </a>
           {(task as any).github_issue_url && (
-            <motion.a
+            <a
               href={(task as any).github_issue_url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
               title="Linked to GitHub Issue"
-              whileHover={{ scale: 1.1, rotate: 15 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
             >
               <Github className="h-4 w-4" />
-            </motion.a>
+            </a>
           )}
         </div>
       </TableCell>
@@ -608,29 +567,19 @@ function AnimatedTableRow({
       </TableCell>
 
       <TableCell>
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        >
-          <Badge variant={getPriorityVariant(task.priority)} className="capitalize">
-            {task.priority.toLowerCase()}
-          </Badge>
-        </motion.div>
+        <Badge variant={getPriorityVariant(task.priority)} className="capitalize">
+          {task.priority.toLowerCase()}
+        </Badge>
       </TableCell>
 
       <TableCell>
         {task.assignedToUser ? (
           <div className="flex items-center gap-2">
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-            >
-              <Avatar className="h-6 w-6">
-                <AvatarFallback className="text-xs">
-                  {getInitials(task.assignedToUser.email)}
-                </AvatarFallback>
-              </Avatar>
-            </motion.div>
+            <Avatar className="h-6 w-6">
+              <AvatarFallback className="text-xs">
+                {getInitials(task.assignedToUser.email)}
+              </AvatarFallback>
+            </Avatar>
             <span className="text-sm text-muted-foreground hidden sm:inline">
               {task.assignedToUser.email}
             </span>

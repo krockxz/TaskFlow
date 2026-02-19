@@ -21,46 +21,27 @@ interface FilterChipsProps {
  * Enhanced with smooth entrance/exit animations and hover effects.
  */
 
-// Chip animation variants
+// Chip animation variants - minimal, polished transitions
 const chipVariants = {
   hidden: {
     opacity: 0,
-    scale: 0.8,
     y: -4,
   },
   visible: (i: number) => ({
     opacity: 1,
-    scale: 1,
     y: 0,
     transition: {
-      duration: 0.25,
+      duration: 0.2,
       ease: [0.4, 0, 0.2, 1] as const,
-      delay: i * 0.05,
+      delay: i * 0.04,
     },
   }),
   exit: {
     opacity: 0,
-    scale: 0.8,
     x: -8,
     transition: {
-      duration: 0.2,
+      duration: 0.15,
       ease: [0.4, 0, 1, 1] as const,
-    },
-  },
-  hover: {
-    scale: 1.02,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 400,
-      damping: 17,
-    },
-  },
-  tap: {
-    scale: 0.98,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 500,
-      damping: 15,
     },
   },
 };
@@ -147,8 +128,6 @@ export default function FilterChips({ users }: FilterChipsProps) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              whileHover="hover"
-              whileTap="tap"
               layout
             >
               <Badge variant="secondary" className="gap-1 pr-1">
@@ -159,12 +138,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('status', status)}
                 >
-                  <motion.div
-                    whileHover={{ rotate: 90, scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                  >
-                    <X className="h-3 w-3" />
-                  </motion.div>
+                  <X className="h-3 w-3" />
                 </Button>
               </Badge>
             </motion.div>
@@ -179,8 +153,6 @@ export default function FilterChips({ users }: FilterChipsProps) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              whileHover="hover"
-              whileTap="tap"
               layout
             >
               <Badge variant="secondary" className="gap-1 pr-1">
@@ -191,12 +163,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('priority', priority)}
                 >
-                  <motion.div
-                    whileHover={{ rotate: 90, scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                  >
-                    <X className="h-3 w-3" />
-                  </motion.div>
+                  <X className="h-3 w-3" />
                 </Button>
               </Badge>
             </motion.div>
@@ -211,8 +178,6 @@ export default function FilterChips({ users }: FilterChipsProps) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              whileHover="hover"
-              whileTap="tap"
               layout
             >
               <Badge variant="secondary" className="gap-1 pr-1">
@@ -223,12 +188,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('assignedTo')}
                 >
-                  <motion.div
-                    whileHover={{ rotate: 90, scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                  >
-                    <X className="h-3 w-3" />
-                  </motion.div>
+                  <X className="h-3 w-3" />
                 </Button>
               </Badge>
             </motion.div>
@@ -243,8 +203,6 @@ export default function FilterChips({ users }: FilterChipsProps) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              whileHover="hover"
-              whileTap="tap"
               layout
             >
               <Badge variant="secondary" className="gap-1 pr-1">
@@ -255,12 +213,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('dateRange')}
                 >
-                  <motion.div
-                    whileHover={{ rotate: 90, scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                  >
-                    <X className="h-3 w-3" />
-                  </motion.div>
+                  <X className="h-3 w-3" />
                 </Button>
               </Badge>
             </motion.div>
@@ -275,8 +228,6 @@ export default function FilterChips({ users }: FilterChipsProps) {
               initial="hidden"
               animate="visible"
               exit="exit"
-              whileHover="hover"
-              whileTap="tap"
               layout
             >
               <Badge variant="secondary" className="gap-1 pr-1">
@@ -287,12 +238,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('search')}
                 >
-                  <motion.div
-                    whileHover={{ rotate: 90, scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                  >
-                    <X className="h-3 w-3" />
-                  </motion.div>
+                  <X className="h-3 w-3" />
                 </Button>
               </Badge>
             </motion.div>
@@ -311,12 +257,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
             className="h-7 gap-1 text-muted-foreground hover:text-foreground"
             onClick={clearAll}
           >
-            <motion.div
-              whileHover={{ rotate: -180, scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-            >
-              <FilterX className="h-3 w-3" />
-            </motion.div>
+            <FilterX className="h-3 w-3" />
             Clear all
           </Button>
         </motion.div>

@@ -94,9 +94,8 @@ const AnimatedDialogContent = React.forwardRef<
   }
 
   const transition: Transition = {
-    type: "spring" as const,
-    stiffness: 300,
-    damping: 30,
+    duration: 0.25,
+    ease: [0.4, 0, 0.2, 1] as const,
   }
 
   return (
@@ -275,7 +274,7 @@ export const SlideOverDialog = React.forwardRef<
                 animate="open"
                 exit="closed"
                 variants={variants[side]}
-                transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
+                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }}
                 className="h-full"
               >
                 {children}
@@ -352,7 +351,7 @@ export const BottomSheetDialog = React.forwardRef<
               animate="open"
               exit="closed"
               variants={sheetVariants}
-              transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }}
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={0.2}
@@ -428,7 +427,7 @@ export const AnimatedAlertDialog = React.forwardRef<
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }}
           >
             <AnimatedDialogHeader>
               <AnimatedDialogTitle>{title}</AnimatedDialogTitle>

@@ -148,7 +148,7 @@ export function AppHeader() {
                         ) : (
                             <>
                                 <a
-                                    href="https://github.com/kunal/TaskFlow"
+                                    href="https://github.com/krockxz/TaskFlow"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 px-2 py-1 rounded-full hover:bg-muted/50"

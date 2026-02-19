@@ -109,9 +109,8 @@ export const AnimatedCard = React.forwardRef<HTMLDivElement, AnimatedCardProps>(
     ref
   ) => {
     const transition: Transition = {
-      type: "spring" as const,
-      stiffness: 300,
-      damping: 25,
+      duration: 0.2,
+      ease: [0.4, 0, 0.2, 1] as const,
     }
 
     const hoverAnimation = animateHover
@@ -141,9 +140,8 @@ export const AnimatedCard = React.forwardRef<HTMLDivElement, AnimatedCardProps>(
           opacity: 1,
           y: 0,
           transition: {
-            type: "spring" as const,
-            stiffness: 300,
-            damping: 24,
+            duration: 0.3,
+            ease: [0.4, 0, 0.2, 1] as const,
           },
         },
       }
@@ -214,7 +212,7 @@ export const AnimatedCardHeader = React.forwardRef<
       ref={ref}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay, type: "spring" as const, stiffness: 200, damping: 20 }}
+      transition={{ delay, duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }}
       className={cn(className)}
       {...props}
     >
@@ -264,7 +262,7 @@ export const AnimatedCardContent = React.forwardRef<
       ref={ref}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, type: "spring" as const, stiffness: 200, damping: 20 }}
+      transition={{ delay, duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }}
       className={cn(className)}
       {...props}
     >
@@ -289,7 +287,7 @@ export const AnimatedCardFooter = React.forwardRef<
       ref={ref}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, type: "spring" as const, stiffness: 200, damping: 20 }}
+      transition={{ delay, duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }}
       className={cn(className)}
       {...props}
     >
@@ -358,7 +356,7 @@ export const ExpandableCard = React.forwardRef<
         <div className="overflow-hidden">
           <motion.div
             animate={{ height }}
-            transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] as const }}
           >
             <div ref={contentHeight}>
               {collapsedContent && !isExpanded && collapsedContent}
@@ -376,7 +374,7 @@ export const ExpandableCard = React.forwardRef<
         >
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ type: "spring" as const, stiffness: 300, damping: 20 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }}
             className="flex items-center justify-center gap-1"
           >
             <span>{isExpanded ? "Show less" : "Show more"}</span>
@@ -444,9 +442,8 @@ export const CardGrid = React.forwardRef<HTMLDivElement, CardGridProps>(
         opacity: 1,
         y: 0,
         transition: {
-          type: "spring" as const,
-          stiffness: 300,
-          damping: 24,
+          duration: 0.3,
+          ease: [0.4, 0, 0.2, 1] as const,
         },
       },
     }

@@ -144,7 +144,7 @@ export function HeroSection() {
                 {/* Dashboard preview using NotificationsDemo */}
                 <div className="space-y-3 relative h-[300px] overflow-hidden w-full">
                   <NotificationsDemo className="scale-90 origin-top p-0 bg-transparent min-h-0" />
-                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none scale-90 origin-bottom" />
                 </div>
               </div>
             </div>
