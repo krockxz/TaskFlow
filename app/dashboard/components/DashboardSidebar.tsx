@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useTaskFilters } from "@/app/dashboard/hooks/useTaskFilters";
 import { signOut } from "@/lib/auth/oauth-helpers";
+import { cn } from "@/lib/utils";
 
 // Softer spring animation curve
 const softSpringEasing = "cubic-bezier(0.25, 1.1, 0.4, 1)";

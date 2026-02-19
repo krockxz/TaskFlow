@@ -4,10 +4,10 @@
  * Returns task counts grouped by priority for the current user's accessible tasks.
  */
 
-import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getDateRangeFilter, type DateRangePreset, isValidDateRange } from '../utils';
 import { requireAuth } from '@/lib/middleware/auth';
+import { getAnalyticsGroupBy } from '../utils/handler';
 
 export async function GET(req: Request) {
   const user = await requireAuth();
@@ -17,22 +17,12 @@ export async function GET(req: Request) {
   const range: DateRangePreset = (rangeParam && isValidDateRange(rangeParam)) ? rangeParam : 'last_30_days';
   const dateFilter = getDateRangeFilter(range);
 
-  const priorityDistribution = await prisma.task.groupBy({
-    by: ['priority'],
-    where: {
-      OR: [
-        { assignedTo: user.id },
-        { createdById: user.id },
-      ],
-      ...(dateFilter ? { createdAt: dateFilter } : {}),
-    },
-    _count: { id: true },
-  });
+  const results = await getAnalyticsGroupBy(user, 'priority', dateFilter);
 
   return NextResponse.json(
-    priorityDistribution.map((p) => ({
-      priority: p.priority,
-      count: p._count.id,
+    results.map((r) => ({
+      priority: r.value,
+      count: r.count,
     }))
   );
 }

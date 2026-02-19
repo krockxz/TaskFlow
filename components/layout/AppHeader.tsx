@@ -10,6 +10,7 @@
 import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Zap, Github, Menu, X, LogOut, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -24,9 +25,11 @@ function Logo({ href }: { href: string }) {
     return (
         <Link href={href} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="relative w-8 h-8 rounded-lg overflow-hidden shadow-sm">
-                <img
+                <Image
                     src="/logo.jpg"
                     alt="TaskFlow Logo"
+                    width={32}
+                    height={32}
                     className="object-cover w-full h-full"
                 />
             </div>

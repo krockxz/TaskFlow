@@ -6,17 +6,12 @@
  *   - unread_only=true: Only return unread notifications
  */
 
-import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/middleware/auth';
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const user = await requireAuth();
 
   try {
     const { searchParams } = new URL(request.url);

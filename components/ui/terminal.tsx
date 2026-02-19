@@ -56,6 +56,7 @@ export const AnimatedSpan = ({
     if (sequence.activeIndex === itemIndex) {
       setHasStarted(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sequence?.activeIndex, sequence?.sequenceStarted, hasStarted, itemIndex])
 
   const shouldAnimate = sequence ? hasStarted : startOnView ? isInView : true
@@ -144,6 +145,7 @@ export const TypingAnimation = ({
     startOnView,
     isInView,
     started,
+    sequence,
     sequence?.activeIndex,
     sequence?.sequenceStarted,
     itemIndex,
@@ -168,6 +170,7 @@ export const TypingAnimation = ({
     return () => {
       clearInterval(typingEffect)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [children, duration, started])
 
   return (

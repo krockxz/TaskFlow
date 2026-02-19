@@ -205,7 +205,7 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
       shortcut: "⌘N",
       keywords: ["create", "new", "task", "add"],
     },
-  ], [theme]);
+  ], [theme, recordCommandUsage, router, setTheme]);
 
   // Combine static and dynamic commands
   const combinedCommandItems = useMemo(() => {

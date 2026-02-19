@@ -38,31 +38,32 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BulkActionBar } from './BulkActionBar';
 import { CheckCircle2, Circle, Clock, AlertCircle, Github } from 'lucide-react';
+import { STATUS_LABELS } from '@/lib/constants/filters';
 
 interface TaskTableProps {
   initialTasks: Task[];
   users: { id: string; email: string }[];
 }
 
-// Status configuration
+// Status configuration with icons and variants (labels from shared constants)
 const statusConfig = {
   OPEN: {
-    label: 'Open',
+    label: STATUS_LABELS.OPEN,
     variant: 'secondary' as const,
     icon: Circle,
   },
   IN_PROGRESS: {
-    label: 'In Progress',
+    label: STATUS_LABELS.IN_PROGRESS,
     variant: 'info' as const,
     icon: Clock,
   },
   READY_FOR_REVIEW: {
-    label: 'Ready for Review',
+    label: STATUS_LABELS.READY_FOR_REVIEW,
     variant: 'warning' as const,
     icon: AlertCircle,
   },
   DONE: {
-    label: 'Done',
+    label: STATUS_LABELS.DONE,
     variant: 'success' as const,
     icon: CheckCircle2,
   },

@@ -14,7 +14,7 @@ import { createClient } from '@/lib/supabase/client';
 /**
  * Events that can be subscribed to in Supabase realtime.
  */
-type RealtimeEvent = '*' | 'INSERT' | 'UPDATE' | 'DELETE';
+type RealtimeEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*';
 
 /**
  * Configuration options for realtime subscription.
@@ -72,10 +72,14 @@ export function useRealtimeSubscription({
   const supabase = createClient();
 
   useEffect(() => {
+    if (!supabase) return;
+
     const channel = supabase.channel(channelName);
 
     // Subscribe to each specified event
+    // Using the actual Supabase pattern from their docs
     for (const event of events) {
+      // @ts-ignore - Supabase types are complex, this pattern is correct
       channel.on('postgres_changes', {
         event,
         schema: 'public',

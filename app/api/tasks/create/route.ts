@@ -4,10 +4,10 @@
  * Handles task creation with notification generation.
  */
 
-import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { requireAuth } from '@/lib/middleware/auth';
 
 const createTaskSchema = z.object({
   title: z.string().min(3).max(255),
@@ -17,12 +17,7 @@ const createTaskSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const user = await requireAuth();
 
   try {
     const body = await request.json();

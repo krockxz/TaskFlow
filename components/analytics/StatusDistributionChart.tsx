@@ -1,22 +1,8 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import { BasePieChart, type ChartDataPoint } from './BasePieChart';
 import type { TaskStatus } from '@/lib/types';
-
-const STATUS_LABELS: Record<TaskStatus, string> = {
-  OPEN: 'Open',
-  IN_PROGRESS: 'In Progress',
-  READY_FOR_REVIEW: 'Ready for Review',
-  DONE: 'Done',
-};
+import { STATUS_LABELS } from '@/lib/constants/filters';
 
 const STATUS_COLORS: Record<TaskStatus, string> = {
   OPEN: 'hsl(var(--secondary))',
@@ -30,57 +16,11 @@ interface StatusDistributionChartProps {
 }
 
 export function StatusDistributionChart({ data }: StatusDistributionChartProps) {
-  if (data.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Status Distribution</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">No data available</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const chartData = data.map((item) => ({
+  const chartData: ChartDataPoint[] = data.map((item) => ({
     name: STATUS_LABELS[item.status],
     value: item.count,
     color: STATUS_COLORS[item.status],
   }));
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Status Distribution</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-              outerRadius={80}
-              dataKey="value"
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'hsl(var(--background))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '6px',
-              }}
-            />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  );
+  return <BasePieChart title="Status Distribution" data={chartData} />;
 }

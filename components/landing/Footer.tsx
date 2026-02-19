@@ -5,6 +5,7 @@
  */
 
 import { Zap, Github } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 const links = {
@@ -31,9 +32,11 @@ export function Footer() {
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5">
               <div className="relative w-8 h-8 rounded-lg overflow-hidden">
-                <img
+                <Image
                   src="/logo.jpg"
                   alt="TaskFlow Logo"
+                  width={32}
+                  height={32}
                   className="object-cover w-full h-full"
                 />
               </div>

@@ -5,10 +5,10 @@
  * PATCH - Marks a specific notification as read.
  */
 
-import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { requireAuth } from '@/lib/middleware/auth';
 
 const markReadSchema = z.object({
   notificationId: z.string().uuid().optional(),
@@ -19,15 +19,7 @@ const markReadSchema = z.object({
  * Marks all notifications as read for the current user.
  */
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json(
-      { success: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
+  const user = await requireAuth();
 
   try {
     await prisma.notification.updateMany({
@@ -54,15 +46,7 @@ export async function POST(request: Request) {
  * Body: { notificationId: string }
  */
 export async function PATCH(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json(
-      { success: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
+  const user = await requireAuth();
 
   try {
     const body = await request.json();

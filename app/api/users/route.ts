@@ -5,17 +5,12 @@
  * Only accessible by authenticated users.
  */
 
-import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/middleware/auth';
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  await requireAuth();
 
   try {
     const users = await prisma.user.findMany({

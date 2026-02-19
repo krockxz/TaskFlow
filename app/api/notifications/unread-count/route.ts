@@ -4,14 +4,14 @@
  * GET - Returns the count of unread notifications for the current user.
  */
 
-import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { getAuthUser } from '@/lib/middleware/auth';
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
+  // Return 0 for unauthenticated users (public endpoint)
   if (!user) {
     return NextResponse.json({ count: 0 });
   }

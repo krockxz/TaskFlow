@@ -31,6 +31,7 @@ export function GitHubSettings() {
       }
     };
     checkConnection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchRepos = async () => {

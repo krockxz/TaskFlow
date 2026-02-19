@@ -4,9 +4,9 @@
  * GET - Returns a single task with full details and event history.
  */
 
-import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/middleware/auth';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -20,12 +20,7 @@ type RouteContext = {
  * - Full event history with changed by user
  */
 export async function GET(_request: Request, context: RouteContext) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const user = await requireAuth();
 
   try {
     const { id } = await context.params;
@@ -85,15 +80,7 @@ export async function GET(_request: Request, context: RouteContext) {
  * For MVP, we'll do a hard delete.
  */
 export async function DELETE(request: Request, context: RouteContext) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json(
-      { success: false, error: 'Unauthorized' },
-      { status: 401 }
-    );
-  }
+  const user = await requireAuth();
 
   try {
     const { id } = await context.params;

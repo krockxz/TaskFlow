@@ -1,15 +1,10 @@
-import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import type { TaskStatus, TaskPriority } from '@/lib/types';
+import { requireAuth } from '@/lib/middleware/auth';
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const user = await requireAuth();
 
   const { taskIds, action, payload } = await req.json();
 

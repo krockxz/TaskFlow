@@ -4,10 +4,10 @@
  * Handles task reassignment with event logging and notifications.
  */
 
-import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { requireAuth } from '@/lib/middleware/auth';
 
 const reassignSchema = z.object({
   taskId: z.string().uuid(),
@@ -15,12 +15,7 @@ const reassignSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const user = await requireAuth();
 
   try {
     const body = await request.json();
