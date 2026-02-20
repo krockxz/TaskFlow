@@ -35,7 +35,8 @@ export function TemplateSelector({ control, onTemplateChange }: TemplateSelector
   };
 
   // Get required fields for current status
-  const currentStep = selectedTemplate?.steps.find(
+  const templateSteps = selectedTemplate?.steps as any[] | undefined;
+  const currentStep = templateSteps?.find(
     (step: any) => step.status === currentStatus
   );
 
@@ -91,7 +92,7 @@ export function TemplateSelector({ control, onTemplateChange }: TemplateSelector
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {selectedTemplate.steps.map((step: any) => (
+                  {(selectedTemplate.steps as any[])?.map((step: any) => (
                     <SelectItem key={step.status} value={step.status}>
                       {step.status.replace(/_/g, ' ').toLowerCase()}
                     </SelectItem>

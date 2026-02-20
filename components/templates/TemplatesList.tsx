@@ -40,7 +40,7 @@ export function TemplatesList({ templates }: TemplatesListProps) {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-1 mb-4">
-                {template.steps.map((step: any) => (
+                {(template.steps as any[])?.map((step: any) => (
                   <Badge key={step.status} variant="secondary">
                     {step.status.replace(/_/g, ' ')}
                   </Badge>
