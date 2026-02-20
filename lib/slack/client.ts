@@ -40,7 +40,7 @@ export function getSlackClient(teamId: string, tokens: SlackTokens): WebClient {
  * @returns WebClient instance or null if installation not found
  */
 export async function getSlackClientByTeam(teamId: string): Promise<WebClient | null> {
-  const { prisma } = await import('@/lib/prisma');
+  const prisma = (await import('@/lib/prisma')).default;
 
   const installation = await prisma.slackInstallation.findUnique({
     where: { teamId },

@@ -2,11 +2,11 @@
  * Slack OAuth installation endpoint.
  *
  * Handles the OAuth flow for installing the app to Slack workspaces.
- * Delegates to @slack/oauth installer for state management and token exchange.
+ * Implements OAuth flow directly for Next.js compatibility.
  */
 
-import { installer } from '@/lib/slack/oauth';
 import { NextRequest, NextResponse } from 'next/server';
+import { env } from '@/lib/env';
 
 /**
  * GET /api/slack/install
@@ -14,32 +14,28 @@ import { NextRequest, NextResponse } from 'next/server';
  * Initiates the OAuth flow by redirecting user to Slack authorization page.
  */
 export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
-  const result = await installer.handleInstallPath(request, url);
-
-  // Handle the response from the installer
-  if (result instanceof Response) {
-    return result;
+  if (!env.SLACK_CLIENT_ID) {
+    return NextResponse.json({ error: 'Slack not configured' }, { status: 500 });
   }
 
-  // If installer returns something else, wrap it in NextResponse
-  return NextResponse.json(result);
+  const state = Math.random().toString(36).substring(7);
+  const redirectUri = `${env.NEXT_PUBLIC_APP_URL}/api/slack/install/callback`;
+
+  const authUrl = new URL('https://slack.com/oauth/v2/authorize');
+  authUrl.searchParams.set('client_id', env.SLACK_CLIENT_ID);
+  authUrl.searchParams.set('scope', 'chat:write,chat:write.public,commands,incoming-webhook');
+  authUrl.searchParams.set('user_scope', '');
+  authUrl.searchParams.set('redirect_uri', redirectUri);
+  authUrl.searchParams.set('state', state);
+
+  return NextResponse.redirect(authUrl.toString());
 }
 
 /**
  * POST /api/slack/install
  *
- * Handles the OAuth callback from Slack after user authorizes the app.
+ * Reserved for future use (e.g., state verification endpoint)
  */
 export async function POST(request: NextRequest) {
-  const url = new URL(request.url);
-  const result = await installer.handleInstallPath(request, url);
-
-  // Handle the response from the installer
-  if (result instanceof Response) {
-    return result;
-  }
-
-  // If installer returns something else, wrap it in NextResponse
-  return NextResponse.json(result);
+  return NextResponse.json({ message: 'Not implemented' }, { status: 501 });
 }

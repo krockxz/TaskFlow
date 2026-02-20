@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
+import { createHmac } from 'crypto';
 
 /**
  * POST /api/slack/events
@@ -24,6 +25,9 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get('x-slack-signature');
   const timestamp = request.headers.get('x-slack-request-timestamp');
 
+  // Get raw body for signature verification
+  const body = await request.text();
+
   // Verify signature if signing secret is configured
   if (env.SLACK_SIGNING_SECRET) {
     if (!signature || !timestamp) {
@@ -37,37 +41,52 @@ export async function POST(request: NextRequest) {
       return new Response('Request timestamp too old', { status: 401 });
     }
 
-    const body = await request.text();
+    // Verify HMAC signature
     const baseString = `v0:${timestamp}:${body}`;
-    const expectedSignature = 'v0=' + crypto.subtle.digest('SHA-256', new TextEncoder().encode(baseString));
+    const expectedSignature = 'v0=' + createHmac('sha256', env.SLACK_SIGNING_SECRET).update(baseString).digest('hex');
 
-    // Note: In production, use crypto.timingSafeEqual to prevent timing attacks
-    // For now, we'll skip signature verification to simplify initial implementation
-    // TODO: Implement proper HMAC verification using Web Crypto API
+    if (signature !== expectedSignature) {
+      return new Response('Invalid signature', { status: 401 });
+    }
   }
 
-  const body = await request.text();
-  const payload = new URLSearchParams(body).get('payload');
+  // Parse the body
+  const formData = new URLSearchParams(body);
+  const payload = formData.get('payload');
 
   if (payload) {
-    // Interactive component or slash command
-    const data = JSON.parse(payload);
+    // Interactive component (button click, etc.)
+    try {
+      const data = JSON.parse(payload);
 
-    // Handle slash command
-    if (data.command === '/taskflow-brief') {
-      // Trigger shift brief generation
-      // For now, respond with a message - in future will call AI endpoint
-      return new Response(
-        JSON.stringify({
-          text: 'Generating your Shift Brief...',
-          response_type: 'in_channel',
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
-      );
+      // Handle button actions
+      if (data.type === 'block_actions') {
+        const action = data.actions?.[0];
+        if (action?.action_id === 'open_task') {
+          // Button click to open task - redirect to task URL
+          // This is handled client-side by Slack
+          return new Response('OK', { status: 200 });
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing payload:', error);
     }
 
-    // Handle other interactive components
     return new Response('OK', { status: 200 });
+  }
+
+  // Check for slash command
+  const command = formData.get('command');
+  if (command === '/taskflow-brief') {
+    // Trigger shift brief generation
+    // For now, respond with a message - in future will call AI endpoint
+    return new Response(
+      JSON.stringify({
+        text: 'Generating your Shift Brief...',
+        response_type: 'in_channel',
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
   // Handle URL verification challenge (initial webhook setup)
@@ -81,12 +100,16 @@ export async function POST(request: NextRequest) {
 
   // Handle events API callbacks
   if (type === 'event_callback') {
-    const eventData = JSON.parse(body);
-    const { event } = eventData;
+    try {
+      const eventData = JSON.parse(body);
+      const { event } = eventData;
 
-    // Handle app mentions or messages
-    // TODO: Implement event handlers for app_mention, message.channels
-    console.log('Slack event received:', event.type);
+      // Handle app mentions or messages
+      // TODO: Implement event handlers for app_mention, message.channels
+      console.log('Slack event received:', event.type);
+    } catch (error) {
+      console.error('Error parsing event callback:', error);
+    }
   }
 
   return new Response('OK', { status: 200 });
