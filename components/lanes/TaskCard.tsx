@@ -7,6 +7,7 @@ import { Task, TaskPriority, TaskStatus } from '@prisma/client';
 import { format } from 'date-fns';
 import { AlertCircle, CheckCircle2, Clock, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion } from 'motion/react';
 
 interface TaskCardProps {
   task: Task;
@@ -35,12 +36,21 @@ export function TaskCard({ task }: TaskCardProps) {
 
   return (
     <div ref={setNodeRef} {...listeners} {...attributes}>
-      <Card
-        className={cn(
-          'cursor-grab active:cursor-grabbing transition-opacity',
-          isDragging && 'opacity-50'
-        )}
+      <motion.div
+        whileHover={{ scale: 1.02, y: -2 }}
+        whileDrag={{ scale: 1.05, rotate: 2 }}
+        transition={{
+          type: 'spring',
+          stiffness: 300,
+          damping: 20,
+        }}
       >
+        <Card
+          className={cn(
+            'cursor-grab active:cursor-grabbing transition-opacity',
+            isDragging && 'opacity-50 shadow-xl'
+          )}
+        >
         <CardHeader className="p-3 pb-2">
           <div className="flex items-start justify-between gap-2">
             <h4 className="font-medium text-sm line-clamp-2">{task.title}</h4>
@@ -65,6 +75,7 @@ export function TaskCard({ task }: TaskCardProps) {
           </div>
         </CardContent>
       </Card>
+    </motion.div>
     </div>
   );
 }

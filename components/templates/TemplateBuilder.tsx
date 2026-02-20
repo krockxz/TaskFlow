@@ -14,6 +14,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { handoffTemplateSchema } from '@/lib/validation/template';
 import { TemplateStep, TemplateField } from '@/lib/types/template';
 import { TaskStatus } from '@prisma/client';
+import { useToast } from '@/lib/hooks/use-toast';
 
 interface TemplateBuilderProps {
   open: boolean;
@@ -23,6 +24,7 @@ interface TemplateBuilderProps {
 
 export function TemplateBuilder({ open, onOpenChange, onSuccess }: TemplateBuilderProps) {
   const [steps, setSteps] = useState<TemplateStep[]>([]);
+  const { success, error } = useToast();
 
   const form = useForm({
     resolver: zodResolver(handoffTemplateSchema),
@@ -82,10 +84,13 @@ export function TemplateBuilder({ open, onOpenChange, onSuccess }: TemplateBuild
     });
 
     if (response.ok) {
+      success('Template created successfully');
       form.reset();
       setSteps([]);
       onSuccess?.();
       onOpenChange(false);
+    } else {
+      error('Failed to create template');
     }
   };
 

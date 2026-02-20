@@ -4,6 +4,7 @@ import { TaskTable } from './TaskTable';
 import FilterChips from './FilterChips';
 import { NewTaskDialog } from './NewTaskDialog';
 import { GitHubSettings } from '@/components/dashboard/GitHubSettings';
+import { ShiftBriefButton } from '@/components/shift-brief/ShiftBriefButton';
 import type { Task } from '@/lib/types';
 
 interface DashboardViewProps {
@@ -28,7 +29,10 @@ export function DashboardView({
               <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
               <p className="text-sm text-muted-foreground">Manage your tasks and track progress</p>
             </div>
-            <NewTaskDialog users={users} />
+            <div className="flex items-center gap-2">
+              <ShiftBriefButton />
+              <NewTaskDialog users={users} />
+            </div>
           </header>
 
           {/* Scrollable content with fade at bottom */}

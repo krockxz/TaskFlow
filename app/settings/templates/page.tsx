@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { getAuthUser } from '@/lib/middleware/auth';
 import prisma from '@/lib/prisma';
 import { TemplatesList } from '@/components/templates/TemplatesList';
+import { TemplatesGridSkeleton } from '@/components/skeletons/template-card-skeleton';
 
 async function getTemplates(userId: string) {
   return prisma.handoffTemplate.findMany({
@@ -25,7 +26,7 @@ export default async function TemplatesPage() {
         </p>
       </div>
 
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<TemplatesGridSkeleton count={6} />}>
         <TemplatesList templates={templates} />
       </Suspense>
     </div>

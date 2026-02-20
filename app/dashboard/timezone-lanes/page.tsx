@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import { getAuthUser } from '@/lib/middleware/auth';
 import prisma from '@/lib/prisma';
 import { TimezoneBoard } from '@/components/lanes/TimezoneBoard';
+import { FadeIn } from '@/components/animations/fade-in';
+import { TimezoneLanesSkeletonGrid } from '@/components/skeletons/timezone-lane-skeleton';
 
 async function getTeamData() {
   const users = await prisma.user.findMany({
@@ -34,19 +36,21 @@ export default async function TimezoneLanesPage() {
   const { users, tasks } = await getTeamData();
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="border-b px-6 py-4">
-        <h1 className="text-2xl font-bold">Timezone Lanes</h1>
-        <p className="text-sm text-muted-foreground">
-          Drag tasks between lanes to reassign work
-        </p>
-      </div>
+    <FadeIn>
+      <div className="h-full flex flex-col">
+        <div className="border-b px-6 py-4">
+          <h1 className="text-2xl font-bold">Timezone Lanes</h1>
+          <p className="text-sm text-muted-foreground">
+            Drag tasks between lanes to reassign work
+          </p>
+        </div>
 
-      <div className="flex-1 overflow-hidden">
-        <Suspense fallback={<div className="p-6">Loading lanes...</div>}>
-          <TimezoneBoard users={users} tasks={tasks} />
-        </Suspense>
+        <div className="flex-1 overflow-hidden">
+          <Suspense fallback={<TimezoneLanesSkeletonGrid count={3} />}>
+            <TimezoneBoard users={users} tasks={tasks} />
+          </Suspense>
+        </div>
       </div>
-    </div>
+    </FadeIn>
   );
 }

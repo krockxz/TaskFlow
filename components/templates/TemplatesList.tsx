@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { HandoffTemplate } from '@prisma/client';
 import { TemplateBuilder } from './TemplateBuilder';
+import { motion } from 'motion/react';
+import { useToast } from '@/lib/hooks/use-toast';
 
 interface TemplatesListProps {
   templates: HandoffTemplate[];
@@ -14,12 +16,19 @@ interface TemplatesListProps {
 
 export function TemplatesList({ templates }: TemplatesListProps) {
   const [builderOpen, setBuilderOpen] = useState(false);
+  const { success, error } = useToast();
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this template?')) return;
 
-    await fetch(`/api/templates/${id}`, { method: 'DELETE' });
-    window.location.reload();
+    const response = await fetch(`/api/templates/${id}`, { method: 'DELETE' });
+
+    if (response.ok) {
+      success('Template deleted successfully');
+      window.location.reload();
+    } else {
+      error('Failed to delete template');
+    }
   };
 
   return (
@@ -31,9 +40,24 @@ export function TemplatesList({ templates }: TemplatesListProps) {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {templates.map((template) => (
-          <Card key={template.id}>
+      <motion.div
+        layout
+        className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+      >
+        {templates.map((template, index) => (
+          <motion.div
+            key={template.id}
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: index * 0.05,
+              duration: 0.3,
+              ease: 'easeOut',
+            }}
+            whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          >
+            <Card className="h-full">
             <CardHeader>
               <CardTitle>{template.name}</CardTitle>
               <CardDescription>{template.description}</CardDescription>
@@ -60,8 +84,9 @@ export function TemplatesList({ templates }: TemplatesListProps) {
               </div>
             </CardContent>
           </Card>
+        </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <TemplateBuilder
         open={builderOpen}

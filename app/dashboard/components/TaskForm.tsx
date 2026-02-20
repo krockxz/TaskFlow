@@ -35,6 +35,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/lib/hooks/use-toast';
 import { DatePicker } from '@/components/ui/date-picker';
+import { TemplateSelector } from '@/components/templates/TemplateSelector';
+import type { HandoffTemplate } from '@prisma/client';
+import type { CustomFieldsData } from '@/lib/types/template';
 
 // Zod validation schema for task creation
 const taskSchema = z.object({
@@ -51,6 +54,9 @@ const taskSchema = z.object({
     required_error: 'Please select a priority',
   }),
   dueDate: z.string().optional(),
+  templateId: z.string().optional(),
+  status: z.string().optional(),
+  customFields: z.record(z.any()).optional(),
 });
 
 type TaskFormValues = z.infer<typeof taskSchema>;
@@ -66,6 +72,7 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
   const { success, error: toastError } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<HandoffTemplate | null>(null);
 
   // Initialize form with React Hook Form and Zod resolver
   const form = useForm<TaskFormValues>({
@@ -76,6 +83,8 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
       assignedTo: 'unassigned',
       priority: 'MEDIUM',
       dueDate: '',
+      templateId: '',
+      customFields: {},
     },
   });
 
@@ -93,6 +102,9 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
           assignedTo: values.assignedTo && values.assignedTo !== 'unassigned' ? values.assignedTo : undefined,
           priority: values.priority,
           dueDate: values.dueDate || undefined,
+          templateId: values.templateId || undefined,
+          status: values.status || undefined,
+          customFields: values.customFields || undefined,
         }),
       });
 
@@ -165,6 +177,11 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
               <FormMessage />
             </FormItem>
           )}
+        />
+
+        <TemplateSelector
+          control={form.control}
+          onTemplateChange={setSelectedTemplate}
         />
 
         <FormField

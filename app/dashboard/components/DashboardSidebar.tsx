@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import Link from "next/link";
 import {
     LayoutDashboard,
     LogOut,
@@ -16,6 +17,7 @@ import {
     Loader2,
     Settings,
     Github,
+    Globe,
 } from "lucide-react";
 import { useTaskFilters } from "@/app/dashboard/hooks/useTaskFilters";
 import { signOut } from "@/lib/auth/oauth-helpers";
@@ -125,24 +127,43 @@ function IconNavButton({
     children,
     isActive = false,
     onClick,
-    tooltip
+    tooltip,
+    href
 }: {
     children: React.ReactNode;
     isActive?: boolean;
     onClick?: () => void;
     tooltip: string;
+    href?: string;
 }) {
+    const buttonContent = (
+        <>
+            <div
+                className={cn(
+                    "group flex items-center justify-center rounded-lg size-10 min-w-10 transition-all duration-300 relative",
+                    isActive ? "bg-primary text-primary-foreground" : "hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200"
+                )}
+                title={tooltip}
+            >
+                {children}
+            </div>
+        </>
+    );
+
+    if (href) {
+        return (
+            <Link href={href}>
+                {buttonContent}
+            </Link>
+        );
+    }
+
     return (
         <button
             type="button"
-            className={cn(
-                "group flex items-center justify-center rounded-lg size-10 min-w-10 transition-all duration-300 relative",
-                isActive ? "bg-primary text-primary-foreground" : "hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200"
-            )}
             onClick={onClick}
-            title={tooltip}
         >
-            {children}
+            {buttonContent}
         </button>
     );
 }
@@ -171,6 +192,7 @@ function IconNavigation({
 
     const navItems = [
         { id: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+        { id: "timezone-lanes", icon: <Globe size={20} />, label: "Timezone Lanes", href: "/dashboard/timezone-lanes" },
         { id: "filters", icon: <Filter size={20} />, label: "Filters" },
         { id: "settings", icon: <Settings size={20} />, label: "Settings" },
     ];
@@ -188,8 +210,9 @@ function IconNavigation({
                     <IconNavButton
                         key={item.id}
                         isActive={activeSection === item.id}
-                        onClick={() => onSectionChange(item.id)}
+                        onClick={() => !item.href && onSectionChange(item.id)}
                         tooltip={item.label}
+                        href={(item as any).href}
                     >
                         {item.icon}
                     </IconNavButton>

@@ -11,6 +11,7 @@ import prisma from '@/lib/prisma';
 import { DashboardSidebar } from './components/DashboardSidebar';
 import { DashboardView } from './components/DashboardView';
 import type { TaskStatus, TaskPriority, DateRangePreset } from '@/lib/types';
+import { FadeIn } from '@/components/animations/fade-in';
 
 interface DashboardPageProps {
   searchParams: Promise<{
@@ -124,12 +125,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   });
 
   return (
-    <DashboardSidebar users={users} userEmail={user.email ?? 'Unknown'}>
-      <DashboardView
-        initialTasks={serializedTasks}
-        users={users}
-        userEmail={user.email ?? 'Unknown'}
-      />
-    </DashboardSidebar>
+    <FadeIn>
+      <DashboardSidebar users={users} userEmail={user.email ?? 'Unknown'}>
+        <DashboardView
+          initialTasks={serializedTasks}
+          users={users}
+          userEmail={user.email ?? 'Unknown'}
+        />
+      </DashboardSidebar>
+    </FadeIn>
   );
 }
