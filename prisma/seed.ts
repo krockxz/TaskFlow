@@ -51,10 +51,10 @@ async function main() {
 
   // Create handoff template
   const template = await prisma.handoffTemplate.upsert({
-    where: { id: 'template-1' },
+    where: { id: '00000000-0000-4000-8000-000000000004' },
     update: {},
     create: {
-      id: 'template-1',
+      id: '00000000-0000-4000-8000-000000000004',
       name: 'Feature Development',
       description: 'Standard workflow for feature development',
       createdById: users[0].id,
@@ -88,10 +88,10 @@ async function main() {
 
   // Create demo tasks
   await prisma.task.upsert({
-    where: { id: 'task-1' },
+    where: { id: '00000000-0000-4000-8000-000000000005' },
     update: {},
     create: {
-      id: 'task-1',
+      id: '00000000-0000-4000-8000-000000000005',
       title: 'Implement user authentication',
       description: 'Add OAuth login with Google and GitHub',
       status: TaskStatus.IN_PROGRESS,
@@ -110,10 +110,10 @@ async function main() {
   });
 
   await prisma.task.upsert({
-    where: { id: 'task-2' },
+    where: { id: '00000000-0000-4000-8000-000000000006' },
     update: {},
     create: {
-      id: 'task-2',
+      id: '00000000-0000-4000-8000-000000000006',
       title: 'Design database schema',
       description: 'Create Prisma schema for new features',
       status: TaskStatus.DONE,
@@ -128,10 +128,10 @@ async function main() {
   });
 
   await prisma.task.upsert({
-    where: { id: 'task-3' },
+    where: { id: '00000000-0000-4000-8000-000000000007' },
     update: {},
     create: {
-      id: 'task-3',
+      id: '00000000-0000-4000-8000-000000000007',
       title: 'Write API documentation',
       description: 'Document all API endpoints with OpenAPI spec',
       status: TaskStatus.OPEN,
