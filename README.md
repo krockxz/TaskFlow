@@ -224,6 +224,28 @@ sequenceDiagram
     Q-->>C: Updated Data
 ```
 
+## Quick Start
+
+### Using Docker (Recommended)
+
+1. Clone the repository
+2. Copy environment example: `cp .env.example .env`
+3. Start with Docker Compose:
+   ```bash
+   make docker-up
+   make db:push
+   make db:seed
+   ```
+4. Open http://localhost:3000
+
+### Local Development
+
+1. Install dependencies: `bun install`
+2. Set up environment variables in `.env`
+3. Push database schema: `bun run db:push`
+4. Seed demo data: `make db:seed`
+5. Start dev server: `bun run dev`
+
 ## Development
 
 ```bash
@@ -253,6 +275,47 @@ bun run dev
 | `bun db:push` | Push Prisma schema to database |
 | `bun db:generate` | Regenerate Prisma Client |
 | `bun db:studio` | Open Prisma Studio |
+| `make db:seed` | Seed database with demo data |
+| `make docker-up` | Start Docker containers |
+| `make docker-down` | Stop Docker containers |
+
+## Self-Hosting
+
+TaskFlow can be self-hosted using Docker Compose:
+
+```bash
+# Start all services
+make docker-up
+
+# Run database migrations
+make db:push
+
+# Seed demo data (optional)
+make db:seed
+
+# Access the application
+open http://localhost:3000
+```
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABASE_URL` | PostgreSQL connection string | Yes |
+| `DIRECT_URL` | Direct PostgreSQL connection for migrations | Yes |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
+| `OPENAI_API_KEY` | OpenAI API key for Shift Brief | Optional |
+| `SLACK_CLIENT_ID` | Slack OAuth client ID | Optional |
+| `SLACK_CLIENT_SECRET` | Slack OAuth client secret | Optional |
+| `SLACK_SIGNING_SECRET` | Slack signing secret | Optional |
+
+### Demo Data
+
+Running `make db:seed` creates:
+- 3 demo users in different timezones
+- 1 handoff template for feature development
+- 3 demo tasks across statuses and priorities
 
 ## API Endpoints
 
@@ -295,6 +358,14 @@ bun run dev
 ```bash
 docker build -t taskflow .
 docker run -p 3000:3000 --env-file .env taskflow
+```
+
+### Docker Compose (Self-Hosting)
+
+```bash
+make docker-up
+make db:push
+make db:seed  # Optional: creates demo data
 ```
 
 ## License
