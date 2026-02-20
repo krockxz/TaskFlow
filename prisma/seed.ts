@@ -2,15 +2,29 @@ import { PrismaClient, TaskStatus, TaskPriority } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Helper to create valid UUID v4
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 async function main() {
   console.log('Seeding database...');
 
-  // Create demo users
+  // Create demo users with fixed IDs for consistency
+  const aliceId = '00000000-0000-4000-8000-000000000001';
+  const bobId = '00000000-0000-4000-8000-000000000002';
+  const carolId = '00000000-0000-4000-8000-000000000003';
+
   const users = await Promise.all([
     prisma.user.upsert({
       where: { email: 'alice@example.com' },
       update: {},
       create: {
+        id: aliceId,
         email: 'alice@example.com',
         timezone: 'America/Los_Angeles',
       },
@@ -19,6 +33,7 @@ async function main() {
       where: { email: 'bob@example.com' },
       update: {},
       create: {
+        id: bobId,
         email: 'bob@example.com',
         timezone: 'Europe/London',
       },
@@ -27,6 +42,7 @@ async function main() {
       where: { email: 'carol@example.com' },
       update: {},
       create: {
+        id: carolId,
         email: 'carol@example.com',
         timezone: 'Asia/Tokyo',
       },
