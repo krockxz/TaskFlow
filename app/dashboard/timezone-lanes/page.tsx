@@ -9,6 +9,8 @@ async function getTeamData() {
       id: true,
       email: true,
       timezone: true,
+      createdAt: true,
+      updatedAt: true,
     },
     orderBy: { email: 'asc' },
   });

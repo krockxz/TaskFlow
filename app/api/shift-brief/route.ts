@@ -79,11 +79,10 @@ export async function POST(request: Request) {
         },
       ],
       temperature: 0.7,
-      maxTokens: 1000,
     });
 
     // Return streaming response
-    return response.toDataStreamResponse();
+    return response.toTextStreamResponse();
   } catch (error) {
     // Handle authentication errors
     if (error instanceof Error && error.message.includes('Unauthorized')) {
