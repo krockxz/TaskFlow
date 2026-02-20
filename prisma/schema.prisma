@@ -17,7 +17,7 @@ model HandoffTemplate {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  createdBy  User  @relation(fields: [createdById], references: [id])
+  createdBy  User              @relation(fields: [createdById], references: [id])
   tasks      Task[]
 
   @@index([createdById], map: "idx_handoff_templates_created_by_id")
@@ -108,6 +108,7 @@ model User {
   notifications Notification[]
   githubTokens  GitHubToken[]
   slackInstallments SlackInstallation[]
+  handoffTemplates HandoffTemplate[]
 
   @@map("users")
 }
