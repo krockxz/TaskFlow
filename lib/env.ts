@@ -69,6 +69,15 @@ export const env = createEnv({
      * operations like webhooks and background jobs. NEVER expose to clients.
      */
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+
+    /**
+     * OpenAI API key for AI features (Shift Brief).
+     * Get from: OpenAI Dashboard → API Keys → Create new secret key
+     *
+     * IMPORTANT: This key is optional. The app works without it, but Shift Brief
+     * features will be disabled. Only used for server-side AI generation.
+     */
+    OPENAI_API_KEY: z.string().min(1).optional(),
   },
 
   /**
@@ -117,6 +126,7 @@ export const env = createEnv({
     GITHUB_WEBHOOK_SECRET: process.env.GITHUB_WEBHOOK_SECRET,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
 
     // Client variables (also available on server)
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
