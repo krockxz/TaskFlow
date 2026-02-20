@@ -78,6 +78,30 @@ export const env = createEnv({
      * features will be disabled. Only used for server-side AI generation.
      */
     OPENAI_API_KEY: z.string().min(1).optional(),
+
+    /**
+     * Slack OAuth client ID.
+     * Get from: Slack App Dashboard → Basic Information → App Credentials
+     *
+     * IMPORTANT: This is optional. The app works without Slack integration.
+     */
+    SLACK_CLIENT_ID: z.string().min(1).optional(),
+
+    /**
+     * Slack OAuth client secret.
+     * Get from: Slack App Dashboard → Basic Information → App Credentials
+     *
+     * IMPORTANT: This is optional. The app works without Slack integration.
+     */
+    SLACK_CLIENT_SECRET: z.string().min(1).optional(),
+
+    /**
+     * Slack signing secret for request verification.
+     * Get from: Slack App Dashboard → Basic Information → App Credentials
+     *
+     * IMPORTANT: This is optional. The app works without Slack integration.
+     */
+    SLACK_SIGNING_SECRET: z.string().min(1).optional(),
   },
 
   /**
@@ -127,6 +151,9 @@ export const env = createEnv({
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    SLACK_CLIENT_ID: process.env.SLACK_CLIENT_ID,
+    SLACK_CLIENT_SECRET: process.env.SLACK_CLIENT_SECRET,
+    SLACK_SIGNING_SECRET: process.env.SLACK_SIGNING_SECRET,
 
     // Client variables (also available on server)
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
