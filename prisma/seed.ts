@@ -8,28 +8,25 @@ async function main() {
   // Create demo users
   const users = await Promise.all([
     prisma.user.upsert({
-      where: { id: 'user-alice' },
+      where: { email: 'alice@example.com' },
       update: {},
       create: {
-        id: 'user-alice',
         email: 'alice@example.com',
         timezone: 'America/Los_Angeles',
       },
     }),
     prisma.user.upsert({
-      where: { id: 'user-bob' },
+      where: { email: 'bob@example.com' },
       update: {},
       create: {
-        id: 'user-bob',
         email: 'bob@example.com',
         timezone: 'Europe/London',
       },
     }),
     prisma.user.upsert({
-      where: { id: 'user-carol' },
+      where: { email: 'carol@example.com' },
       update: {},
       create: {
-        id: 'user-carol',
         email: 'carol@example.com',
         timezone: 'Asia/Tokyo',
       },
@@ -107,6 +104,7 @@ async function main() {
       priority: TaskPriority.MEDIUM,
       assignedTo: users[2].id,
       createdById: users[0].id,
+      templateId: template.id,
       customFields: {
         prLink: 'https://github.com/org/repo/pull/123',
       },
