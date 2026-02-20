@@ -8,6 +8,22 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model HandoffTemplate {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String?  @db.Text
+  steps       Json     @default("[]")
+  createdById String   @map("created_by_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  createdBy  User  @relation(fields: [createdById], references: [id])
+  tasks      Task[]
+
+  @@index([createdById], map: "idx_handoff_templates_created_by_id")
+  @@map("handoff_templates")
+}
+
 model Task {
   id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title             String
@@ -26,9 +42,15 @@ model Task {
   githubPrUrl       String?        @map("github_pr_url") @db.Text
   githubRepo        String?        @map("github_repo") @db.Text
 
+  // Handoff Templates
+  templateId       String?  @map("template_id") @db.Uuid
+  customFields     Json?    @map("custom_fields")
+  timezone         String?  @map("timezone") @db.Text
+
   // Relations
   createdBy   User         @relation("CreatedBy", fields: [createdById], references: [id])
   assignedToUser User?     @relation("AssignedTo", fields: [assignedTo], references: [id])
+  template         HandoffTemplate? @relation(fields: [templateId], references: [id])
   events      TaskEvent[]
   notifications Notification[]
 
@@ -36,6 +58,7 @@ model Task {
   @@index([createdById], map: "idx_tasks_created_by_id")
   @@index([assignedTo], map: "idx_tasks_assigned_to")
   @@index([githubRepo], map: "idx_tasks_github_repo")
+  @@index([templateId], map: "idx_tasks_template_id")
   @@map("tasks")
 }
 
@@ -74,6 +97,7 @@ model Notification {
 model User {
   id            String    @id @db.Uuid
   email         String    @unique
+  timezone      String?   @db.Text
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -83,6 +107,7 @@ model User {
   createdEvents TaskEvent[]
   notifications Notification[]
   githubTokens  GitHubToken[]
+  slackInstallments SlackInstallation[]
 
   @@map("users")
 }
@@ -101,6 +126,26 @@ model GitHubToken {
 
   @@index([userId], map: "idx_github_tokens_user_id")
   @@map("github_tokens")
+}
+
+model SlackInstallation {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  teamId            String   @unique @map("team_id") @db.Text
+  enterpriseId      String?  @map("enterprise_id") @db.Text
+  userId            String   @map("user_id") @db.Uuid
+  accessToken       String   @map("access_token") @db.Text
+  refreshToken      String?  @map("refresh_token") @db.Text
+  botAccessToken    String   @map("bot_access_token") @db.Text
+  botRefreshToken   String?  @map("bot_refresh_token") @db.Text
+  scope             String   @db.Text
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([teamId], map: "idx_slack_installations_team_id")
+  @@index([userId], map: "idx_slack_installations_user_id")
+  @@map("slack_installations")
 }
 
 enum EventType {
