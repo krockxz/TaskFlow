@@ -71,13 +71,14 @@ export const env = createEnv({
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 
     /**
-     * OpenAI API key for AI features (Shift Brief).
-     * Get from: OpenAI Dashboard → API Keys → Create new secret key
+     * Google Gemini API key for AI features (Shift Brief).
+     * Get from: Google AI Studio → Create API Key
      *
      * IMPORTANT: This key is optional. The app works without it, but Shift Brief
-     * features will be disabled. Only used for server-side AI generation.
+     * features will be disabled. Only used for server-side AI generation with
+     * Gemini 2.5 Flash Lite model.
      */
-    OPENAI_API_KEY: z.string().min(1).optional(),
+    GEMINI_API_KEY: z.string().min(1).optional(),
 
     /**
      * Slack OAuth client ID.
@@ -150,7 +151,7 @@ export const env = createEnv({
     GITHUB_WEBHOOK_SECRET: process.env.GITHUB_WEBHOOK_SECRET,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     SLACK_CLIENT_ID: process.env.SLACK_CLIENT_ID,
     SLACK_CLIENT_SECRET: process.env.SLACK_CLIENT_SECRET,
     SLACK_SIGNING_SECRET: process.env.SLACK_SIGNING_SECRET,

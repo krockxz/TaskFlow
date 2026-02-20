@@ -7,11 +7,13 @@ export interface ShiftBriefContext {
 }
 
 /**
- * Generate an AI prompt for Shift Brief generation.
+ * Generate an AI prompt for Shift Brief generation using Google Gemini.
  *
  * This function creates a context-aware prompt that helps the AI understand
  * what tasks are relevant, their priorities, and what the user needs to know
  * for async handoffs across timezones.
+ *
+ * Compatible with Google Gemini 2.5 Flash Lite model.
  *
  * @param context - Object containing tasks, user name, and timeframe
  * @returns A formatted prompt string for the AI model
