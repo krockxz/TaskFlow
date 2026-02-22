@@ -78,7 +78,7 @@ export function HeroSection() {
 
             {/* Subheading - dark gray */}
             <p className="text-lg text-muted-foreground max-w-lg leading-relaxed">
-              Track handoffs across timezones. Get notified when tasks move forward.
+              Track handoffs across timezones. AI-powered summaries for async teams.
             </p>
 
             {/* CTA - Black primary button */}

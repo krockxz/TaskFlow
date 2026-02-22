@@ -1,5 +1,6 @@
 export * from './CTASection';
 export * from './CommandSnippet';
+export * from './NewFeaturesSection';
 export * from './FeaturesSection';
 export * from './Footer';
 export * from './HeroSection';

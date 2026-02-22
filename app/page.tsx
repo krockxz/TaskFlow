@@ -6,6 +6,7 @@
 
 import {
   HeroSection,
+  NewFeaturesSection,
   ProblemSection,
   SolutionSection,
   FeaturesSection,
@@ -20,6 +21,8 @@ export default function LandingPage() {
         <HeroSection />
         <div className="section-divider max-w-6xl mx-auto" />
         <ProblemSection />
+        <div className="section-divider max-w-6xl mx-auto" />
+        <NewFeaturesSection />
         <div className="section-divider max-w-6xl mx-auto" />
         <SolutionSection />
         <FeaturesSection />
