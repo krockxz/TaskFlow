@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/middleware/auth';
 import { customFieldsSchema } from '@/lib/validation/template';
+import { TaskStatus } from '@prisma/client';
 
 const createTaskSchema = z.object({
   title: z.string().min(3).max(255),
@@ -24,9 +25,9 @@ const createTaskSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const user = await requireAuth();
-
   try {
+    const user = await requireAuth();
+
     const body = await request.json();
     const input = createTaskSchema.parse(body);
 
@@ -44,16 +45,19 @@ export async function POST(request: Request) {
       }
 
       // Get the step for the initial status
-      const templateSteps = template.steps as any[];
-      const initialStep = templateSteps.find((s: any) => s.status === (input.status || 'OPEN'));
+      const templateSteps = template.steps as Array<{
+        status: TaskStatus;
+        requiredFields: Array<{ name: string }>;
+      }>;
+      const initialStep = templateSteps.find((s) => s.status === (input.status || 'OPEN'));
 
       if (initialStep && initialStep.requiredFields.length > 0) {
         // Validate that all required fields are present
-        const requiredFieldNames = initialStep.requiredFields.map((f: any) => f.name);
+        const requiredFieldNames = initialStep.requiredFields.map((f) => f.name);
         const providedFields = input.customFields || {};
 
         const missingFields = requiredFieldNames.filter(
-          (name: string) => !(name in providedFields) || providedFields[name] === '' || providedFields[name] === null
+          (name) => !(name in providedFields) || providedFields[name] === '' || providedFields[name] === null
         );
 
         if (missingFields.length > 0) {
@@ -125,6 +129,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data: task });
   } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },

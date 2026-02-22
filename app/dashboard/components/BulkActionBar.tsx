@@ -30,6 +30,12 @@ interface BulkActionBarProps {
   onClearSelection: () => void;
 }
 
+interface BulkActionPayload {
+  status?: string;
+  priority?: string;
+  assignedTo?: string;
+}
+
 /**
  * BulkActionBar Component
  *
@@ -89,7 +95,7 @@ export function BulkActionBar({ selectedIds, users, onClearSelection }: BulkActi
 
   // Bulk mutation
   const { mutate: bulkAction, isPending } = useMutation({
-    mutationFn: async ({ action, payload }: { action: string; payload?: any }) => {
+    mutationFn: async ({ action, payload }: { action: string; payload?: BulkActionPayload }) => {
       const res = await fetch('/api/tasks/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

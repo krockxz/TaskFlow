@@ -122,7 +122,15 @@ const AnimatedTaskRow = ({ task, index }: { task: typeof taskPool[0]; index: num
     </motion.div>
 );
 
-const StatCard = ({ label, value, change, icon: Icon, delay }: any) => (
+interface StatCardProps {
+  label: string;
+  value: number | string;
+  change: string;
+  icon: React.ComponentType<{ className?: string }>;
+  delay: number;
+}
+
+const StatCard = ({ label, value, change, icon: Icon, delay }: StatCardProps) => (
     <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

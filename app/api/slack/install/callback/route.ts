@@ -11,6 +11,23 @@ import prisma from '@/lib/prisma';
 import { EncryptionService } from '@/lib/crypto';
 
 /**
+ * Verify and decode the state parameter.
+ * Returns the user ID if valid, null otherwise.
+ */
+function verifyState(state: string): string | null {
+  try {
+    const data = JSON.parse(Buffer.from(state, 'base64').toString());
+    // State is valid for 10 minutes
+    if (Date.now() - data.timestamp > 10 * 60 * 1000) {
+      return null;
+    }
+    return data.userId as string;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * GET /api/slack/install/callback
  *
  * Handles the OAuth callback from Slack.
@@ -20,6 +37,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
+    const state = searchParams.get('state');
     const error = searchParams.get('error');
 
     // Handle user denial
@@ -30,6 +48,18 @@ export async function GET(request: NextRequest) {
 
     if (!code) {
       return NextResponse.redirect(new URL('/settings/slack?error=no_code', request.url));
+    }
+
+    // Verify state parameter to get TaskFlow user ID
+    if (!state) {
+      console.error('Slack OAuth callback missing state parameter');
+      return NextResponse.redirect(new URL('/settings/slack?error=invalid_state', request.url));
+    }
+
+    const taskFlowUserId = verifyState(state);
+    if (!taskFlowUserId) {
+      console.error('Slack OAuth callback invalid or expired state');
+      return NextResponse.redirect(new URL('/settings/slack?error=invalid_state', request.url));
     }
 
     // Exchange code for access tokens
@@ -55,18 +85,22 @@ export async function GET(request: NextRequest) {
     const { team, enterprise, authed_user, bot, access_token, scope } = tokenData;
 
     // Store installation in database
+    // userId: TaskFlow user UUID (from OAuth state)
+    // slackUserId: Slack user ID (from authed_user.id)
     await prisma.slackInstallation.upsert({
       where: { teamId: team.id },
       create: {
         teamId: team.id,
         enterpriseId: enterprise?.id,
-        userId: authed_user.id,
+        userId: taskFlowUserId,
+        slackUserId: authed_user.id,
         accessToken: access_token ? EncryptionService.encryptToken(access_token) : '',
         botAccessToken: EncryptionService.encryptToken(bot?.token || ''),
         scope: scope || '',
       },
       update: {
-        userId: authed_user.id,
+        userId: taskFlowUserId,
+        slackUserId: authed_user.id,
         accessToken: access_token ? EncryptionService.encryptToken(access_token) : '',
         botAccessToken: EncryptionService.encryptToken(bot?.token || ''),
         scope: scope || '',

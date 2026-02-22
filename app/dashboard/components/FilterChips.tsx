@@ -137,6 +137,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   size="sm"
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('status', status)}
+                  aria-label={`Remove ${STATUS_LABELS[status as TaskStatus]} filter`}
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -162,6 +163,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   size="sm"
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('priority', priority)}
+                  aria-label={`Remove ${PRIORITY_LABELS[priority as TaskPriority]} filter`}
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -187,6 +189,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   size="sm"
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('assignedTo')}
+                  aria-label="Remove assigned user filter"
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -212,6 +215,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   size="sm"
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('dateRange')}
+                  aria-label={`Remove ${DATE_RANGE_LABELS[dateRange] || dateRange} filter`}
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -237,6 +241,7 @@ export default function FilterChips({ users }: FilterChipsProps) {
                   size="sm"
                   className="h-auto p-0 hover:bg-transparent"
                   onClick={() => removeFilter('search')}
+                  aria-label="Remove search filter"
                 >
                   <X className="h-3 w-3" />
                 </Button>

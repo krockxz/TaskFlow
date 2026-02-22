@@ -7,6 +7,38 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
+import { getAuthUser } from '@/lib/supabase/server';
+import crypto from 'crypto';
+
+/**
+ * Generate a secure state parameter containing the user ID.
+ * Format: base64(json({ userId, nonce, timestamp }))
+ */
+function generateState(userId: string): string {
+  const stateData = {
+    userId,
+    nonce: crypto.randomBytes(16).toString('hex'),
+    timestamp: Date.now(),
+  };
+  return Buffer.from(JSON.stringify(stateData)).toString('base64');
+}
+
+/**
+ * Verify and decode the state parameter.
+ * Returns the user ID if valid, null otherwise.
+ */
+function verifyState(state: string): string | null {
+  try {
+    const data = JSON.parse(Buffer.from(state, 'base64').toString());
+    // State is valid for 10 minutes
+    if (Date.now() - data.timestamp > 10 * 60 * 1000) {
+      return null;
+    }
+    return data.userId as string;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * GET /api/slack/install
@@ -18,7 +50,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Slack not configured' }, { status: 500 });
   }
 
-  const state = Math.random().toString(36).substring(7);
+  // Get current user and include in OAuth state
+  const user = await getAuthUser();
+  if (!user) {
+    return NextResponse.redirect(new URL('/login?redirect=/settings/slack', request.url));
+  }
+
+  const state = generateState(user.id);
   const redirectUri = `${env.NEXT_PUBLIC_APP_URL}/api/slack/install/callback`;
 
   const authUrl = new URL('https://slack.com/oauth/v2/authorize');

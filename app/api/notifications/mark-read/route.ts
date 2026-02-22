@@ -19,9 +19,8 @@ const markReadSchema = z.object({
  * Marks all notifications as read for the current user.
  */
 export async function POST(request: Request) {
-  const user = await requireAuth();
-
   try {
+    const user = await requireAuth();
     await prisma.notification.updateMany({
       where: {
         userId: user.id,
@@ -32,6 +31,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     console.error('POST /api/notifications/mark-read error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to mark notifications as read' },
@@ -46,9 +53,8 @@ export async function POST(request: Request) {
  * Body: { notificationId: string }
  */
 export async function PATCH(request: Request) {
-  const user = await requireAuth();
-
   try {
+    const user = await requireAuth();
     const body = await request.json();
     const { notificationId } = markReadSchema.parse(body);
 
@@ -85,6 +91,14 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { success: false, error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },

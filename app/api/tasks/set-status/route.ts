@@ -8,13 +8,13 @@ import { z } from 'zod';
 const setStatusSchema = z.object({
   id: z.string().uuid(),
   status: z.enum(['OPEN', 'IN_PROGRESS', 'READY_FOR_REVIEW', 'DONE']),
-  customFields: z.any().optional(),
+  customFields: customFieldsSchema.optional(),
 });
 
 export async function PATCH(request: NextRequest) {
-  const user = await requireAuth();
-
   try {
+    const user = await requireAuth();
+
     const body = await request.json();
     const { id: taskId, status, customFields } = setStatusSchema.parse(body);
 
@@ -30,16 +30,20 @@ export async function PATCH(request: NextRequest) {
 
     // If task has a template, validate required fields for the new status
     if (task.template) {
-      const templateSteps = task.template.steps as any[];
-      const targetStep = templateSteps.find((s: any) => s.status === status);
+      const templateSteps = task.template.steps as Array<{
+        status: TaskStatus;
+        requiredFields: Array<{ name: string }>;
+        allowedTransitions: TaskStatus[];
+      }>;
+      const targetStep = templateSteps.find((s) => s.status === status);
 
       if (targetStep && targetStep.requiredFields.length > 0) {
         // Validate that all required fields are present
-        const requiredFieldNames = targetStep.requiredFields.map((f: any) => f.name);
+        const requiredFieldNames = targetStep.requiredFields.map((f) => f.name);
         const providedFields = customFields || {};
 
         const missingFields = requiredFieldNames.filter(
-          (name: string) => !(name in providedFields) || providedFields[name] === '' || providedFields[name] === null
+          (name) => !(name in providedFields) || providedFields[name] === '' || providedFields[name] === null
         );
 
         if (missingFields.length > 0) {
@@ -62,7 +66,7 @@ export async function PATCH(request: NextRequest) {
       }
 
       // Validate that the status transition is allowed
-      const currentStep = templateSteps.find((s: any) => s.status === task.status);
+      const currentStep = templateSteps.find((s) => s.status === task.status);
       if (currentStep && !currentStep.allowedTransitions.includes(status)) {
         return NextResponse.json({
           error: 'Status transition not allowed',
@@ -78,12 +82,20 @@ export async function PATCH(request: NextRequest) {
       where: { id: taskId },
       data: {
         status,
-        customFields: customFields || task.customFields,
+        customFields: (customFields ?? task.customFields) as Record<string, string | number | boolean | null>,
       },
     });
 
     return NextResponse.json(updatedTask);
   } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },
@@ -91,6 +103,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    console.error('PATCH /api/tasks/set-status error:', error);
     return NextResponse.json(
       { error: 'An error occurred' },
       { status: 500 }

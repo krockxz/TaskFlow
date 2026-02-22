@@ -16,6 +16,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { useCommand } from "@/components/command/CommandContext";
 import { useSession } from "@/lib/hooks/useSession";
+import type { Task } from "@/lib/types";
 
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
@@ -68,7 +69,7 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
   const ref = useRef<HTMLDivElement>(null);
   const itemsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isTaskSearch, setIsTaskSearch] = useState(false);
 
   // Function to record command usage in history
@@ -490,12 +491,12 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
                             }}
                           >
                             <div className="flex items-center gap-2.5">
-                              <div className={`flex h-8 w-8 items-center justify-center rounded-md border ${task.status === 'done' ? 'bg-green-500/10 border-green-500/20' :
-                                task.status === 'in-progress' ? 'bg-blue-500/10 border-blue-500/20' :
+                              <div className={`flex h-8 w-8 items-center justify-center rounded-md border ${task.status === 'DONE' ? 'bg-green-500/10 border-green-500/20' :
+                                task.status === 'IN_PROGRESS' ? 'bg-blue-500/10 border-blue-500/20' :
                                   'bg-gray-500/10 border-gray-500/20'
                                 }`}>
-                                <div className={`h-2 w-2 rounded-full ${task.status === 'done' ? 'bg-green-500' :
-                                  task.status === 'in-progress' ? 'bg-blue-500' :
+                                <div className={`h-2 w-2 rounded-full ${task.status === 'DONE' ? 'bg-green-500' :
+                                  task.status === 'IN_PROGRESS' ? 'bg-blue-500' :
                                     'bg-gray-500'
                                   }`} />
                               </div>

@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
 
   // Define protected routes
-  const protectedPaths = ['/dashboard', '/tasks'];
+  const protectedPaths = ['/dashboard', '/tasks', '/analytics', '/settings'];
   const isProtectedPath = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
@@ -80,6 +80,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/tasks/:path*', '/login', '/register', '/'],
+  matcher: ['/dashboard/:path*', '/tasks/:path*', '/analytics/:path*', '/settings/:path*', '/login', '/register', '/'],
   // Note: /auth/callback is intentionally excluded to allow OAuth redirects
 };

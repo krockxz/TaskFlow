@@ -10,9 +10,9 @@ import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middleware/auth';
 
 export async function GET() {
-  await requireAuth();
-
   try {
+    const user = await requireAuth();
+
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -23,6 +23,14 @@ export async function GET() {
 
     return NextResponse.json(users);
   } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     console.error('GET /api/users error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch users' },

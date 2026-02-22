@@ -90,10 +90,10 @@ TaskFlow/
 │   ├── landing/             # Landing page sections
 │   └── animations/          # Motion components
 ├── lib/
-│   ├── prisma/              # Prisma client singleton
+│   ├── prisma.ts            # Prisma client singleton
 │   ├── supabase/            # Server/client Supabase clients
 │   ├── middleware/          # Auth middleware
-│   ├── query/               # TanStack Query config
+│   ├── query-keys.ts        # TanStack Query key factory
 │   ├── hooks/               # Custom React hooks
 │   └── types/               # TypeScript type definitions
 └── prisma/
@@ -305,7 +305,9 @@ open http://localhost:3000
 | `DIRECT_URL` | Direct PostgreSQL connection for migrations | Yes |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
-| `OPENAI_API_KEY` | OpenAI API key for Shift Brief | Optional |
+| `GEMINI_API_KEY` | Google Gemini API key for Shift Brief | Optional |
+| `GITHUB_WEBHOOK_SECRET` | GitHub webhook secret for signature verification | Yes |
+| `ENCRYPTION_KEY` | Encryption key for sensitive data (32+ bytes) | Yes |
 | `SLACK_CLIENT_ID` | Slack OAuth client ID | Optional |
 | `SLACK_CLIENT_SECRET` | Slack OAuth client secret | Optional |
 | `SLACK_SIGNING_SECRET` | Slack signing secret | Optional |

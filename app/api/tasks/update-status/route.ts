@@ -15,9 +15,9 @@ const updateStatusSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const user = await requireAuth();
-
   try {
+    const user = await requireAuth();
+
     const body = await request.json();
     const { taskId, status } = updateStatusSchema.parse(body);
 
@@ -53,6 +53,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },

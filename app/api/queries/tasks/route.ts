@@ -7,10 +7,11 @@
  * Used by TanStack Query for client-side data fetching.
  */
 
-import { createClient } from '@/lib/supabase/server';
+import { getAuthUser } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import type { TaskStatus, TaskPriority, DateRangePreset } from '@/lib/types';
+import { getDateRangeFilter } from '@/lib/utils/date-range';
 
 import type { Task } from '@/lib/types';
 
@@ -22,31 +23,8 @@ interface TasksResponse {
   totalPages: number;
 }
 
-/**
- * Calculates the date filter object based on a preset range.
- */
-const getDateRangeFilter = (preset: DateRangePreset) => {
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  switch (preset) {
-    case 'today':
-      return { gte: startOfDay };
-    case 'last_7_days':
-      return { gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) };
-    case 'last_30_days':
-      return { gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) };
-    case 'last_90_days':
-      return { gte: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000) };
-    case 'all_time':
-    default:
-      return undefined;
-  }
-};
-
 export async function GET(req: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

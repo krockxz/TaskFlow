@@ -11,6 +11,7 @@ import prisma from '@/lib/prisma';
 import { DashboardSidebar } from './components/DashboardSidebar';
 import { DashboardView } from './components/DashboardView';
 import type { TaskStatus, TaskPriority, DateRangePreset } from '@/lib/types';
+import { getDateRangeFilter } from '@/lib/utils/date-range';
 import { FadeIn } from '@/components/animations/fade-in';
 
 interface DashboardPageProps {
@@ -22,28 +23,6 @@ interface DashboardPageProps {
     search?: string;
   }>;
 }
-
-/**
- * Calculates the date filter object based on a preset range.
- */
-const getDateRangeFilter = (preset: DateRangePreset) => {
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  switch (preset) {
-    case 'today':
-      return { gte: startOfDay };
-    case 'last_7_days':
-      return { gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) };
-    case 'last_30_days':
-      return { gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) };
-    case 'last_90_days':
-      return { gte: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000) };
-    case 'all_time':
-    default:
-      return undefined;
-  }
-};
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const user = await getAuthUser();

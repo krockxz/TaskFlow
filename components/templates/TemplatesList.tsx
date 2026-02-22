@@ -9,6 +9,8 @@ import { HandoffTemplate } from '@prisma/client';
 import { TemplateBuilder } from './TemplateBuilder';
 import { motion } from 'motion/react';
 import { useToast } from '@/lib/hooks/use-toast';
+import type { HandoffTemplateStep } from '@/lib/types/template';
+import { TaskStatus } from '@prisma/client';
 
 interface TemplatesListProps {
   templates: HandoffTemplate[];
@@ -64,20 +66,21 @@ export function TemplatesList({ templates }: TemplatesListProps) {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-1 mb-4">
-                {(template.steps as any[])?.map((step: any) => (
+                {(template.steps as unknown as HandoffTemplateStep[])?.map((step) => (
                   <Badge key={step.status} variant="secondary">
                     {step.status.replace(/_/g, ' ')}
                   </Badge>
                 ))}
               </div>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline">
+                <Button size="sm" variant="outline" aria-label={`Edit ${template.name} template`}>
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleDelete(template.id)}
+                  aria-label={`Delete ${template.name} template`}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

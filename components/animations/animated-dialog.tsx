@@ -317,7 +317,7 @@ export const BottomSheetDialog = React.forwardRef<
     open: { y: 0 },
   }
 
-  const handleDragEnd = (_: any, { offset, velocity }: any) => {
+  const handleDragEnd = (_: unknown, { offset, velocity }: { offset: { y: number }; velocity: { y: number } }) => {
     if (offset.y > 100 || velocity.y > 500) {
       onOpenChange(false)
     }

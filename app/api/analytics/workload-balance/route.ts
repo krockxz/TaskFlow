@@ -5,14 +5,13 @@
  * for the current user's accessible tasks.
  */
 
-import { createClient } from '@/lib/supabase/server';
+import { getAuthUser } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getDateRangeFilter, type DateRangePreset, isValidDateRange } from '../utils';
 
 export async function GET(req: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

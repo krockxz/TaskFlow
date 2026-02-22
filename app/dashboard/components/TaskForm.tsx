@@ -38,6 +38,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { TemplateSelector } from '@/components/templates/TemplateSelector';
 import type { HandoffTemplate } from '@prisma/client';
 import type { CustomFieldsData } from '@/lib/types/template';
+import { customFieldsSchema } from '@/lib/validation/template';
 
 // Zod validation schema for task creation
 const taskSchema = z.object({
@@ -56,7 +57,7 @@ const taskSchema = z.object({
   dueDate: z.string().optional(),
   templateId: z.string().optional(),
   status: z.string().optional(),
-  customFields: z.record(z.any()).optional(),
+  customFields: customFieldsSchema.optional(),
 });
 
 type TaskFormValues = z.infer<typeof taskSchema>;

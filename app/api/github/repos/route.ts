@@ -9,6 +9,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/supabase/server';
 import { fetchGitHubAPI } from '@/lib/github/service';
 
+interface GitHubRepoResponse {
+  id: number;
+  name: string;
+  full_name: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+  description: string | null;
+  private: boolean;
+  html_url: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser();
@@ -47,17 +60,17 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      repos: repos.map((repo: unknown) => ({
-        id: (repo as any).id,
-        name: (repo as any).name,
-        full_name: (repo as any).full_name,
+      repos: repos.map((repo: GitHubRepoResponse) => ({
+        id: repo.id,
+        name: repo.name,
+        full_name: repo.full_name,
         owner: {
-          login: (repo as any).owner.login,
-          avatar_url: (repo as any).owner.avatar_url,
+          login: repo.owner.login,
+          avatar_url: repo.owner.avatar_url,
         },
-        description: (repo as any).description,
-        private: (repo as any).private,
-        html_url: (repo as any).html_url,
+        description: repo.description,
+        private: repo.private,
+        html_url: repo.html_url,
       })),
     });
   } catch (error) {

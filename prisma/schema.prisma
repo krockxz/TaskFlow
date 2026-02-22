@@ -68,6 +68,7 @@ model TaskEvent {
   eventType     EventType  @map("event_type")
   oldStatus     String?    @map("old_status")
   newStatus     String?    @map("new_status")
+  newPriority   String?    @map("new_priority")
   changedById   String     @map("changed_by_id") @db.Uuid
   createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
 
@@ -133,7 +134,8 @@ model SlackInstallation {
   id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   teamId            String   @unique @map("team_id") @db.Text
   enterpriseId      String?  @map("enterprise_id") @db.Text
-  userId            String   @map("user_id") @db.Uuid
+  userId            String?  @map("user_id") @db.Uuid
+  slackUserId       String?  @map("slack_user_id") @db.Text
   accessToken       String   @map("access_token") @db.Text
   refreshToken      String?  @map("refresh_token") @db.Text
   botAccessToken    String   @map("bot_access_token") @db.Text
@@ -142,10 +144,11 @@ model SlackInstallation {
   createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user User @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
 
   @@index([teamId], map: "idx_slack_installations_team_id")
   @@index([userId], map: "idx_slack_installations_user_id")
+  @@index([slackUserId], map: "idx_slack_installations_slack_user_id")
   @@map("slack_installations")
 }
 

@@ -7,6 +7,7 @@
  * Supports filter-aware query keys for proper cache management.
  * Enhanced with smooth animations for row entrance, hover effects, and interactions.
  * Includes pagination for performance with large datasets.
+ * Now includes mobile-friendly card views with collapsible details.
  */
 
 'use client';
@@ -40,11 +41,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { BulkActionBar } from './BulkActionBar';
-import { CheckCircle2, Circle, Clock, AlertCircle, Github, Inbox, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, AlertCircle, Github, Inbox, ChevronLeft, ChevronRight, Loader2, ChevronDown } from 'lucide-react';
 import { motion } from 'motion/react';
 import { STATUS_LABELS, normalizeStatus } from '@/lib/constants/filters';
 import { useToast } from '@/lib/hooks/use-toast';
 import { format, formatDistanceToNow, isPast, isToday, differenceInDays } from 'date-fns';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from '@/components/ui/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 interface TaskTableProps {
   initialTasks: Task[];
@@ -356,66 +367,76 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
     };
   }, [supabase, queryClient, filters]);
 
-  // Enhanced Skeleton Loading - matches table structure
+  // Enhanced Skeleton Loading - responsive for mobile and desktop
   if (isLoading) {
     return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">
-              <Skeleton className="h-5 w-5 rounded" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-5 w-16" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-5 w-16" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-5 w-16" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-5 w-24" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-5 w-20" />
-            </TableHead>
-            <TableHead>
-              <Skeleton className="h-5 w-16" />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+      <>
+        {/* Mobile skeleton */}
+        <div className="md:hidden space-y-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <TableRow key={i}>
-              <TableCell>
-                <Skeleton className="h-5 w-5 rounded" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-5 w-48" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-7 w-24 rounded-md" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-6 w-16 rounded-full" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-16" />
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Skeleton className="h-6 w-6 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4 w-20" />
-              </TableCell>
-            </TableRow>
+            <MobileSkeleton key={i} />
           ))}
-        </TableBody>
-      </Table>
+        </div>
+
+        {/* Desktop skeleton */}
+        <Table className="hidden md:block">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">
+                <Skeleton className="h-5 w-5 rounded" />
+              </TableHead>
+              <TableHead>
+                <Skeleton className="h-5 w-16" />
+              </TableHead>
+              <TableHead>
+                <Skeleton className="h-5 w-16" />
+              </TableHead>
+              <TableHead>
+                <Skeleton className="h-5 w-16" />
+              </TableHead>
+              <TableHead>
+                <Skeleton className="h-5 w-24" />
+              </TableHead>
+              <TableHead>
+                <Skeleton className="h-5 w-20" />
+              </TableHead>
+              <TableHead>
+                <Skeleton className="h-5 w-16" />
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <TableRow key={i}>
+                <TableCell>
+                  <Skeleton className="h-5 w-5 rounded" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-48" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-7 w-24 rounded-md" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-6 w-6 rounded-full" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </>
     );
   }
 
@@ -478,7 +499,8 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
 
   return (
     <>
-      <Table>
+      {/* Desktop Table - hidden on mobile, shown on md+ */}
+      <Table className="hidden md:block">
         <TableHeader>
           <TableRow>
             {/* Checkbox column */}
@@ -523,11 +545,42 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
         </TableBody>
       </Table>
 
+      {/* Mobile Cards - hidden on md+, shown on mobile */}
+      <div className="md:hidden space-y-4">
+        {tasks.map((task, index) => {
+          const isSelected = selectedIds.has(task.id);
+          const statusInfo = statusConfig[task.status] || statusConfig.OPEN;
+          const StatusIcon = statusInfo.icon;
+          const dueDateInfo = getDueDateInfo(task.dueDate);
+
+          return (
+            <MobileTaskCard
+              key={task.id}
+              task={task}
+              index={index}
+              isSelected={isSelected}
+              StatusIcon={StatusIcon}
+              statusConfig={statusConfig}
+              getPriorityVariant={getPriorityVariant}
+              getInitials={getInitials}
+              getDueDateInfo={getDueDateInfo}
+              getDueDateVariant={getDueDateVariant}
+              updateStatus={updateStatus}
+              onToggle={() => toggleRow(task.id)}
+              isUpdating={updatingTaskIds.has(task.id)}
+            />
+          );
+        })}
+      </div>
+
       {/* Pagination Controls */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-2 py-4">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground hidden sm:block">
             Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, response.total)} of {response.total} tasks
+          </div>
+          <div className="text-sm text-muted-foreground sm:hidden">
+            {Math.min(currentPage * ITEMS_PER_PAGE, response.total)} of {response.total} tasks
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -538,7 +591,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
               className="gap-1"
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              <span className="hidden sm:inline">Previous</span>
             </Button>
             <div className="flex items-center gap-1">
               {getPageNumbers().map((pageNum, i) => (
@@ -564,7 +617,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
               disabled={currentPage === totalPages}
               className="gap-1"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -578,6 +631,201 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
         onClearSelection={clearSelection}
       />
     </>
+  );
+}
+
+// Mobile Skeleton Component
+function MobileSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-start gap-3">
+          <Skeleton className="h-5 w-5 rounded mt-0.5" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-7 w-24 rounded-md" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-6 w-6 rounded-full" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <Skeleton className="h-4 w-24" />
+      </CardContent>
+    </Card>
+  );
+}
+
+// Mobile Task Card Component
+interface MobileTaskCardProps {
+  task: Task;
+  index: number;
+  isSelected: boolean;
+  StatusIcon: React.ComponentType<{ className?: string }>;
+  statusConfig: typeof statusConfig;
+  getPriorityVariant: (priority: string) => 'default' | 'secondary' | 'outline';
+  getInitials: (email: string) => string;
+  getDueDateInfo: (dueDate: string | null) => ReturnType<typeof getDueDateInfo>;
+  getDueDateVariant: (variant: 'overdue' | 'today' | 'soon' | 'normal') => string;
+  updateStatus: (params: { taskId: string; status: string }) => void;
+  onToggle: () => void;
+  isUpdating: boolean;
+}
+
+function MobileTaskCard({
+  task,
+  index,
+  isSelected,
+  StatusIcon,
+  statusConfig,
+  getPriorityVariant,
+  getInitials,
+  getDueDateInfo,
+  getDueDateVariant,
+  updateStatus,
+  onToggle,
+  isUpdating,
+}: MobileTaskCardProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dueDateInfo = getDueDateInfo(task.dueDate);
+
+  return (
+    <motion.div
+      custom={index}
+      variants={rowVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <Card className={isSelected ? 'bg-muted/50' : ''}>
+        <CardHeader className="pb-3">
+          <div className="flex items-start gap-3">
+            {/* Selection Checkbox */}
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={onToggle}
+              aria-label={`Select task ${task.title}`}
+              className="mt-0.5"
+            />
+
+            {/* Title and GitHub Link */}
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <a
+                  href={`/tasks/${task.id}`}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {task.title}
+                </a>
+                {task.githubIssueUrl && (
+                  <a
+                    href={task.githubIssueUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    title="Linked to GitHub Issue"
+                    aria-label="Open GitHub issue"
+                  >
+                    <Github className="h-4 w-4" />
+                  </a>
+                )}
+              </div>
+
+              {/* Status Dropdown - Inline Editable */}
+              <Select
+                value={task.status.toLowerCase()}
+                onValueChange={(value) =>
+                  updateStatus({ taskId: task.id, status: value })
+                }
+                disabled={isUpdating}
+              >
+                <SelectTrigger className="h-7 w-fit gap-1.5">
+                  {isUpdating ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  ) : (
+                    <StatusIcon className="h-3.5 w-3.5" />
+                  )}
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="ready_for_review">Ready for Review</SelectItem>
+                  <SelectItem value="done">Done</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-3">
+          {/* Priority Badge */}
+          <div className="flex items-center gap-2">
+            <Badge variant={getPriorityVariant(task.priority)} className="capitalize">
+              {task.priority.toLowerCase()}
+            </Badge>
+
+            {/* Due Date with Color Coding */}
+            {dueDateInfo ? (
+              <div className="flex flex-col">
+                <span className={`text-sm font-medium ${getDueDateVariant(dueDateInfo.variant)}`}>
+                  {dueDateInfo.text}
+                </span>
+                {dueDateInfo.subtitle && (
+                  <span className="text-xs text-muted-foreground">
+                    {dueDateInfo.subtitle}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <span className="text-sm text-muted-foreground">No due date</span>
+            )}
+          </div>
+
+          {/* Assigned User */}
+          {task.assignedToUser ? (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                <AvatarFallback className="text-xs">
+                  {getInitials(task.assignedToUser.email)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm text-muted-foreground">
+                {task.assignedToUser.email}
+              </span>
+            </div>
+          ) : (
+            <span className="text-sm text-muted-foreground">Unassigned</span>
+          )}
+
+          {/* Expandable Details Section */}
+          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full justify-between hover:bg-muted/50 mt-2">
+                <span className="text-sm">Details</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-3 space-y-2">
+              {/* Description */}
+              {task.description && (
+                <div className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">Description: </span>
+                  {task.description}
+                </div>
+              )}
+
+              {/* Updated Date */}
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">Updated: </span>
+                {new Date(task.updatedAt).toLocaleDateString()}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
 
@@ -651,13 +899,14 @@ function AnimatedTableRow({
           >
             {task.title}
           </a>
-          {(task as any).github_issue_url && (
+          {task.githubIssueUrl && (
             <a
-              href={(task as any).github_issue_url}
+              href={task.githubIssueUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
               title="Linked to GitHub Issue"
+              aria-label="Open GitHub issue"
             >
               <Github className="h-4 w-4" />
             </a>
@@ -684,7 +933,7 @@ function AnimatedTableRow({
           <SelectContent>
             <SelectItem value="open">Open</SelectItem>
             <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="ready_for_review">Ready for Review</SelectItem>
+<SelectItem value="ready_for_review">Ready for Review</SelectItem>
             <SelectItem value="done">Done</SelectItem>
           </SelectContent>
         </Select>

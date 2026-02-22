@@ -25,6 +25,11 @@ export interface Task {
   assignedTo: string | null;
   createdAt: string;
   updatedAt: string;
+  // GitHub integration fields
+  githubIssueUrl?: string | null;
+  githubIssueNumber?: number | null;
+  githubPrUrl?: string | null;
+  githubRepo?: string | null;
   // Relations
   createdBy: UserPreview;
   assignedToUser: UserPreview | null;

@@ -21,9 +21,8 @@ type RouteContext = {
  * - Full event history with changed by user
  */
 export async function GET(_request: Request, context: RouteContext) {
-  const user = await requireAuth();
-
   try {
+    const user = await requireAuth();
     const { id } = await context.params;
 
     const task = await prisma.task.findUnique({
@@ -93,6 +92,14 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json(serializedTask);
   } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     console.error('GET /api/tasks/[id] error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch task' },
@@ -107,9 +114,8 @@ export async function GET(_request: Request, context: RouteContext) {
  * For MVP, we'll do a hard delete.
  */
 export async function DELETE(request: Request, context: RouteContext) {
-  const user = await requireAuth();
-
   try {
+    const user = await requireAuth();
     const { id } = await context.params;
 
     // First verify ownership
@@ -138,6 +144,14 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     console.error('DELETE /api/tasks/[id] error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete task' },

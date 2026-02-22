@@ -10,30 +10,46 @@ import { requireAuth } from '@/lib/middleware/auth';
 import { getAnalyticsGroupBy, getUserEmails } from '../utils/handler';
 
 export async function GET(req: Request) {
-  const user = await requireAuth();
+  try {
+    const user = await requireAuth();
 
-  const { searchParams } = new URL(req.url);
-  const rangeParam = searchParams.get('range');
-  const range: DateRangePreset = (rangeParam && isValidDateRange(rangeParam)) ? rangeParam : 'last_30_days';
-  const dateFilter = getDateRangeFilter(range);
+    const { searchParams } = new URL(req.url);
+    const rangeParam = searchParams.get('range');
+    const range: DateRangePreset = (rangeParam && isValidDateRange(rangeParam)) ? rangeParam : 'last_30_days';
+    const dateFilter = getDateRangeFilter(range);
 
-  const results = await getAnalyticsGroupBy(user, 'assignedTo', dateFilter);
+    const results = await getAnalyticsGroupBy(user, 'assignedTo', dateFilter);
 
-  // Get user emails for all assignees
-  const userIds = results
-    .map((r) => r.value)
-    .filter((id): id is string => id !== null);
+    // Get user emails for all assignees
+    const userIds = results
+      .map((r) => r.value)
+      .filter((id): id is string => id !== null);
 
-  const userEmailMap = await getUserEmails(userIds);
+    const userEmailMap = await getUserEmails(userIds);
 
-  // Format response with email and count, sorted by count descending
-  const data = results
-    .filter((r) => r.value)
-    .map((r) => ({
-      email: userEmailMap[r.value] || 'Unknown',
-      count: r.count,
-    }))
-    .sort((a, b) => b.count - a.count);
+    // Format response with email and count, sorted by count descending
+    const data = results
+      .filter((r) => r.value)
+      .map((r) => ({
+        email: userEmailMap[r.value] || 'Unknown',
+        count: r.count,
+      }))
+      .sort((a, b) => b.count - a.count);
 
-  return NextResponse.json(data);
+    return NextResponse.json(data);
+  } catch (error) {
+    // Handle authentication errors
+    if (error instanceof Error && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    console.error('GET /api/analytics/tasks-per-user error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch analytics' },
+      { status: 500 }
+    );
+  }
 }

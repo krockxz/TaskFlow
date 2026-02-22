@@ -187,7 +187,7 @@ export interface ShakeAnimationProps {
   /**
    * Trigger shake on value change
    */
-  trigger?: any
+  trigger?: unknown
   /**
    * Shake intensity
    * @default 5
@@ -242,7 +242,7 @@ export const ShakeAnimation = React.forwardRef<
       ref={ref}
       key={key}
       className={cn("inline-block", className)}
-      animate={shakeAnimation as any}
+      animate={shakeAnimation as Record<string, number[]>}
       transition={{ duration: duration / (cycles * 2) }}
     >
       {children}
@@ -474,7 +474,7 @@ export interface ConfettiProps {
   /**
    * Trigger value to start animation
    */
-  trigger?: any
+  trigger?: unknown
   className?: string
 }
 

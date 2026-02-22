@@ -138,6 +138,7 @@ function AuthModal({
                                 <button
                                     onClick={() => setIsOpen(false)}
                                     className="absolute right-4 top-4 z-10 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                    aria-label="Close authentication dialog"
                                 >
                                     <X className="h-4 w-4" />
                                 </button>

@@ -130,6 +130,7 @@ export function TemplateBuilder({ open, onOpenChange, onSuccess }: TemplateBuild
                     size="sm"
                     variant="ghost"
                     onClick={() => removeStep(stepIndex)}
+                    aria-label={`Remove ${step.status.replace(/_/g, ' ')} step`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -167,6 +168,7 @@ export function TemplateBuilder({ open, onOpenChange, onSuccess }: TemplateBuild
                         size="sm"
                         variant="ghost"
                         onClick={() => removeField(stepIndex, fieldIndex)}
+                        aria-label={`Remove ${field.label} field`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

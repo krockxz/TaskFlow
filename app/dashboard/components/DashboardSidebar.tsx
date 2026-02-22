@@ -106,6 +106,13 @@ function SearchContainer({ isCollapsed, onSearch, initialValue }: { isCollapsed?
 
 /* --------------------------- Types / Content Map -------------------------- */
 
+interface NavItemT {
+    id: string;
+    icon: React.ReactNode;
+    label: string;
+    href?: string;
+}
+
 interface MenuItemT {
     id?: string;
     icon?: React.ReactNode;
@@ -190,7 +197,7 @@ function IconNavigation({
         }
     };
 
-    const navItems = [
+    const navItems: NavItemT[] = [
         { id: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
         { id: "timezone-lanes", icon: <Globe size={20} />, label: "Timezone Lanes", href: "/dashboard/timezone-lanes" },
         { id: "filters", icon: <Filter size={20} />, label: "Filters" },
@@ -212,7 +219,7 @@ function IconNavigation({
                         isActive={activeSection === item.id}
                         onClick={() => !item.href && onSectionChange(item.id)}
                         tooltip={item.label}
-                        href={(item as any).href}
+                        href={item.href}
                     >
                         {item.icon}
                     </IconNavButton>
@@ -548,10 +555,13 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
             {/* 2. Collapsible Sidebar Panel */}
             <aside
                 className={cn(
-                    "bg-black flex flex-col pt-4 pb-4 transition-all duration-500 overflow-hidden border-r border-neutral-800",
-                    isCollapsed ? "w-0 opacity-0 px-0 border-none" : "w-64 px-4 opacity-100"
+                    "bg-black flex flex-col pt-4 pb-4 px-4 w-64 border-r border-neutral-800 shrink-0 overflow-hidden",
+                    "transition-transform duration-200",
+                    isCollapsed ? "-translate-x-full opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
                 )}
-                style={{ transitionTimingFunction: softSpringEasing }}
+                style={{
+                    transitionTimingFunction: softSpringEasing,
+                }}
             >
                 <SectionTitle
                     title={currentContent.title}
