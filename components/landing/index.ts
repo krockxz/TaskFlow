@@ -7,6 +7,5 @@ export * from './HeroSection';
 export * from './NotificationsDemo';
 export * from './ProblemSection';
 export * from './SolutionSection';
-export * from './SplitView';
 export * from './ScrollReveal';
 export * from './FloatingElement';

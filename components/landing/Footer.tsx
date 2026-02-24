@@ -14,12 +14,9 @@ import { HoverLink } from '@/components/ui/hover-link';
 const links = {
   product: [
     { name: 'Features', href: '#features' },
-    { name: 'Documentation', href: '#' },
-    { name: 'Changelog', href: '#' },
   ],
   resources: [
     { name: 'GitHub', href: 'https://github.com/krockxz/TaskFlow' },
-    { name: 'Contributing', href: '#' },
     { name: 'License', href: '#' },
   ],
 };

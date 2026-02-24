@@ -402,6 +402,11 @@ export function Features() {
                                 </div>
                             </motion.div>
                         </div>
+                        {/* Fade-out overlay matching section background */}
+                        <div
+                            className="absolute bottom-0 left-0 right-0 h-52 pointer-events-none z-20"
+                            style={{ background: 'linear-gradient(to bottom, transparent, hsl(var(--background)))' }}
+                        />
                     </div>
                 </motion.div>
 
