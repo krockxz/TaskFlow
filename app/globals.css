@@ -181,12 +181,88 @@
     border-color: hsl(var(--muted-foreground));
     box-shadow: 0 0 0 3px hsl(var(--muted) / 0.5);
   }
+
+  /* MagicUI / Acernity UI animations */
+  .animate-spotlight {
+    animation: spotlight 6s ease-in-out infinite;
+  }
+  .animate-gradient {
+    animation: animate-gradient var(--duration, 3s) ease infinite;
+    background-size: 200% 100%;
+  }
+  .animate-meteor {
+    animation: meteor 5s linear infinite;
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
 }
 
 /* Selection styling - monochrome */
 ::selection {
   background: hsl(var(--foreground) / 0.15);
   color: inherit;
+}
+
+@keyframes spotlight {
+  0% {
+    transform: translateY(-50%) translateX(-50%) scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50%) translateX(-50%) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes animate-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes meteor {
+  0% {
+    transform: rotate(215deg) translateX(0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(215deg) translateX(-500px);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 @theme inline {
@@ -196,17 +272,17 @@
     }
   }
   @keyframes spin-around {
-  0% {
-    transform: translateZ(0) rotate(0);
+    0% {
+      transform: translateZ(0) rotate(0);
+      }
+    15%, 35% {
+      transform: translateZ(0) rotate(90deg);
+      }
+    65%, 85% {
+      transform: translateZ(0) rotate(270deg);
+      }
+    100% {
+      transform: translateZ(0) rotate(360deg);
+      }
     }
-  15%, 35% {
-    transform: translateZ(0) rotate(90deg);
-    }
-  65%, 85% {
-    transform: translateZ(0) rotate(270deg);
-    }
-  100% {
-    transform: translateZ(0) rotate(360deg);
-    }
-  }
 }

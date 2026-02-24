@@ -7,7 +7,6 @@
 'use client';
 
 import { Bell, BarChart3, Users, Zap, Search, LayoutDashboard, CheckSquare, Settings, Moon, MoreHorizontal } from 'lucide-react';
-import { NumberTicker } from '@/components/ui/number-ticker';
 import { motion, useInView, AnimatePresence } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
 
@@ -104,18 +103,18 @@ const AnimatedTaskRow = ({ task, index }: { task: typeof taskPool[0]; index: num
         <div className="flex items-center gap-2 ml-auto flex-shrink-0">
             <PriorityIndicator priority={task.priority} />
             <div className="flex items-center gap-2 mr-1">
-            <motion.div
-                className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center text-background text-[10px] font-medium"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-            >
-                {task.assignee}
-            </motion.div>
-            <motion.div
-                className="w-2 h-2 rounded-full bg-foreground border-2 border-card"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 2, repeat: Infinity, delay: index * 0.2 }}
-            />
+                <motion.div
+                    className="w-6 h-6 rounded-full bg-foreground flex items-center justify-center text-background text-[10px] font-medium"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    {task.assignee}
+                </motion.div>
+                <motion.div
+                    className="w-2 h-2 rounded-full bg-foreground border-2 border-card"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: index * 0.2 }}
+                />
             </div>
             <span className="text-xs text-muted-foreground w-16 text-right">{task.due}</span>
         </div>
@@ -123,11 +122,11 @@ const AnimatedTaskRow = ({ task, index }: { task: typeof taskPool[0]; index: num
 );
 
 interface StatCardProps {
-  label: string;
-  value: number | string;
-  change: string;
-  icon: React.ComponentType<{ className?: string }>;
-  delay: number;
+    label: string;
+    value: number | string;
+    change: string;
+    icon: React.ComponentType<{ className?: string }>;
+    delay: number;
 }
 
 const StatCard = ({ label, value, change, icon: Icon, delay }: StatCardProps) => (
@@ -147,15 +146,9 @@ const StatCard = ({ label, value, change, icon: Icon, delay }: StatCardProps) =>
                 <Icon className="w-3.5 h-3.5 text-foreground" />
             </motion.div>
         </div>
-        <motion.div
-            className="text-2xl font-semibold text-foreground relative"
-            initial={{ scale: 0 }}
-            whileInView={{ scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ type: "spring", stiffness: 150, delay: delay + 0.2 }}
-        >
-            <NumberTicker value={typeof value === 'number' ? value : parseInt(value) || 0} />
-        </motion.div>
+        <div className="text-2xl font-semibold text-foreground relative">
+            {value}
+        </div>
         <div className="text-xs text-muted-foreground mt-1.5 relative">{change}</div>
     </motion.div>
 );
@@ -163,7 +156,7 @@ const StatCard = ({ label, value, change, icon: Icon, delay }: StatCardProps) =>
 export function Features() {
     const sectionRef = useRef(null);
     const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
-    const [visibleTasks, setVisibleTasks] = useState(taskPool.slice(0, 5));
+    const [visibleTasks, setVisibleTasks] = useState(taskPool.slice(0, 4));
 
     // Auto-rotate tasks
     useEffect(() => {
@@ -218,7 +211,7 @@ export function Features() {
                     animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
                     transition={{ duration: 0.8, delay: 0.3, type: "spring" }}
                 >
-                    <div className="aspect-[88/36] relative overflow-hidden rounded-xl bg-gradient-to-br from-background via-background to-secondary/30 border border-border">
+                    <div className="h-[540px] relative overflow-hidden rounded-xl bg-gradient-to-br from-background via-background to-secondary/30 border border-border">
                         {/* Browser Chrome */}
                         <motion.div
                             className="absolute top-0 left-0 right-0 z-10 h-11 bg-secondary/30 border-b border-border flex items-center px-4 gap-3"
@@ -281,11 +274,10 @@ export function Features() {
                                     ].map((item, i) => (
                                         <motion.div
                                             key={item.label}
-                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                                                item.active
-                                                    ? "bg-secondary text-foreground"
-                                                    : "text-muted-foreground hover:bg-secondary/50"
-                                            }`}
+                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${item.active
+                                                ? "bg-secondary text-foreground"
+                                                : "text-muted-foreground hover:bg-secondary/50"
+                                                }`}
                                             initial={{ x: -20, opacity: 0 }}
                                             animate={isInView ? { x: 0, opacity: 1 } : {}}
                                             transition={{ delay: 0.7 + i * 0.05 }}
@@ -356,7 +348,7 @@ export function Features() {
                                 </div>
 
                                 {/* Content */}
-                                <div className="flex-1 overflow-auto p-5 space-y-5">
+                                <div className="flex-1 overflow-hidden p-5 space-y-5">
                                     {/* Stats Cards */}
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                         <StatCard label="Total" value="24" change="+4 this week" icon={CheckSquare} delay={0} />

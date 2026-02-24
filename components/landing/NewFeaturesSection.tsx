@@ -12,7 +12,7 @@ import { useRef } from 'react';
 import { Copy, Sparkles, Globe, MessageSquare, Server } from 'lucide-react';
 import { NumberTicker } from '@/components/ui/number-ticker';
 
-// Animation variants matching features-6.tsx pattern
+// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -109,7 +109,7 @@ const DemoTaskCard = ({ task, index }: { task: DemoTask; index: number }) => (
     className="bg-card border border-border rounded-lg p-3 mb-2 cursor-pointer hover:border-foreground/30 transition-colors"
   >
     <div className="flex items-start gap-3">
-      <div className="w-4 h-4 rounded border border-border mt-0.5 flex-shrink-0 group-hover:border-foreground/50 transition-colors" />
+      <div className="w-4 h-4 rounded border border-border mt-0.5 flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="text-sm text-foreground truncate font-medium">{task.title}</p>
         <span className="text-xs text-muted-foreground">{task.status}</span>
@@ -200,25 +200,13 @@ export function NewFeaturesSection() {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
-          {/* Heading */}
-          <motion.h2
-            className="text-4xl md:text-5xl font-semibold text-foreground mb-6 tracking-tight-vercel"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ delay: 0.2 }}
-          >
+          <h2 className="text-4xl md:text-5xl font-semibold text-foreground mb-6 tracking-tight-vercel">
             Everything you need to coordinate async teams
-          </motion.h2>
+          </h2>
 
-          {/* Subheading */}
-          <motion.p
-            className="text-lg text-muted-foreground leading-relaxed"
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : {}}
-            transition={{ delay: 0.3 }}
-          >
+          <p className="text-lg text-muted-foreground leading-relaxed">
             Powerful features that keep your distributed team aligned, productive, and always in sync—no matter where they are.
-          </motion.p>
+          </p>
         </motion.div>
 
         {/* Timezone Lanes Interactive Demo */}
@@ -235,7 +223,6 @@ export function NewFeaturesSection() {
           <motion.div
             className="relative rounded-xl border border-border bg-secondary/20 p-6 overflow-hidden"
           >
-
             <motion.div
               className="flex gap-4 overflow-x-auto pb-2 relative"
               variants={containerVariants}

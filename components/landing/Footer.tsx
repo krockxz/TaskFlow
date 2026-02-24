@@ -1,12 +1,15 @@
 /**
- * Footer - Vercel Design System
+ * Footer - Vercel Design System with hover effects
  *
- * Minimal footer with monochrome palette.
+ * Minimal footer with monochrome palette and animated links.
  */
 
-import { Zap, Github } from 'lucide-react';
+'use client';
+
+import { Github } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { HoverLink } from '@/components/ui/hover-link';
 
 const links = {
   product: [
@@ -28,10 +31,10 @@ export function Footer() {
     <footer className="py-16 px-6 bg-background border-t border-border">
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-          {/* Brand - monochrome logo */}
+          {/* Brand */}
           <div className="md:col-span-2">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="relative w-8 h-8 rounded-lg overflow-hidden transition-transform duration-300 group-hover:scale-105">
                 <Image
                   src="/logo.jpg"
                   alt="TaskFlow Logo"
@@ -49,18 +52,15 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Links - 2 columns only */}
+          {/* Links */}
           <div>
             <h3 className="text-sm font-semibold text-foreground mb-4 tracking-tight">Product</h3>
             <ul className="space-y-3">
               {links.product.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  <HoverLink href={link.href} showArrow={false}>
                     {link.name}
-                  </a>
+                  </HoverLink>
                 </li>
               ))}
             </ul>
@@ -71,12 +71,9 @@ export function Footer() {
             <ul className="space-y-3">
               {links.resources.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  <HoverLink href={link.href} showArrow={false}>
                     {link.name}
-                  </a>
+                  </HoverLink>
                 </li>
               ))}
             </ul>
@@ -92,10 +89,10 @@ export function Footer() {
             href="https://github.com/krockxz/TaskFlow"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
           >
-            <Github className="w-4 h-4" />
-            View on GitHub
+            <Github className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
+            <span>View on GitHub</span>
           </a>
         </div>
       </div>

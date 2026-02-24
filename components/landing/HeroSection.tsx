@@ -1,13 +1,13 @@
 /**
- * Hero Section - Vercel Design System
+ * Hero Section - Vercel Design System with subtle enhancements
  *
- * Clean, focused hero with monochrome palette and subtle borders.
+ * Clean, focused hero with monochrome palette and minimal effects.
  */
 
 'use client';
 
 import { motion, AnimatePresence } from 'motion/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NotificationsDemo } from './NotificationsDemo';
 import { AuthModal } from "@/components/ui/auth-modal";
 
@@ -16,6 +16,8 @@ const words = ['synchronized.', 'productive.', 'organized.', 'efficient.'];
 export function HeroSection() {
   const [currentWord, setCurrentWord] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -29,10 +31,36 @@ export function HeroSection() {
     return () => clearInterval(interval);
   }, []);
 
+  // Track mouse position for spotlight effect
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!heroRef.current) return;
+      const rect = heroRef.current.getBoundingClientRect();
+      setMousePosition({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
-    <section className="relative min-h-screen bg-background flex items-center">
-      {/* Subtle grid background */}
-      <div className="absolute inset-0 grid-pattern opacity-[0.4]" />
+    <section
+      ref={heroRef}
+      className="relative min-h-screen bg-background flex items-center overflow-hidden"
+    >
+      {/* Subtle grid pattern overlay */}
+      <div className="absolute inset-0 grid-pattern opacity-[0.3]" />
+
+      {/* Subtle mouse-following spotlight */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-10"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, hsl(var(--foreground) / 0.08), transparent 40%)`,
+        }}
+      />
 
       <div className="max-w-6xl mx-auto px-6 py-32 w-full relative">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -43,7 +71,7 @@ export function HeroSection() {
             transition={{ duration: 0.5 }}
             className="space-y-10"
           >
-            {/* Badge - monochrome */}
+            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -55,7 +83,7 @@ export function HeroSection() {
               </span>
             </motion.div>
 
-            {/* Main headline - high contrast black with animated word */}
+            {/* Main headline - animated word */}
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-foreground leading-[1.1] tracking-tight-vercel">
               Async teams,
               <br />
@@ -76,12 +104,12 @@ export function HeroSection() {
               </span>
             </h1>
 
-            {/* Subheading - dark gray */}
+            {/* Subheading */}
             <p className="text-lg text-muted-foreground max-w-lg leading-relaxed">
               Track handoffs across timezones. AI-powered summaries for async teams.
             </p>
 
-            {/* CTA - Black primary button */}
+            {/* CTA Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -95,7 +123,7 @@ export function HeroSection() {
               />
             </motion.div>
 
-            {/* Social proof / trust indicators */}
+            {/* Social proof indicators */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -121,27 +149,26 @@ export function HeroSection() {
             </motion.div>
           </motion.div>
 
-          {/* Right: Product Screenshot - subtle border with animated beam */}
+          {/* Right: Product Screenshot */}
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
             className="relative"
           >
-            <div className="rounded-xl bg-card border border-border overflow-hidden relative">
-              {/* Animated border beam effect */}
+            <div className="rounded-xl bg-card border border-border overflow-hidden relative group">
+              {/* Subtle border shimmer */}
               <motion.div
                 className="absolute inset-0 rounded-xl"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                animate={{ opacity: [0.3, 0.5, 0.3] }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               >
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-foreground/10 to-transparent translate-x-[-100%] animate-[shimmer_3s_infinite]" />
               </motion.div>
 
-              {/* Screenshot placeholder */}
-              <div className="aspect-[4/3] bg-gradient-to-br from-background to-secondary flex items-center justify-center p-8">
-                {/* Dashboard preview using NotificationsDemo */}
+              {/* Screenshot */}
+              <div className="aspect-[4/3] bg-gradient-to-br from-background to-secondary flex items-center justify-center p-8 relative">
                 <div className="space-y-3 relative h-[300px] overflow-hidden w-full">
                   <NotificationsDemo className="scale-90 origin-top p-0 bg-transparent min-h-0" />
                   <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none scale-90 origin-bottom" />
@@ -152,7 +179,7 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Add shimmer animation keyframes */}
+      {/* Shimmer animation keyframes */}
       <style jsx>{`
         @keyframes shimmer {
           0% { transform: translateX(-100%); }
