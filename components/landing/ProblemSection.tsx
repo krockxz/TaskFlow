@@ -131,12 +131,12 @@ export function ProblemSection() {
           </div>
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground tracking-tight mb-6">
-            Async teamwork is{' '}
-            <span className="text-foreground/50">broken</span>
+            You wake up to{' '}
+            <span className="text-foreground/50">chaos</span>
           </h2>
 
           <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto">
-            Modern tools weren&apos;t built for distributed teams.
+            Your team moved across timezones, but your tools didn&apos;t. Slack threads, buried context, and &quot;who owns this?&quot; every single morning.
           </p>
         </motion.div>
 
@@ -155,8 +155,8 @@ export function ProblemSection() {
                   <X className="w-4 h-4 text-foreground/40" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Without TaskFlow</p>
-                  <p className="text-xs text-muted-foreground">The chaos</p>
+                  <p className="text-sm font-medium text-foreground">The old way</p>
+                  <p className="text-xs text-muted-foreground">Digging through Slack</p>
                 </div>
               </div>
 
@@ -183,7 +183,7 @@ export function ProblemSection() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">With TaskFlow</p>
-                  <p className="text-xs text-muted-foreground">The clarity</p>
+                  <p className="text-xs text-muted-foreground">Instant clarity</p>
                 </div>
               </div>
 

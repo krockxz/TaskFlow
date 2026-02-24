@@ -14,37 +14,37 @@ const features = [
   {
     icon: Copy,
     title: 'Handoff Templates',
-    description: 'Reusable task templates with custom fields to standardize workflows across teams.',
+    description: 'Standardize your workflow with reusable templates. Every handoff follows the same process, every time.',
     stat: '80%',
-    label: 'faster handoffs'
+    label: 'time saved'
   },
   {
     icon: Sparkles,
-    title: 'AI Shift Brief',
-    description: 'Auto-generated summaries using Google Gemini 2.5 Flash Lite for perfect async handoffs.',
+    title: 'AI Shift Briefs',
+    description: 'Get caught up in seconds. AI summarizes what happened while you slept—no more scrolling through threads.',
     stat: '~2 min',
-    label: 'generation time'
+    label: 'to catch up'
   },
   {
     icon: Globe,
-    title: 'Timezone Lanes',
-    description: 'Visual drag-drop lanes for reassigning tasks across timezones with availability tracking.',
+    title: 'Timezone-Aware',
+    description: 'See who\'s online and when. Reassign tasks across timezones without the back-and-forth.',
     stat: '24/7',
-    label: 'global coverage'
+    label: 'coverage'
   },
   {
     icon: MessageSquare,
-    title: 'Slack Integration',
-    description: 'Native OAuth integration for notifications and task updates. Stay in sync without leaving Slack.',
+    title: 'Slack Sync',
+    description: 'Updates where you already are. Get notified and respond to tasks without leaving Slack.',
     stat: '< 5s',
-    label: 'notification delay'
+    label: 'delivery'
   },
   {
     icon: Server,
-    title: 'Self-Hosting',
-    description: 'Docker support for on-premise deployment with full control over data and infrastructure.',
+    title: 'Your Data, Your Rules',
+    description: 'Self-host with Docker. Keep everything on your own servers if you need to.',
     stat: '100%',
-    label: 'data ownership'
+    label: 'ownership'
   }
 ];
 
@@ -114,11 +114,11 @@ export function NewFeaturesSection() {
           </div>
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground tracking-tight mb-6">
-            Built for distributed teams
+            Everything remote teams need
           </h2>
 
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-            Everything you need to coordinate async teams across timezones—without the chaos.
+            Stop fighting against your tools. TaskFlow works the way distributed teams actually work—async, across timezones, by default.
           </p>
         </motion.div>
 

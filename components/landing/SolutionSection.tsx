@@ -16,7 +16,7 @@
 import { motion, useInView } from 'motion/react';
 import { memo, useRef, useState, useCallback, useMemo } from 'react';
 
-const steps = ['Draft', 'Assign', 'Sync', 'Track'] as const;
+const steps = ['Create', 'Assign', 'Handoff', 'Track'] as const;
 
 // Abstract workflow node component
 const WorkflowNode = memo(function WorkflowNode({
@@ -41,11 +41,10 @@ const WorkflowNode = memo(function WorkflowNode({
       onPointerEnter={() => onHover(index)}
     >
       <div
-        className={`transition-all duration-500 ${
-          isActive
+        className={`transition-all duration-500 ${isActive
             ? 'bg-foreground text-background scale-[1.02]'
             : 'bg-secondary/30 text-muted-foreground hover:bg-secondary/50'
-        }`}
+          }`}
         style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}
       >
         <div className="p-6">
@@ -53,9 +52,8 @@ const WorkflowNode = memo(function WorkflowNode({
             <span className="font-mono-display text-[10px] tracking-[0.2em] uppercase opacity-40">
               {String(index + 1).padStart(2, '0')}
             </span>
-            <div className={`w-1.5 h-1.5 ${
-              isActive ? 'bg-background' : 'bg-foreground/20'
-            }`} />
+            <div className={`w-1.5 h-1.5 ${isActive ? 'bg-background' : 'bg-foreground/20'
+              }`} />
           </div>
           <span className="font-mono-display text-sm tracking-wide">
             {label}
@@ -157,9 +155,9 @@ function SolutionSection() {
 
               {/* Headline - split-color with brutalist emphasis */}
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground leading-[1.1] tracking-tight mb-8">
-                How teams<br />
+                Work happens.<br />
                 <span className="relative">
-                  <span className="text-foreground/40">actually work</span>
+                  <span className="text-foreground/40">You sleep.</span>
                   {/* Diagonal strike-through for brutalist edge */}
                   <svg className="absolute -top-1 -left-1 w-full h-full" viewBox="0 0 200 40" preserveAspectRatio="none">
                     <line x1="0" y1="0" x2="200" y2="40" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" />
@@ -169,14 +167,14 @@ function SolutionSection() {
 
               {/* Description */}
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-12 max-w-md">
-                TaskFlow creates a single source of truth for distributed teams—eliminating chat fatigue and ownership ambiguity.
+                TaskFlow gives your distributed team a single source of truth. Clear ownership, smooth handoffs, no more &quot;what did I miss?&quot;
               </p>
 
               {/* Feature pills - simplified with numbers instead of icons */}
               <div className="flex flex-col gap-4">
-                <FeaturePill number="01" text="Global teams" delay={0.3} />
-                <FeaturePill number="02" text="Async-first" delay={0.35} />
-                <FeaturePill number="03" text="Instant sync" delay={0.4} />
+                <FeaturePill number="01" text="Built for timezones" delay={0.3} />
+                <FeaturePill number="02" text="AI-powered catch-ups" delay={0.35} />
+                <FeaturePill number="03" text="Works while you sleep" delay={0.4} />
               </div>
             </motion.div>
           </div>

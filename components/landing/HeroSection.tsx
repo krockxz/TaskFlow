@@ -151,15 +151,15 @@ export function HeroSection() {
             >
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span>Real-time sync</span>
+                <span>Never miss a handoff</span>
               </div>
               <div className="flex items-center gap-2">
                 <Zap className="w-3.5 h-3.5" />
-                <span>AI summaries</span>
+                <span>AI catch-ups in seconds</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-3.5 h-3.5" />
-                <span>Self-hosted</span>
+                <span>100% free & open source</span>
               </div>
             </motion.div>
           </motion.div>
