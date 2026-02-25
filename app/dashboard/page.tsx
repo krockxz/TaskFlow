@@ -77,7 +77,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }
   }
 
-  // Fetch user's tasks (created by or assigned to) with filters applied
+  // Limit initial server-side load to first 50 tasks for performance
+  // Client-side pagination will handle additional data via API
   const tasks = await prisma.task.findMany({
     where,
     include: {
@@ -85,6 +86,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       assignedToUser: { select: { id: true, email: true } },
     },
     orderBy: { updatedAt: 'desc' },
+    take: 50,
   });
 
   // Convert Date objects to strings for type compatibility

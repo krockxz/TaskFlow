@@ -84,7 +84,7 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
   }, {} as Record<string, Task[]>);
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 px-4 h-full">
+    <div className="flex gap-4 overflow-x-auto px-4 h-full">
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}

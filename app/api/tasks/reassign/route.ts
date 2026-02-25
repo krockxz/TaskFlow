@@ -33,9 +33,17 @@ export async function POST(request: Request) {
     const updated = await prisma.task.update({
       where: { id: taskId },
       data: { assignedTo },
-      include: {
-        createdBy: { select: { id: true, email: true } },
-        assignedToUser: { select: { id: true, email: true } },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        priority: true,
+        dueDate: true,
+        assignedTo: true,
+        createdById: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -50,13 +58,21 @@ export async function POST(request: Request) {
 
     // Create notification for new assignee
     if (assignedTo && assignedTo !== user.id) {
-      await prisma.notification.create({
-        data: {
-          userId: assignedTo,
-          taskId,
-          message: `${user.email} assigned you a task: ${task.title}`,
-        },
+      // Verify the assignee exists in the database before creating notification
+      const assigneeExists = await prisma.user.findUnique({
+        where: { id: assignedTo },
+        select: { id: true },
       });
+
+      if (assigneeExists) {
+        await prisma.notification.create({
+          data: {
+            userId: assignedTo,
+            taskId,
+            message: `You were assigned a task: ${task.title}`,
+          },
+        });
+      }
     }
 
     return NextResponse.json({ success: true, data: updated });
@@ -77,8 +93,9 @@ export async function POST(request: Request) {
     }
 
     console.error('POST /api/tasks/reassign error:', error);
+    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
-      { error: 'An error occurred' },
+      { error: 'An error occurred', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
       { status: 500 }
     );
   }

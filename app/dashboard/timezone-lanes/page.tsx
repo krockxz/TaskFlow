@@ -19,11 +19,14 @@ async function getTeamData() {
     orderBy: { email: 'asc' },
   });
 
+  // Limit to 100 active tasks for timezone lanes performance
+  // Prioritize recently updated tasks
   const tasks = await prisma.task.findMany({
     where: {
       status: { not: 'DONE' },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { updatedAt: 'desc' },
+    take: 100,
   });
 
   return { users, tasks };

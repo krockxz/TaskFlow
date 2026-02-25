@@ -59,6 +59,9 @@ model Task {
   @@index([assignedTo], map: "idx_tasks_assigned_to")
   @@index([githubRepo], map: "idx_tasks_github_repo")
   @@index([templateId], map: "idx_tasks_template_id")
+  // Composite indexes for dashboard queries (filter by user + order by updatedAt)
+  @@index([assignedTo, updatedAt], map: "idx_tasks_assigned_to_updated_at")
+  @@index([createdById, updatedAt], map: "idx_tasks_created_by_id_updated_at")
   @@map("tasks")
 }
 

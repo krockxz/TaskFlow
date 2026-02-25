@@ -248,7 +248,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
       return res.json();
     },
     initialData: { tasks: initialTasks, total: initialTasks.length, page: 1, pageSize: ITEMS_PER_PAGE, totalPages: 1 },
-    staleTime: 5000,
+    staleTime: 60000, // 60 seconds to reduce unnecessary refetches
   });
 
   const tasks = response.tasks;

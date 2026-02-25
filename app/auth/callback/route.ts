@@ -45,17 +45,20 @@ export async function GET(request: NextRequest) {
 
       if (user && user.email) {
         try {
-          await prisma.user.upsert({
+          // Only create user if they don't exist - skip update to avoid slow writes
+          const existingUser = await prisma.user.findUnique({
             where: { id: user.id },
-            update: {
-              email: user.email,
-              updatedAt: new Date(),
-            },
-            create: {
-              id: user.id,
-              email: user.email,
-            },
+            select: { id: true },
           });
+
+          if (!existingUser) {
+            await prisma.user.create({
+              data: {
+                id: user.id,
+                email: user.email,
+              },
+            });
+          }
         } catch (dbError) {
           console.error('Error syncing user to Prisma:', dbError);
         }
