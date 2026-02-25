@@ -12,7 +12,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -170,19 +170,18 @@ const getDueDateVariant = (variant: 'overdue' | 'today' | 'soon' | 'normal') => 
   }
 };
 
-// Row animation variants - minimal fade/slide
+// Simplified row animation variants - no per-row delays for better performance
 const rowVariants = {
   hidden: {
     opacity: 0,
   },
-  visible: (i: number) => ({
+  visible: {
     opacity: 1,
     transition: {
-      duration: 0.2,
+      duration: 0.15,
       ease: [0.4, 0, 0.2, 1] as const,
-      delay: Math.min(i * 0.02, 0.2),
     },
-  }),
+  },
 };
 
 // Empty state animation variants
@@ -349,7 +348,10 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
   });
 
   // Realtime subscription - FETCH-ON-EVENT PATTERN with filter-aware key
+  // Debounced refetch to avoid excessive queries during rapid updates
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+
     const channel = supabase
       .channel(`tasks-changes-${Date.now()}`)
       .on('postgres_changes', {
@@ -357,12 +359,16 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
         schema: 'public',
         table: 'tasks',
       }, () => {
-        // Signal TanStack Query to refetch with current filters
-        queryClient.invalidateQueries({ queryKey: ['tasks', filters] });
+        // Debounce refetch by 500ms to avoid excessive queries during rapid updates
+        if (timeoutId) clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ['tasks', filters] });
+        }, 500);
       })
       .subscribe();
 
     return () => {
+      if (timeoutId) clearTimeout(timeoutId);
       supabase.removeChannel(channel);
     };
   }, [supabase, queryClient, filters]);
@@ -674,7 +680,7 @@ interface MobileTaskCardProps {
   isUpdating: boolean;
 }
 
-function MobileTaskCard({
+const MobileTaskCard = memo(function MobileTaskCard({
   task,
   index,
   isSelected,
@@ -693,7 +699,6 @@ function MobileTaskCard({
 
   return (
     <motion.div
-      custom={index}
       variants={rowVariants}
       initial="hidden"
       animate="visible"
@@ -827,7 +832,7 @@ function MobileTaskCard({
       </Card>
     </motion.div>
   );
-}
+});
 
 // Animated Checkbox Component with spring animation
 interface AnimatedCheckboxProps {
@@ -861,7 +866,7 @@ interface AnimatedTableRowProps {
   isUpdating: boolean;
 }
 
-function AnimatedTableRow({
+const AnimatedTableRow = memo(function AnimatedTableRow({
   task,
   index,
   isSelected,
@@ -876,7 +881,6 @@ function AnimatedTableRow({
   return (
     <motion.tr
       key={task.id}
-      custom={index}
       variants={rowVariants}
       initial="hidden"
       animate="visible"
@@ -984,4 +988,4 @@ function AnimatedTableRow({
       </TableCell>
     </motion.tr>
   );
-}
+});

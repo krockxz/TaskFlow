@@ -26,8 +26,8 @@ export function Lane({ user, tasks }: LaneProps) {
 
   return (
     <Card className={cn(
-      "flex-shrink-0 w-80 transition-colors",
-      isOver && "bg-accent/50"
+      "flex-shrink-0 w-80 min-w-[280px] sm:w-80 transition-all duration-200",
+      isOver && "border-primary bg-accent/30 ring-2 ring-primary/20 shadow-lg"
     )}>
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
@@ -46,7 +46,10 @@ export function Lane({ user, tasks }: LaneProps) {
       <CardContent>
         <div
           ref={setNodeRef}
-          className="space-y-2 min-h-[200px] max-h-[calc(100vh-300px)] overflow-y-auto"
+          className={cn(
+            "space-y-2 min-h-[200px] max-h-[calc(100vh-300px)] sm:max-h-[calc(100vh-300px)] overflow-y-auto rounded-md transition-colors duration-200",
+            isOver && "bg-primary/5"
+          )}
         >
           <SortableContext
             items={tasks.map(t => t.id)}

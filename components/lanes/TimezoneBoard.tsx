@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors, DragStartEvent, DragOverlay } from '@dnd-kit/core';
+import { useState, useMemo } from 'react';
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors, DragStartEvent, DragCancelEvent, DragOverlay } from '@dnd-kit/core';
 import { Task, User } from '@prisma/client';
 import { Lane } from './Lane';
 import { TaskCard } from './TaskCard';
 import { useToast } from '@/lib/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface TimezoneBoardProps {
   users: User[];
@@ -18,6 +19,7 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
   );
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [isReassigning, setIsReassigning] = useState<string | null>(null);
 
   const { success, error } = useToast();
 
@@ -34,6 +36,11 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
     setActiveId(active.id as string);
     const task = tasks.find(t => t.id === active.id);
     setActiveTask(task || null);
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setActiveTask(null);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -54,6 +61,7 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
       ...prev,
       [taskId]: newAssigneeId,
     }));
+    setIsReassigning(taskId);
 
     try {
       const response = await fetch('/api/tasks/reassign', {
@@ -72,22 +80,27 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
         [taskId]: oldAssigneeId,
       }));
       error('Failed to reassign task');
+    } finally {
+      setIsReassigning(null);
     }
   };
 
-  // Group tasks by assigned user
-  const tasksByUser = users.reduce((acc, user) => {
-    acc[user.id] = tasks.filter(
-      t => taskAssignments[t.id] === user.id
-    );
-    return acc;
-  }, {} as Record<string, Task[]>);
+  // Group tasks by assigned user - memoized to prevent recalculation on every render
+  const tasksByUser = useMemo(() => {
+    return users.reduce((acc, user) => {
+      acc[user.id] = tasks.filter(
+        t => taskAssignments[t.id] === user.id
+      );
+      return acc;
+    }, {} as Record<string, Task[]>);
+  }, [users, tasks, taskAssignments]);
 
   return (
     <div className="flex gap-4 overflow-x-auto px-4 h-full">
       <DndContext
         sensors={sensors}
         onDragStart={handleDragStart}
+        onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
       >
         {users.map((user) => (
@@ -99,7 +112,10 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
         ))}
         <DragOverlay>
           {activeTask && (
-            <div className="opacity-80 rotate-3">
+            <div className={cn(
+              "opacity-80 rotate-3 transition-opacity",
+              isReassigning === activeTask.id && "opacity-50"
+            )}>
               <TaskCard task={activeTask} />
             </div>
           )}

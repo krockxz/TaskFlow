@@ -140,6 +140,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
         title="Analytics"
         description="Track team productivity and task distribution"
         actions={<TimeRangeSelector defaultValue={range} />}
+        backTo="/dashboard"
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

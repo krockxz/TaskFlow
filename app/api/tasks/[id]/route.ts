@@ -41,6 +41,7 @@ export async function GET(_request: Request, context: RouteContext) {
             },
           },
           orderBy: { createdAt: 'desc' },
+          take: 50, // Limit to most recent 50 events for performance
         },
       },
     });

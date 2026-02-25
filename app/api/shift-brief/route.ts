@@ -80,11 +80,23 @@ export async function POST(request: Request) {
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
+        // Add timeout to prevent hanging on slow AI responses
+        const timeout = setTimeout(() => {
+          console.error('Gemini API timeout after 15 seconds');
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ error: 'Request timeout - AI service took too long to respond' })}\n\n`)
+          );
+          controller.close();
+        }, 15000); // 15 second timeout
+
         try {
           const response = await ai.models.generateContentStream({
             model: 'gemini-2.5-flash-lite',
             contents: prompt,
           });
+
+          // Clear timeout on successful response
+          clearTimeout(timeout);
 
           for await (const chunk of response) {
             const text = chunk.text;
@@ -95,6 +107,7 @@ export async function POST(request: Request) {
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
         } catch (error) {
+          clearTimeout(timeout);
           console.error('Gemini API error:', error);
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({ error: 'Failed to generate brief' })}\n\n`)

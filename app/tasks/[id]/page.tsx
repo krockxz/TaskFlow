@@ -33,6 +33,18 @@ export default function TaskDetailPage() {
   const { registerAction, unregisterAction } = useCommand();
   const taskId = params.id as string;
 
+  // Store the referring page for proper back navigation
+  const [referringPage, setReferringPage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Try to get the referrer from sessionStorage
+    const referrer = sessionStorage.getItem('taskReferrer');
+    if (referrer) {
+      setReferringPage(referrer);
+      sessionStorage.removeItem('taskReferrer');
+    }
+  }, []);
+
   // Fetch task data
   const [task, setTask] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -224,11 +236,11 @@ export default function TaskDetailPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Button
           variant="ghost"
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.back()}
           className="mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
+          Back
         </Button>
 
         <div className="bg-card rounded-lg border p-6">

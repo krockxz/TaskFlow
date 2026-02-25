@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/middleware/auth';
 import prisma from '@/lib/prisma';
 import { TemplatesList } from '@/components/templates/TemplatesList';
 import { TemplatesGridSkeleton } from '@/components/skeletons/template-card-skeleton';
+import { Header } from '@/components/layout/Header';
 
 async function getTemplates(userId: string) {
   return prisma.handoffTemplate.findMany({
@@ -18,17 +19,18 @@ export default async function TemplatesPage() {
   const templates = await getTemplates(user.id);
 
   return (
-    <div className="container py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Handoff Templates</h1>
-        <p className="text-muted-foreground">
-          Manage templates for standardized task workflows
-        </p>
+    <>
+      <Header
+        userEmail={user.email ?? 'Unknown'}
+        title="Handoff Templates"
+        description="Manage templates for standardized task workflows"
+        backTo="/dashboard"
+      />
+      <div className="container py-8">
+        <Suspense fallback={<TemplatesGridSkeleton count={6} />}>
+          <TemplatesList templates={templates} />
+        </Suspense>
       </div>
-
-      <Suspense fallback={<TemplatesGridSkeleton count={6} />}>
-        <TemplatesList templates={templates} />
-      </Suspense>
-    </div>
+    </>
   );
 }

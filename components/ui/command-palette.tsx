@@ -12,6 +12,9 @@ import {
   LayoutDashboard,
   Plus,
   Settings,
+  Clock,
+  Slack,
+  FileText,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCommand } from "@/components/command/CommandContext";
@@ -158,6 +161,46 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
         setOpen(false);
       },
       keywords: ["analytics", "metrics", "stats", "charts"],
+    },
+    {
+      id: "nav-timezone-lanes",
+      title: "Go to Timezone Lanes",
+      description: "View task lanes across timezones",
+      category: "Navigation",
+      section: "favorites",
+      icon: <Clock className="h-4 w-4" />,
+      action: () => {
+        router.push("/dashboard/timezone-lanes");
+        setOpen(false);
+      },
+      shortcut: "⌘L",
+      keywords: ["timezone", "lanes", "drag", "drop", "reassign"],
+    },
+    {
+      id: "nav-settings-slack",
+      title: "Slack Settings",
+      description: "Configure Slack integration",
+      category: "Navigation",
+      section: "all",
+      icon: <Slack className="h-4 w-4" />,
+      action: () => {
+        router.push("/settings/slack");
+        setOpen(false);
+      },
+      keywords: ["slack", "settings", "integration", "notifications"],
+    },
+    {
+      id: "nav-settings-templates",
+      title: "Handoff Templates",
+      description: "Manage task handoff templates",
+      category: "Navigation",
+      section: "all",
+      icon: <FileText className="h-4 w-4" />,
+      action: () => {
+        router.push("/settings/templates");
+        setOpen(false);
+      },
+      keywords: ["templates", "handoff", "workflow", "settings"],
     },
     // System commands
     {

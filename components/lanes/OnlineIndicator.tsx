@@ -1,29 +1,30 @@
 'use client';
 
 import { useTaskPresence } from '@/lib/hooks/usePresence';
+import { useSession } from '@/lib/hooks/useSession';
 import { cn } from '@/lib/utils';
 
 interface OnlineIndicatorProps {
   userId: string;
-  taskId?: string;
 }
 
-export function OnlineIndicator({ userId, taskId }: OnlineIndicatorProps) {
-  // Note: useTaskPresence signature is (taskId: string, currentUserId: string | undefined)
-  // For lane-level presence, we track users viewing the app (not a specific task)
-  // The existing hook requires a taskId, so we pass empty string for app-level presence
-  const presences = useTaskPresence(taskId || '', userId);
+export function OnlineIndicator({ userId }: OnlineIndicatorProps) {
+  const { user } = useSession();
 
-  // Check if the specific user is online (in the presence list)
+  // For lane-level presence, we use a shared "timezone-lanes" channel
+  // This tracks which users are currently viewing the timezone lanes page
+  const presences = useTaskPresence('timezone-lanes', user?.id);
+
+  // Check if the lane user (not current user) is online
   const isOnline = presences.some(p => p.userId === userId);
 
   return (
     <div
       className={cn(
-        'h-2.5 w-2.5 rounded-full border-2 border-white',
+        'h-2.5 w-2.5 rounded-full border-2 border-background dark:border-white',
         isOnline ? 'bg-green-500' : 'bg-gray-400'
       )}
-      title={isOnline ? 'Online' : 'Offline'}
+      title={isOnline ? 'Online now' : 'Offline'}
     />
   );
 }
