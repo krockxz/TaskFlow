@@ -16,7 +16,7 @@ interface LaneProps {
 }
 
 export function Lane({ user, tasks }: LaneProps) {
-  const { setNodeRef } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: user.id,
   });
 
@@ -25,7 +25,10 @@ export function Lane({ user, tasks }: LaneProps) {
   const localTime = formatInTimeZone(new Date(), userTimezone, 'HH:mm');
 
   return (
-    <Card className="flex-shrink-0 w-80">
+    <Card className={cn(
+      "flex-shrink-0 w-80 transition-colors",
+      isOver && "bg-accent/50"
+    )}>
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
           <Avatar>

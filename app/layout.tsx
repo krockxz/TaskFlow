@@ -2,11 +2,11 @@
  * Root Layout
  *
  * The main layout wrapper for the entire application.
- * Includes AppHeader, Providers, Command Palette, and global styles.
+ * Includes Providers, Command Palette, and global styles.
+ * AppHeader is only included in the landing page layout.
  */
 
 import { Providers } from './providers';
-import { AppHeader } from '@/components/layout/AppHeader';
 import TaskFlowCommandPalette from '@/components/ui/command-palette';
 import { CommandProvider } from '@/components/command/CommandContext';
 import './globals.css';
@@ -29,7 +29,6 @@ export default function RootLayout({
       <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
         <CommandProvider>
           <Providers>
-            <AppHeader />
             <TaskFlowCommandPalette />
             {children}
           </Providers>

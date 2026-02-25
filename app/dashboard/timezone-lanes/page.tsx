@@ -1,7 +1,9 @@
 import { Suspense } from 'react';
-import { getAuthUser } from '@/lib/middleware/auth';
+import { redirect } from 'next/navigation';
+import { getAuthUser } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
-import { TimezoneBoard } from '@/components/lanes/TimezoneBoard';
+import { DashboardSidebar } from '../components/DashboardSidebar';
+import { TimezoneLanesContent } from './TimezoneLanesContent';
 import { FadeIn } from '@/components/animations/fade-in';
 import { TimezoneLanesSkeletonGrid } from '@/components/skeletons/timezone-lane-skeleton';
 
@@ -29,28 +31,20 @@ async function getTeamData() {
 
 export default async function TimezoneLanesPage() {
   const user = await getAuthUser();
+
   if (!user) {
-    return null;
+    redirect('/login');
   }
 
   const { users, tasks } = await getTeamData();
 
   return (
     <FadeIn>
-      <div className="h-full flex flex-col">
-        <div className="border-b px-6 py-4">
-          <h1 className="text-2xl font-bold">Timezone Lanes</h1>
-          <p className="text-sm text-muted-foreground">
-            Drag tasks between lanes to reassign work
-          </p>
-        </div>
-
-        <div className="flex-1 overflow-hidden">
-          <Suspense fallback={<TimezoneLanesSkeletonGrid count={3} />}>
-            <TimezoneBoard users={users} tasks={tasks} />
-          </Suspense>
-        </div>
-      </div>
+      <DashboardSidebar users={users} userEmail={user.email ?? 'Unknown'}>
+        <Suspense fallback={<TimezoneLanesSkeletonGrid count={3} />}>
+          <TimezoneLanesContent users={users} tasks={tasks} />
+        </Suspense>
+      </DashboardSidebar>
     </FadeIn>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -19,6 +19,16 @@ interface NewTaskDialogProps {
 
 export function NewTaskDialog({ users }: NewTaskDialogProps) {
     const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        const handleOpenCreateTaskModal = () => setOpen(true);
+
+        window.addEventListener('open-create-task-modal', handleOpenCreateTaskModal);
+
+        return () => {
+            window.removeEventListener('open-create-task-modal', handleOpenCreateTaskModal);
+        };
+    }, []);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

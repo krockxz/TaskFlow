@@ -2,6 +2,7 @@
  * TaskFlow Landing Page - Vercel Design System
  *
  * Clean, focused landing with monochrome palette.
+ * Includes the AppHeader for landing page navigation.
  */
 
 import {
@@ -13,10 +14,12 @@ import {
   CTASection,
   Footer,
 } from '@/components/landing';
+import { AppHeader } from '@/components/layout/AppHeader';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
+      <AppHeader />
       <main>
         <HeroSection />
         <div className="section-divider max-w-6xl mx-auto" />

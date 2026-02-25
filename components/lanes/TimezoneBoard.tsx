@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { Task, User } from '@prisma/client';
 import { Lane } from './Lane';
+import { TaskCard } from './TaskCard';
 import { useToast } from '@/lib/hooks/use-toast';
 
 interface TimezoneBoardProps {
@@ -15,19 +16,31 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
   const [taskAssignments, setTaskAssignments] = useState<Record<string, string>>(
     Object.fromEntries(tasks.map(t => [t.id, t.assignedTo || '']))
   );
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   const { success, error } = useToast();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
       },
     })
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    setActiveId(active.id as string);
+    const task = tasks.find(t => t.id === active.id);
+    setActiveTask(task || null);
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
+    setActiveTask(null);
+
     if (!over || active.id === over.id) return;
 
     const taskId = active.id as string;
@@ -71,8 +84,12 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
   }, {} as Record<string, Task[]>);
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4 px-4">
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    <div className="flex gap-4 overflow-x-auto pb-4 px-4 h-full">
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
         {users.map((user) => (
           <Lane
             key={user.id}
@@ -80,6 +97,13 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
             tasks={tasksByUser[user.id] || []}
           />
         ))}
+        <DragOverlay>
+          {activeTask && (
+            <div className="opacity-80 rotate-3">
+              <TaskCard task={activeTask} />
+            </div>
+          )}
+        </DragOverlay>
       </DndContext>
     </div>
   );
