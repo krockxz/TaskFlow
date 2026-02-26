@@ -100,6 +100,26 @@ TaskFlow/
     └── schema.prisma        # Database schema
 ```
 
+## Database Security
+
+### Row Level Security (RLS)
+
+TaskFlow uses PostgreSQL Row Level Security (RLS) policies to enforce data isolation at the database level. This provides defense-in-depth protection even if application-level authorization has bugs.
+
+**Key RLS Policies:**
+- Users can only see tasks they created OR are assigned to
+- Users can only access their own notifications
+- Users can only modify their own GitHub tokens
+- Task events are readable only for accessible tasks
+
+**After database setup, apply RLS policies:**
+```bash
+bun run db:apply-rls   # Apply policies
+bun run db:verify-rls  # Verify they're active
+```
+
+See `prisma/README.md` for detailed RLS documentation.
+
 ## Database Schema
 
 ```mermaid
@@ -275,6 +295,8 @@ bun run dev
 | `bun db:push` | Push Prisma schema to database |
 | `bun db:generate` | Regenerate Prisma Client |
 | `bun db:studio` | Open Prisma Studio |
+| `bun db:apply-rls` | Apply Row Level Security policies |
+| `bun db:verify-rls` | Verify RLS is properly configured |
 | `make db:seed` | Seed database with demo data |
 | `make docker-up` | Start Docker containers |
 | `make docker-down` | Stop Docker containers |

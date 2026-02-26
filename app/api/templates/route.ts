@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middleware/auth';
 import prisma from '@/lib/prisma';
 import { handoffTemplateSchema } from '@/lib/validation/template';
-import { ZodError } from 'zod';
+import { unauthorized, validationError, badRequest, serverError, handleApiError, created } from '@/lib/api/errors';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,19 +15,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(templates);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'GET /api/templates');
+    if (handled) return handled;
 
-    console.error('GET /api/templates error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch templates' },
-      { status: 500 }
-    );
+    return serverError('Failed to fetch templates');
   }
 }
 
@@ -47,40 +38,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(template, { status: 201 });
+    return created(template);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'POST /api/templates');
+    if (handled) return handled;
 
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Invalid request body',
-          details: error.errors.map((e) => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })),
-        },
-        { status: 400 }
-      );
-    }
-
-    if (error instanceof SyntaxError) {
-      return NextResponse.json(
-        { error: 'Invalid JSON in request body' },
-        { status: 400 }
-      );
-    }
-
-    console.error('Template creation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create template' },
-      { status: 500 }
-    );
+    return serverError('Failed to create template');
   }
 }

@@ -1,8 +1,9 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
-import type { TaskStatus, TaskPriority } from '@/lib/types';
+import type { TaskStatus, TaskPriority } from '@prisma/client';
 import { requireAuth } from '@/lib/middleware/auth';
 import { z } from 'zod';
+import { apiSuccess, notFound, forbidden, unauthorized, validationError, badRequest, serverError, handleApiError } from '@/lib/api/errors';
 
 const bulkActionSchema = z.enum(['delete', 'changeStatus', 'changePriority', 'reassign']);
 
@@ -55,10 +56,7 @@ export async function POST(req: Request) {
     });
 
     if (tasks.length !== taskIds.length) {
-      return NextResponse.json(
-        { error: 'Some tasks not found or access denied' },
-        { status: 403 }
-      );
+      return forbidden('Some tasks not found or access denied');
     }
 
     // Execute bulk action
@@ -118,7 +116,7 @@ export async function POST(req: Request) {
           select: { id: true },
         });
         if (!assignee) {
-          return NextResponse.json({ error: 'Assignee not found' }, { status: 404 });
+          return notFound('Assignee not found');
         }
         await prisma.task.updateMany({
           where: { id: { in: taskIds } },
@@ -136,46 +134,14 @@ export async function POST(req: Request) {
       }
 
       default:
-        return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+        return badRequest('Unknown action');
     }
 
-    return NextResponse.json({
-      success: true,
-      affected: taskIds.length,
-    });
+    return apiSuccess({ affected: taskIds.length });
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'POST /api/tasks/bulk');
+    if (handled) return handled;
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Invalid request body',
-          details: error.errors.map((e) => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })),
-        },
-        { status: 400 }
-      );
-    }
-
-    if (error instanceof SyntaxError) {
-      return NextResponse.json(
-        { error: 'Invalid JSON in request body' },
-        { status: 400 }
-      );
-    }
-
-    console.error('Bulk action error:', error);
-    return NextResponse.json(
-      { error: 'Failed to perform bulk action' },
-      { status: 500 }
-    );
+    return serverError('Failed to perform bulk action');
   }
 }

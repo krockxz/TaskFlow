@@ -3,29 +3,16 @@
  *
  * Handles the OAuth callback from Slack after user authorizes the app.
  * Exchanges authorization code for access tokens and stores in database.
+ *
+ * SECURITY: Verifies OAuth state parameter to prevent CSRF attacks
+ * and ensure the installation is linked to the correct user.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
 import prisma from '@/lib/prisma';
 import { EncryptionService } from '@/lib/crypto';
-
-/**
- * Verify and decode the state parameter.
- * Returns the user ID if valid, null otherwise.
- */
-function verifyState(state: string): string | null {
-  try {
-    const data = JSON.parse(Buffer.from(state, 'base64').toString());
-    // State is valid for 10 minutes
-    if (Date.now() - data.timestamp > 10 * 60 * 1000) {
-      return null;
-    }
-    return data.userId as string;
-  } catch {
-    return null;
-  }
-}
+import { verifyOAuthState } from '@/lib/slack/oauth';
 
 /**
  * GET /api/slack/install/callback
@@ -56,7 +43,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/settings/slack?error=invalid_state', request.url));
     }
 
-    const taskFlowUserId = verifyState(state);
+    const taskFlowUserId = verifyOAuthState(state);
     if (!taskFlowUserId) {
       console.error('Slack OAuth callback invalid or expired state');
       return NextResponse.redirect(new URL('/settings/slack?error=invalid_state', request.url));

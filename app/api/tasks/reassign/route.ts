@@ -8,6 +8,7 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/middleware/auth';
+import { apiSuccess, notFound, unauthorized, validationError, serverError, handleApiError } from '@/lib/api/errors';
 
 const reassignSchema = z.object({
   taskId: z.string().uuid(),
@@ -20,13 +21,25 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { taskId, assignedTo } = reassignSchema.parse(body);
 
+    // If assigning to a user, verify they exist first
+    if (assignedTo !== null) {
+      const assigneeExists = await prisma.user.findUnique({
+        where: { id: assignedTo },
+        select: { id: true },
+      });
+
+      if (!assigneeExists) {
+        return notFound('Assignee not found');
+      }
+    }
+
     // Get current task state
     const task = await prisma.task.findUnique({
       where: { id: taskId },
     });
 
     if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      return notFound('Task not found');
     }
 
     // Update task assignment
@@ -58,45 +71,20 @@ export async function POST(request: Request) {
 
     // Create notification for new assignee
     if (assignedTo && assignedTo !== user.id) {
-      // Verify the assignee exists in the database before creating notification
-      const assigneeExists = await prisma.user.findUnique({
-        where: { id: assignedTo },
-        select: { id: true },
+      await prisma.notification.create({
+        data: {
+          userId: assignedTo,
+          taskId,
+          message: `You were assigned a task: ${task.title}`,
+        },
       });
-
-      if (assigneeExists) {
-        await prisma.notification.create({
-          data: {
-            userId: assignedTo,
-            taskId,
-            message: `You were assigned a task: ${task.title}`,
-          },
-        });
-      }
     }
 
-    return NextResponse.json({ success: true, data: updated });
+    return apiSuccess(updated);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'POST /api/tasks/reassign');
+    if (handled) return handled;
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },
-        { status: 400 }
-      );
-    }
-
-    console.error('POST /api/tasks/reassign error:', error);
-    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
-    return NextResponse.json(
-      { error: 'An error occurred', details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined },
-      { status: 500 }
-    );
+    return serverError();
   }
 }

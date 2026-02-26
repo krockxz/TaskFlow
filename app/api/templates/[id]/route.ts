@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middleware/auth';
 import prisma from '@/lib/prisma';
 import { handoffTemplateSchema } from '@/lib/validation/template';
-import { z } from 'zod';
+import { notFound, unauthorized, validationError, serverError, handleApiError, apiSuccess } from '@/lib/api/errors';
 
 export async function GET(
   request: NextRequest,
@@ -17,24 +17,15 @@ export async function GET(
     });
 
     if (!template) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return notFound();
     }
 
     return NextResponse.json(template);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'GET /api/templates/[id]');
+    if (handled) return handled;
 
-    console.error('GET /api/templates/[id] error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch template' },
-      { status: 500 }
-    );
+    return serverError('Failed to fetch template');
   }
 }
 
@@ -59,37 +50,15 @@ export async function PUT(
     });
 
     if (template.count === 0) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return notFound();
     }
 
-    return NextResponse.json({ success: true });
+    return apiSuccess();
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'PUT /api/templates/[id]');
+    if (handled) return handled;
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Invalid request body',
-          details: error.errors.map((e) => ({
-            path: e.path.join('.'),
-            message: e.message,
-          })),
-        },
-        { status: 400 }
-      );
-    }
-
-    console.error('PUT /api/templates/[id] error:', error);
-    return NextResponse.json(
-      { error: 'Failed to update template' },
-      { status: 500 }
-    );
+    return serverError('Failed to update template');
   }
 }
 
@@ -106,23 +75,14 @@ export async function DELETE(
     });
 
     if (template.count === 0) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      return notFound();
     }
 
-    return NextResponse.json({ success: true });
+    return apiSuccess();
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'DELETE /api/templates/[id]');
+    if (handled) return handled;
 
-    console.error('DELETE /api/templates/[id] error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete template' },
-      { status: 500 }
-    );
+    return serverError('Failed to delete template');
   }
 }

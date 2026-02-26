@@ -8,6 +8,7 @@ import { NextResponse } from 'next/server';
 import { getDateRangeFilter, type DateRangePreset, isValidDateRange } from '../utils';
 import { requireAuth } from '@/lib/middleware/auth';
 import { getAnalyticsGroupBy } from '../utils/handler';
+import { unauthorized, serverError, handleApiError } from '@/lib/api/errors';
 
 export async function GET(req: Request) {
   try {
@@ -27,18 +28,9 @@ export async function GET(req: Request) {
       }))
     );
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'GET /api/analytics/status-distribution');
+    if (handled) return handled;
 
-    console.error('GET /api/analytics/status-distribution error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch analytics' },
-      { status: 500 }
-    );
+    return serverError('Failed to fetch analytics');
   }
 }

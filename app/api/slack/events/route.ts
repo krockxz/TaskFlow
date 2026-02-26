@@ -6,11 +6,15 @@
  * - URL verification challenge
  * - Interactive components (buttons, shortcuts)
  * - Events API callbacks (mentions, messages)
+ *
+ * SECURITY: All requests must be signed by Slack using the signing secret.
+ * Signature verification is MANDATORY and cannot be bypassed.
+ *
+ * @see https://api.slack.com/authentication/verifying-requests-from-slack
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { env } from '@/lib/env';
-import { createHmac } from 'crypto';
+import { NextRequest } from 'next/server';
+import { verifySlackRequest } from '@/lib/slack/verification';
 
 /**
  * POST /api/slack/events
@@ -22,32 +26,13 @@ import { createHmac } from 'crypto';
  * - URL verification
  */
 export async function POST(request: NextRequest) {
-  const signature = request.headers.get('x-slack-signature');
-  const timestamp = request.headers.get('x-slack-request-timestamp');
-
   // Get raw body for signature verification
   const body = await request.text();
 
-  // Verify signature if signing secret is configured
-  if (env.SLACK_SIGNING_SECRET) {
-    if (!signature || !timestamp) {
-      return new Response('Missing signature headers', { status: 401 });
-    }
-
-    // Check for replay attacks (timestamp must be within 5 minutes)
-    const requestTimestamp = parseInt(timestamp, 10);
-    const currentTime = Math.floor(Date.now() / 1000);
-    if (Math.abs(currentTime - requestTimestamp) > 300) {
-      return new Response('Request timestamp too old', { status: 401 });
-    }
-
-    // Verify HMAC signature
-    const baseString = `v0:${timestamp}:${body}`;
-    const expectedSignature = 'v0=' + createHmac('sha256', env.SLACK_SIGNING_SECRET).update(baseString).digest('hex');
-
-    if (signature !== expectedSignature) {
-      return new Response('Invalid signature', { status: 401 });
-    }
+  // Verify signature - MANDATORY for all requests
+  const verification = verifySlackRequest(request, body);
+  if (!verification.valid) {
+    return verification.response;
   }
 
   // Parse the body

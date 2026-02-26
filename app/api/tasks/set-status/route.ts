@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { customFieldsSchema } from '@/lib/validation/template';
 import { TaskStatus } from '@prisma/client';
 import { z } from 'zod';
+import { apiSuccess, notFound, unauthorized, validationError, badRequest, serverError, handleApiError, apiError } from '@/lib/api/errors';
 
 const setStatusSchema = z.object({
   id: z.string().uuid(),
@@ -25,7 +26,7 @@ export async function PATCH(request: NextRequest) {
     });
 
     if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      return notFound('Task not found');
     }
 
     // If task has a template, validate required fields for the new status
@@ -47,33 +48,28 @@ export async function PATCH(request: NextRequest) {
         );
 
         if (missingFields.length > 0) {
-          return NextResponse.json({
-            error: 'Missing required fields',
+          return apiError('Missing required fields', 400, undefined, {
             missingFields,
             requiredFields: targetStep.requiredFields,
-          }, { status: 400 });
+          });
         }
 
         // Validate custom fields against schema
         try {
           customFieldsSchema.parse(customFields);
         } catch (error) {
-          return NextResponse.json({
-            error: 'Invalid custom fields',
-            details: error,
-          }, { status: 400 });
+          return badRequest('Invalid custom fields');
         }
       }
 
       // Validate that the status transition is allowed
       const currentStep = templateSteps.find((s) => s.status === task.status);
       if (currentStep && !currentStep.allowedTransitions.includes(status)) {
-        return NextResponse.json({
-          error: 'Status transition not allowed',
+        return apiError('Status transition not allowed', 400, undefined, {
           currentStatus: task.status,
           requestedStatus: status,
           allowedTransitions: currentStep.allowedTransitions,
-        }, { status: 400 });
+        });
       }
     }
 
@@ -86,27 +82,11 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(updatedTask);
+    return apiSuccess(updatedTask);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'PATCH /api/tasks/set-status');
+    if (handled) return handled;
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },
-        { status: 400 }
-      );
-    }
-
-    console.error('PATCH /api/tasks/set-status error:', error);
-    return NextResponse.json(
-      { error: 'An error occurred' },
-      { status: 500 }
-    );
+    return serverError();
   }
 }

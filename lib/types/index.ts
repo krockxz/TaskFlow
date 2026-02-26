@@ -6,13 +6,14 @@
  */
 
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { TaskStatus, TaskPriority, EventType } from "@prisma/client";
+
+// Re-export Prisma enums for convenience
+export { TaskStatus, TaskPriority, EventType };
 
 // ============================================================================
 // Task Types
 // ============================================================================
-
-export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'READY_FOR_REVIEW' | 'DONE';
-export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export interface Task {
   id: string;
@@ -44,8 +45,6 @@ export interface UserPreview {
 // ============================================================================
 // Task Event Types
 // ============================================================================
-
-export type EventType = 'CREATED' | 'ASSIGNED' | 'STATUS_CHANGED' | 'COMPLETED' | 'PRIORITY_CHANGED';
 
 export interface TaskEvent {
   id: string;

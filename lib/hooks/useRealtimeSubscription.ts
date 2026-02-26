@@ -29,7 +29,7 @@ interface RealtimeSubscriptionOptions {
   /** Events to listen for (default: all) */
   events?: RealtimeEvent[];
   /** TanStack Query keys to invalidate on events */
-  queryKeys: string[][];
+  queryKeys: unknown[][];
   /** Log message when subscribed (optional) */
   logMessage?: string;
 }

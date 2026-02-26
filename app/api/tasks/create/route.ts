@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { requireAuth } from '@/lib/middleware/auth';
 import { customFieldsSchema } from '@/lib/validation/template';
 import { TaskStatus } from '@prisma/client';
+import { apiSuccess, notFound, unauthorized, validationError, badRequest, serverError, handleApiError, apiError } from '@/lib/api/errors';
 
 const createTaskSchema = z.object({
   title: z.string().min(3).max(255),
@@ -31,6 +32,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const input = createTaskSchema.parse(body);
 
+    // If an assignee is provided, verify they exist in the database
+    if (input.assignedTo) {
+      const assigneeExists = await prisma.user.findUnique({
+        where: { id: input.assignedTo },
+        select: { id: true },
+      });
+
+      if (!assigneeExists) {
+        return notFound('Assignee not found');
+      }
+    }
+
     // If a template is provided, validate custom fields
     if (input.templateId) {
       const template = await prisma.handoffTemplate.findUnique({
@@ -38,10 +51,7 @@ export async function POST(request: Request) {
       });
 
       if (!template) {
-        return NextResponse.json(
-          { error: 'Template not found' },
-          { status: 404 }
-        );
+        return notFound('Template not found');
       }
 
       // Get the step for the initial status
@@ -61,21 +71,17 @@ export async function POST(request: Request) {
         );
 
         if (missingFields.length > 0) {
-          return NextResponse.json({
-            error: 'Missing required fields for template',
+          return apiError('Missing required fields for template', 400, undefined, {
             missingFields,
             requiredFields: initialStep.requiredFields,
-          }, { status: 400 });
+          });
         }
 
         // Validate custom fields against schema
         try {
           customFieldsSchema.parse(input.customFields);
         } catch (error) {
-          return NextResponse.json({
-            error: 'Invalid custom fields',
-            details: error,
-          }, { status: 400 });
+          return badRequest('Invalid custom fields');
         }
       }
     }
@@ -127,27 +133,11 @@ export async function POST(request: Request) {
       return newTask;
     });
 
-    return NextResponse.json({ success: true, data: task });
+    return apiSuccess(task);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'POST /api/tasks/create');
+    if (handled) return handled;
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },
-        { status: 400 }
-      );
-    }
-
-    console.error('Failed to create task:', error);
-    return NextResponse.json(
-      { error: 'An error occurred while creating the task' },
-      { status: 500 }
-    );
+    return serverError('An error occurred while creating the task');
   }
 }

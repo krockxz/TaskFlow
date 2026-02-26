@@ -15,6 +15,7 @@ import { handoffTemplateSchema } from '@/lib/validation/template';
 import { TemplateStep, TemplateField } from '@/lib/types/template';
 import { TaskStatus } from '@prisma/client';
 import { useToast } from '@/lib/hooks/use-toast';
+import type { FieldValues } from 'react-hook-form';
 
 interface TemplateBuilderProps {
   open: boolean;
@@ -75,7 +76,7 @@ export function TemplateBuilder({ open, onOpenChange, onSuccess }: TemplateBuild
     setSteps(updated);
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FieldValues) => {
     const payload = { ...data, steps };
     const response = await fetch('/api/templates', {
       method: 'POST',
@@ -150,7 +151,7 @@ export function TemplateBuilder({ open, onOpenChange, onSuccess }: TemplateBuild
                       />
                       <Select
                         value={field.type}
-                        onValueChange={(value) => updateField(stepIndex, fieldIndex, { type: value as any })}
+                        onValueChange={(value) => updateField(stepIndex, fieldIndex, { type: value as TemplateField['type'] })}
                       >
                         <SelectTrigger className="w-32">
                           <SelectValue />

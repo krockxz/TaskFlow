@@ -8,6 +8,7 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/middleware/auth';
+import { apiSuccess, notFound, unauthorized, validationError, serverError, handleApiError } from '@/lib/api/errors';
 
 const updateStatusSchema = z.object({
   taskId: z.string().uuid(),
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
     });
 
     if (!task) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      return notFound('Task not found');
     }
 
     // Update task status
@@ -51,26 +52,11 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, data: updated });
+    return apiSuccess(updated);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'POST /api/tasks/update-status');
+    if (handled) return handled;
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'An error occurred' },
-      { status: 500 }
-    );
+    return serverError();
   }
 }

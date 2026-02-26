@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import { validationError, badRequest, serverError } from '@/lib/api/errors';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -29,10 +30,7 @@ export async function POST(request: Request) {
     });
 
     if (error || !user) {
-      return NextResponse.json(
-        { error: error?.message || 'Registration failed' },
-        { status: 400 }
-      );
+      return badRequest(error?.message || 'Registration failed');
     }
 
     // Create corresponding user record in our database
@@ -51,16 +49,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },
-        { status: 400 }
-      );
-    }
+    const handled = error && typeof error === 'object' && 'name' in error && error.name === 'ZodError'
+      ? validationError(error as z.ZodError)
+      : null;
 
-    return NextResponse.json(
-      { error: 'An error occurred' },
-      { status: 500 }
-    );
+    if (handled) return handled;
+
+    return serverError();
   }
 }

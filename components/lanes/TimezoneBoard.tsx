@@ -87,7 +87,10 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
 
   // Group tasks by assigned user and unassigned - O(T) single pass using Map
   // Combines both computations to avoid iterating tasks twice
-  const { tasksByUser, unassignedTasks } = useMemo(() => {
+  const { tasksByUser, unassignedTasks } = useMemo<{
+    tasksByUser: Record<string, Task[]>;
+    unassignedTasks: Task[];
+  }>(() => {
     const userTasksMap = new Map<string, Task[]>();
     const unassigned: Task[] = [];
 
@@ -109,7 +112,7 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
     // Convert Map to Record for consistent access pattern
     return {
       tasksByUser: Object.fromEntries(userTasksMap) as Record<string, Task[]>,
-      unassignedTasks,
+      unassignedTasks: unassigned,
     };
   }, [users, tasks, taskAssignments]);
 

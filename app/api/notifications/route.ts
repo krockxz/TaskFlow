@@ -9,6 +9,7 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middleware/auth';
+import { unauthorized, serverError, handleApiError } from '@/lib/api/errors';
 
 export async function GET(request: Request) {
   try {
@@ -36,18 +37,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json(notifications);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'GET /api/notifications');
+    if (handled) return handled;
 
-    console.error('GET /api/notifications error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch notifications' },
-      { status: 500 }
-    );
+    return serverError('Failed to fetch notifications');
   }
 }

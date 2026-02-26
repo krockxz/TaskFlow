@@ -1,7 +1,7 @@
 'use client';
 
-import { Control } from 'react-hook-form';
-import { TemplateField } from '@/lib/types/template';
+import { Control, FieldValues } from 'react-hook-form';
+import { TemplateField, CustomFieldValue } from '@/lib/types/template';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils';
 
 interface CustomFieldsRendererProps {
   fields: TemplateField[];
-  control: Control<any>;
-  values?: Record<string, any>;
+  control: Control<FieldValues>;
+  values?: Record<string, CustomFieldValue>;
 }
 
 export function CustomFieldsRenderer({ fields, control, values }: CustomFieldsRendererProps) {

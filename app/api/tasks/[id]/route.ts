@@ -8,6 +8,8 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middleware/auth';
 import type { Task, TaskEvent } from '@/lib/types';
+import type { TaskStatus, TaskPriority, EventType } from '@prisma/client';
+import { notFound, forbidden, unauthorized, serverError, handleApiError, apiSuccess } from '@/lib/api/errors';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -47,10 +49,7 @@ export async function GET(_request: Request, context: RouteContext) {
     });
 
     if (!task) {
-      return NextResponse.json(
-        { error: 'Task not found' },
-        { status: 404 }
-      );
+      return notFound('Task not found');
     }
 
     // Verify user has access to this task
@@ -59,10 +58,7 @@ export async function GET(_request: Request, context: RouteContext) {
       task.assignedTo === user.id;
 
     if (!hasAccess) {
-      return NextResponse.json(
-        { error: 'Forbidden' },
-        { status: 403 }
-      );
+      return forbidden();
     }
 
     // Convert Date objects to strings for type compatibility
@@ -70,8 +66,8 @@ export async function GET(_request: Request, context: RouteContext) {
       id: task.id,
       title: task.title,
       description: task.description,
-      status: task.status as any,
-      priority: task.priority as any,
+      status: task.status as TaskStatus,
+      priority: task.priority as TaskPriority,
       dueDate: task.dueDate ? task.dueDate.toISOString() : null,
       createdById: task.createdById,
       assignedTo: task.assignedTo,
@@ -82,7 +78,7 @@ export async function GET(_request: Request, context: RouteContext) {
       events: task.events.map((event): TaskEvent => ({
         id: event.id,
         taskId: event.taskId,
-        eventType: event.eventType as any,
+        eventType: event.eventType as EventType,
         oldStatus: event.oldStatus,
         newStatus: event.newStatus,
         changedById: event.changedById,
@@ -93,19 +89,10 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json(serializedTask);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'GET /api/tasks/[id]');
+    if (handled) return handled;
 
-    console.error('GET /api/tasks/[id] error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch task' },
-      { status: 500 }
-    );
+    return serverError('Failed to fetch task');
   }
 }
 
@@ -125,17 +112,11 @@ export async function DELETE(request: Request, context: RouteContext) {
     });
 
     if (!task) {
-      return NextResponse.json(
-        { success: false, error: 'Task not found' },
-        { status: 404 }
-      );
+      return notFound('Task not found');
     }
 
     if (task.createdById !== user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Forbidden: Only creator can delete' },
-        { status: 403 }
-      );
+      return forbidden('Only creator can delete');
     }
 
     // Delete the task (cascade will delete events and notifications)
@@ -143,20 +124,11 @@ export async function DELETE(request: Request, context: RouteContext) {
       where: { id },
     });
 
-    return NextResponse.json({ success: true });
+    return apiSuccess();
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'DELETE /api/tasks/[id]');
+    if (handled) return handled;
 
-    console.error('DELETE /api/tasks/[id] error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to delete task' },
-      { status: 500 }
-    );
+    return serverError('Failed to delete task');
   }
 }

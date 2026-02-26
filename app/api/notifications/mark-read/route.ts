@@ -9,6 +9,7 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/middleware/auth';
+import { apiSuccess, notFound, forbidden, unauthorized, validationError, badRequest, serverError, handleApiError } from '@/lib/api/errors';
 
 const markReadSchema = z.object({
   notificationId: z.string().uuid().optional(),
@@ -29,21 +30,12 @@ export async function POST(request: Request) {
       data: { read: true },
     });
 
-    return NextResponse.json({ success: true });
+    return apiSuccess();
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'POST /api/notifications/mark-read');
+    if (handled) return handled;
 
-    console.error('POST /api/notifications/mark-read error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to mark notifications as read' },
-      { status: 500 }
-    );
+    return serverError('Failed to mark notifications as read');
   }
 }
 
@@ -59,10 +51,7 @@ export async function PATCH(request: Request) {
     const { notificationId } = markReadSchema.parse(body);
 
     if (!notificationId) {
-      return NextResponse.json(
-        { success: false, error: 'notificationId is required' },
-        { status: 400 }
-      );
+      return badRequest('notificationId is required');
     }
 
     // Verify the notification belongs to the user
@@ -71,17 +60,11 @@ export async function PATCH(request: Request) {
     });
 
     if (!notification) {
-      return NextResponse.json(
-        { success: false, error: 'Notification not found' },
-        { status: 404 }
-      );
+      return notFound('Notification not found');
     }
 
     if (notification.userId !== user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
-      );
+      return forbidden();
     }
 
     await prisma.notification.update({
@@ -89,27 +72,11 @@ export async function PATCH(request: Request) {
       data: { read: true },
     });
 
-    return NextResponse.json({ success: true });
+    return apiSuccess();
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'PATCH /api/notifications/mark-read');
+    if (handled) return handled;
 
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid input', fieldErrors: error.flatten().fieldErrors },
-        { status: 400 }
-      );
-    }
-
-    console.error('PATCH /api/notifications/mark-read error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to mark notification as read' },
-      { status: 500 }
-    );
+    return serverError('Failed to mark notification as read');
   }
 }

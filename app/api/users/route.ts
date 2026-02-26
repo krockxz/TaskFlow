@@ -8,6 +8,7 @@
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/middleware/auth';
+import { unauthorized, serverError, handleApiError } from '@/lib/api/errors';
 
 interface UsersResponse {
   users: Array<{ id: string; email: string }>;
@@ -60,18 +61,9 @@ export async function GET(req: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof Error && error.message.includes('Unauthorized')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const handled = handleApiError(error, 'GET /api/users');
+    if (handled) return handled;
 
-    console.error('GET /api/users error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch users' },
-      { status: 500 }
-    );
+    return serverError('Failed to fetch users');
   }
 }

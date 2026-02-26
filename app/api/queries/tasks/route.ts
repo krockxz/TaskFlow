@@ -12,6 +12,7 @@ import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import type { TaskStatus, TaskPriority, DateRangePreset } from '@/lib/types';
 import { getDateRangeFilter } from '@/lib/utils/date-range';
+import { unauthorized, serverError, handleApiError } from '@/lib/api/errors';
 
 import type { Task } from '@/lib/types';
 
@@ -24,101 +25,108 @@ interface TasksResponse {
 }
 
 export async function GET(req: Request) {
-  const user = await getAuthUser();
+  try {
+    const user = await getAuthUser();
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { searchParams } = new URL(req.url);
-
-  // Parse pagination parameters
-  const pageParam = searchParams.get('page');
-  const pageSizeParam = searchParams.get('pageSize');
-
-  const page = Math.max(1, parseInt(pageParam || '1', 10));
-  const pageSize = Math.min(100, Math.max(1, parseInt(pageSizeParam || '20', 10)));
-  const skip = (page - 1) * pageSize;
-
-  // Parse filter parameters
-  const statusParam = searchParams.get('status');
-  const priorityParam = searchParams.get('priority');
-  const assignedTo = searchParams.get('assignedTo') || undefined;
-  const dateRange = searchParams.get('dateRange') as DateRangePreset | undefined;
-  const search = searchParams.get('search') || undefined;
-
-  // Split comma-separated values for multi-select filters
-  const statusFilter = statusParam?.split(',').filter(Boolean) as TaskStatus[] | undefined;
-  const priorityFilter = priorityParam?.split(',').filter(Boolean) as TaskPriority[] | undefined;
-
-  // Build where clause with filters
-  const where: Record<string, unknown> = {
-    OR: [
-      { assignedTo: user.id },
-      { createdById: user.id },
-    ],
-  };
-
-  // Apply status filter (multi-select)
-  if (statusFilter && statusFilter.length > 0) {
-    where.status = { in: statusFilter };
-  }
-
-  // Apply priority filter (multi-select)
-  if (priorityFilter && priorityFilter.length > 0) {
-    where.priority = { in: priorityFilter };
-  }
-
-  // Apply assignedTo filter
-  if (assignedTo) {
-    where.assignedTo = assignedTo;
-  }
-
-  // Apply search filter (case-insensitive title search)
-  if (search) {
-    where.title = { contains: search, mode: 'insensitive' as const };
-  }
-
-  // Apply date range filter
-  if (dateRange && dateRange !== 'all_time') {
-    const dateFilter = getDateRangeFilter(dateRange);
-    if (dateFilter) {
-      where.createdAt = dateFilter;
+    if (!user) {
+      return unauthorized();
     }
+
+    const { searchParams } = new URL(req.url);
+
+    // Parse pagination parameters
+    const pageParam = searchParams.get('page');
+    const pageSizeParam = searchParams.get('pageSize');
+
+    const page = Math.max(1, parseInt(pageParam || '1', 10));
+    const pageSize = Math.min(100, Math.max(1, parseInt(pageSizeParam || '20', 10)));
+    const skip = (page - 1) * pageSize;
+
+    // Parse filter parameters
+    const statusParam = searchParams.get('status');
+    const priorityParam = searchParams.get('priority');
+    const assignedTo = searchParams.get('assignedTo') || undefined;
+    const dateRange = searchParams.get('dateRange') as DateRangePreset | undefined;
+    const search = searchParams.get('search') || undefined;
+
+    // Split comma-separated values for multi-select filters
+    const statusFilter = statusParam?.split(',').filter(Boolean) as TaskStatus[] | undefined;
+    const priorityFilter = priorityParam?.split(',').filter(Boolean) as TaskPriority[] | undefined;
+
+    // Build where clause with filters
+    const where: Record<string, unknown> = {
+      OR: [
+        { assignedTo: user.id },
+        { createdById: user.id },
+      ],
+    };
+
+    // Apply status filter (multi-select)
+    if (statusFilter && statusFilter.length > 0) {
+      where.status = { in: statusFilter };
+    }
+
+    // Apply priority filter (multi-select)
+    if (priorityFilter && priorityFilter.length > 0) {
+      where.priority = { in: priorityFilter };
+    }
+
+    // Apply assignedTo filter
+    if (assignedTo) {
+      where.assignedTo = assignedTo;
+    }
+
+    // Apply search filter (case-insensitive title search)
+    if (search) {
+      where.title = { contains: search, mode: 'insensitive' as const };
+    }
+
+    // Apply date range filter
+    if (dateRange && dateRange !== 'all_time') {
+      const dateFilter = getDateRangeFilter(dateRange);
+      if (dateFilter) {
+        where.createdAt = dateFilter;
+      }
+    }
+
+    // Execute queries in parallel for better performance
+    const [tasks, total] = await Promise.all([
+      prisma.task.findMany({
+        where,
+        include: {
+          createdBy: { select: { id: true, email: true } },
+          assignedToUser: { select: { id: true, email: true } },
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: pageSize,
+        skip,
+      }),
+      prisma.task.count({ where }),
+    ]);
+
+    // Convert Date objects to strings for type compatibility
+    const serializedTasks = tasks.map((task) => ({
+      ...task,
+      status: task.status as TaskStatus,
+      priority: task.priority as TaskPriority,
+      dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+      createdAt: task.createdAt.toISOString(),
+      updatedAt: task.updatedAt.toISOString(),
+    }));
+
+    const response: TasksResponse = {
+      tasks: serializedTasks,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    const handled = handleApiError(error, 'GET /api/queries/tasks');
+    if (handled) return handled;
+
+    return serverError('Failed to fetch tasks');
   }
-
-  // Execute queries in parallel for better performance
-  const [tasks, total] = await Promise.all([
-    prisma.task.findMany({
-      where,
-      include: {
-        createdBy: { select: { id: true, email: true } },
-        assignedToUser: { select: { id: true, email: true } },
-      },
-      orderBy: { updatedAt: 'desc' },
-      take: pageSize,
-      skip,
-    }),
-    prisma.task.count({ where }),
-  ]);
-
-  // Convert Date objects to strings for type compatibility
-  const serializedTasks = tasks.map((task) => ({
-    ...task,
-    status: task.status as TaskStatus,
-    priority: task.priority as TaskPriority,
-    dueDate: task.dueDate ? task.dueDate.toISOString() : null,
-    createdAt: task.createdAt.toISOString(),
-    updatedAt: task.updatedAt.toISOString(),
-  }));
-
-  const response: TasksResponse = {
-    tasks: serializedTasks,
-    total,
-    page,
-    pageSize,
-    totalPages: Math.ceil(total / pageSize),
-  };
-
-  return NextResponse.json(response);
 }
