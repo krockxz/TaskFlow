@@ -10,8 +10,10 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { getNotificationsQueryConfig, getUnreadCountQueryConfig } from '@/lib/query/config';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRealtimeNotifications } from '@/lib/hooks/useRealtimeNotifications';
@@ -99,10 +101,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
     isLoading: isLoadingNotifications,
     error: notificationsError,
   } = useQuery({
-    queryKey: ['notifications'],
+    ...getNotificationsQueryConfig(),
     queryFn: fetchNotifications,
-    staleTime: 30000,
-    refetchOnWindowFocus: false,
     enabled: !!user,
   });
 
@@ -111,10 +111,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
     data: unreadData = { count: 0 },
     isLoading: isLoadingCount,
   } = useQuery({
-    queryKey: ['notifications', 'unread-count'],
+    ...getUnreadCountQueryConfig(),
     queryFn: fetchUnreadCount,
-    staleTime: 30000,
-    refetchOnWindowFocus: false,
     enabled: !!user,
   });
 
@@ -189,7 +187,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
           <ul className="divide-y">
             {notifications.map((notification) => (
               <li key={notification.id}>
-                <a
+                <Link
                   href={`/tasks/${notification.taskId}`}
                   className={`block p-4 hover:bg-accent transition-colors ${
                     !notification.read ? 'bg-accent/50' : ''
@@ -209,7 +207,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
                       {formatRelativeDate(notification.createdAt)}
                     </span>
                   </div>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

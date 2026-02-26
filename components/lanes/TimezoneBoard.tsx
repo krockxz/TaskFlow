@@ -85,15 +85,40 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
     }
   };
 
-  // Group tasks by assigned user - memoized to prevent recalculation on every render
-  const tasksByUser = useMemo(() => {
-    return users.reduce((acc, user) => {
-      acc[user.id] = tasks.filter(
-        t => taskAssignments[t.id] === user.id
-      );
-      return acc;
-    }, {} as Record<string, Task[]>);
+  // Group tasks by assigned user and unassigned - O(T) single pass using Map
+  // Combines both computations to avoid iterating tasks twice
+  const { tasksByUser, unassignedTasks } = useMemo(() => {
+    const userTasksMap = new Map<string, Task[]>();
+    const unassigned: Task[] = [];
+
+    // Initialize empty arrays for all users to ensure consistent ordering
+    for (const user of users) {
+      userTasksMap.set(user.id, []);
+    }
+
+    // Distribute tasks to their assigned users in a single pass
+    for (const task of tasks) {
+      const assigneeId = taskAssignments[task.id];
+      if (!assigneeId || assigneeId === '') {
+        unassigned.push(task);
+      } else if (userTasksMap.has(assigneeId)) {
+        userTasksMap.get(assigneeId)!.push(task);
+      }
+    }
+
+    // Convert Map to Record for consistent access pattern
+    return {
+      tasksByUser: Object.fromEntries(userTasksMap) as Record<string, Task[]>,
+      unassignedTasks,
+    };
   }, [users, tasks, taskAssignments]);
+
+  // Unassigned lane user object (virtual)
+  const unassignedUser = useMemo(() => ({
+    id: 'unassigned',
+    email: 'Unassigned',
+    timezone: null,
+  }), []);
 
   return (
     <div className="flex gap-4 overflow-x-auto px-4 h-full">
@@ -103,6 +128,11 @@ export function TimezoneBoard({ users, tasks }: TimezoneBoardProps) {
         onDragCancel={handleDragCancel}
         onDragEnd={handleDragEnd}
       >
+        <Lane
+          key="unassigned"
+          user={unassignedUser}
+          tasks={unassignedTasks}
+        />
         {users.map((user) => (
           <Lane
             key={user.id}

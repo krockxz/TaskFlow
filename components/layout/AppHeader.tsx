@@ -6,17 +6,16 @@
 
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Github, LogOut, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { NotificationBell } from './NotificationBell';
 import { Button } from '@/components/ui/button';
-import { createClient } from '@/lib/supabase/client';
-import { signOut } from '@/lib/auth/oauth-helpers';
+import { useSignOut } from '@/lib/auth/sign-out';
+import { useSession } from '@/lib/hooks/useSession';
 
 function Logo({ href }: { href: string }) {
   return (
@@ -41,43 +40,15 @@ function Logo({ href }: { href: string }) {
 }
 
 export function AppHeader() {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userEmail, setUserEmail] = useState<string>('');
+  const { handleSignOut, isPending } = useSignOut();
+  const { user, isAuthenticated, isLoading } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   const handleLogout = async () => {
-    const { error } = await signOut();
-    if (!error) {
-      setIsAuthenticated(false);
-      setUserEmail('');
-      startTransition(() => {
-        router.push('/');
-        router.refresh();
-      });
-    }
+    await handleSignOut();
   };
 
-  useEffect(() => {
-    setMounted(true);
-    const supabase = createClient();
-
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setIsAuthenticated(!!user);
-      setUserEmail(user?.email || '');
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setIsAuthenticated(!!session?.user);
-      setUserEmail(session?.user?.email || '');
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (!mounted) {
+  if (isLoading) {
     return (
       <nav className="fixed top-6 left-0 right-0 z-50 px-4">
         <div className="max-w-2xl mx-auto">
@@ -193,7 +164,7 @@ export function AppHeader() {
                   </div>
                   <div className="h-px bg-border/30 my-2" />
                   <div className="px-2.5 py-2 text-xs text-muted-foreground truncate">
-                    {userEmail}
+                    {user?.email}
                   </div>
                   <button
                     onClick={handleLogout}

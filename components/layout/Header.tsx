@@ -8,14 +8,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
 import type { ReactNode } from 'react';
 import { LogOut, Loader2, ArrowLeft, Keyboard } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { signOut } from '@/lib/auth/oauth-helpers';
+import { useSignOut } from '@/lib/auth/sign-out';
 
 export interface HeaderProps {
   userEmail: string;
@@ -27,18 +25,9 @@ export interface HeaderProps {
 }
 
 export function Header({ userEmail, title, description, actions, backTo, backLabel = 'Back to Dashboard' }: HeaderProps) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const { handleSignOut, isPending } = useSignOut();
 
-  const handleLogout = async () => {
-    const { error } = await signOut();
-    if (!error) {
-      startTransition(() => {
-        router.push('/');
-        router.refresh();
-      });
-    }
-  };
+  const handleLogout = () => handleSignOut();
 
   return (
     <header className="border-b">

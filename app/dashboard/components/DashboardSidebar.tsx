@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
 import Link from "next/link";
 import {
     LayoutDashboard,
@@ -20,7 +18,7 @@ import {
     Globe,
 } from "lucide-react";
 import { useTaskFilters } from "@/app/dashboard/hooks/useTaskFilters";
-import { signOut } from "@/lib/auth/oauth-helpers";
+import { useSignOut } from "@/lib/auth/sign-out";
 import { cn } from "@/lib/utils";
 
 // Smooth easing — no overshoot
@@ -184,18 +182,9 @@ function IconNavigation({
     onSectionChange: (section: string) => void;
     userEmail: string;
 }) {
-    const router = useRouter();
-    const [isPending, startTransition] = useTransition();
+    const { handleSignOut, isPending } = useSignOut();
 
-    const handleLogout = async () => {
-        const { error } = await signOut();
-        if (!error) {
-            startTransition(() => {
-                router.push('/');
-                router.refresh();
-            });
-        }
-    };
+    const handleLogout = () => handleSignOut();
 
     const navItems: NavItemT[] = [
         { id: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },

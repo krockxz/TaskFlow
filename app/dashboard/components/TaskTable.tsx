@@ -15,8 +15,10 @@
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
+import { getTasksQueryConfig } from '@/lib/query/config';
 import type { Task, TaskStatus, TaskPriority, DateRangePreset, TaskFilters } from '@/lib/types';
+import { useRealtimeTasks } from '@/lib/hooks/useRealtimeTasks';
 import {
   Table,
   TableBody,
@@ -199,7 +201,6 @@ const ITEMS_PER_PAGE = 25;
 
 export function TaskTable({ initialTasks, users }: TaskTableProps) {
   const queryClient = useQueryClient();
-  const supabase = createClient();
   const { success, error: toastError } = useToast();
   const searchParams = useSearchParams();
 
@@ -239,6 +240,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
 
   // Fetch tasks with TanStack Query - filter-aware query key
   const { data: response = { tasks: initialTasks, total: initialTasks.length, page: 1, pageSize: ITEMS_PER_PAGE, totalPages: 1 }, isLoading } = useQuery<TasksResponse>({
+    ...getTasksQueryConfig(filters),
     queryKey: ['tasks', filters, currentPage],
     queryFn: async () => {
       const url = `/api/queries/tasks?${queryString}`;
@@ -247,7 +249,6 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
       return res.json();
     },
     initialData: { tasks: initialTasks, total: initialTasks.length, page: 1, pageSize: ITEMS_PER_PAGE, totalPages: 1 },
-    staleTime: 60000, // 60 seconds to reduce unnecessary refetches
   });
 
   const tasks = response.tasks;
@@ -347,31 +348,9 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
     },
   });
 
-  // Realtime subscription - FETCH-ON-EVENT PATTERN with filter-aware key
-  // Debounced refetch to avoid excessive queries during rapid updates
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout | null = null;
-
-    const channel = supabase
-      .channel(`tasks-changes-${Date.now()}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'tasks',
-      }, () => {
-        // Debounce refetch by 500ms to avoid excessive queries during rapid updates
-        if (timeoutId) clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          queryClient.invalidateQueries({ queryKey: ['tasks', filters] });
-        }, 500);
-      })
-      .subscribe();
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, queryClient, filters]);
+  // Realtime subscription using shared hook - FETCH-ON-EVENT PATTERN
+  // Subscribes to task changes and invalidates queries with filter-aware keys
+  useRealtimeTasks(filters, currentPage);
 
   // Enhanced Skeleton Loading - responsive for mobile and desktop
   if (isLoading) {
@@ -717,12 +696,12 @@ const MobileTaskCard = memo(function MobileTaskCard({
             {/* Title and GitHub Link */}
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <a
+                <Link
                   href={`/tasks/${task.id}`}
                   className="font-medium text-primary hover:underline"
                 >
                   {task.title}
-                </a>
+                </Link>
                 {task.githubIssueUrl && (
                   <a
                     href={task.githubIssueUrl}
@@ -897,12 +876,12 @@ const AnimatedTableRow = memo(function AnimatedTableRow({
 
       <TableCell>
         <div className="flex items-center gap-2">
-          <a
+          <Link
             href={`/tasks/${task.id}`}
             className="font-medium text-primary hover:underline inline-block"
           >
             {task.title}
-          </a>
+          </Link>
           {task.githubIssueUrl && (
             <a
               href={task.githubIssueUrl}

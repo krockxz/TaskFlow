@@ -15,13 +15,24 @@ interface LaneProps {
   tasks: Task[];
 }
 
+function isValidTimezone(timezone: string): boolean {
+  try {
+    Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // Try formatting a date with the timezone - this will throw if invalid
+    new Date().toLocaleString('en-US', { timeZone: timezone });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function Lane({ user, tasks }: LaneProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: user.id,
   });
 
   const userInitial = user.email.charAt(0).toUpperCase();
-  const userTimezone = user.timezone || 'UTC';
+  const userTimezone = user.timezone && isValidTimezone(user.timezone) ? user.timezone : 'UTC';
   const localTime = formatInTimeZone(new Date(), userTimezone, 'HH:mm');
 
   return (

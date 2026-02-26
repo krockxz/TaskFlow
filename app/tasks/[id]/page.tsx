@@ -3,9 +3,37 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCommand } from '@/components/command/CommandContext';
-import { CheckCircle, UserPlus, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
+import { CheckCircle, UserPlus, Trash2, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { createClient } from '@/lib/supabase/client';
+import { useToast } from '@/lib/hooks/use-toast';
 import type { CommandAction, TaskStatus } from '@/lib/types';
 
 // Valid task status values matching the Prisma enum
@@ -31,24 +59,25 @@ export default function TaskDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { registerAction, unregisterAction } = useCommand();
+  const { toast, success, error } = useToast();
   const taskId = params.id as string;
-
-  // Store the referring page for proper back navigation
-  const [referringPage, setReferringPage] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Try to get the referrer from sessionStorage
-    const referrer = sessionStorage.getItem('taskReferrer');
-    if (referrer) {
-      setReferringPage(referrer);
-      sessionStorage.removeItem('taskReferrer');
-    }
-  }, []);
 
   // Fetch task data
   const [task, setTask] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  // Dialog states
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<TaskStatus | null>(null);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Users for assignment
+  const [users, setUsers] = useState<Array<{ id: string; email: string }>>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   useEffect(() => {
     const supabase = createClient();
@@ -62,7 +91,8 @@ export default function TaskDetailPage() {
 
       if (error) {
         console.error('Error loading task:', error);
-        router.push('/dashboard');
+        setLoadError(error.message || 'Failed to load task');
+        setLoading(false);
         return;
       }
 
@@ -71,7 +101,27 @@ export default function TaskDetailPage() {
     }
 
     loadTask();
-  }, [taskId, router]);
+  }, [taskId]);
+
+  // Fetch users for assignment dropdown
+  useEffect(() => {
+    async function fetchUsers() {
+      setUsersLoading(true);
+      try {
+        const response = await fetch('/api/users?pageSize=100');
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data.users || []);
+        }
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      } finally {
+        setUsersLoading(false);
+      }
+    }
+
+    fetchUsers();
+  }, []);
 
   // Update task status via API
   const updateStatus = useCallback(async (newStatus: TaskStatus) => {
@@ -86,18 +136,19 @@ export default function TaskDetailPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update status');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update status');
       }
 
       setTask({ ...task, status: newStatus });
-    } catch (error) {
-      console.error('Error updating status:', error);
-      alert(error instanceof Error ? error.message : 'Failed to update status');
+      success(`Status updated to ${STATUS_LABELS[newStatus]}`);
+    } catch (err) {
+      console.error('Error updating status:', err);
+      error(err instanceof Error ? err.message : 'Failed to update status', 'Status Update Failed');
     } finally {
       setActionLoading(null);
     }
-  }, [task, taskId]);
+  }, [task, taskId, success, error]);
 
   // Assign task via API
   const assignTask = useCallback(async (userId: string) => {
@@ -112,18 +163,19 @@ export default function TaskDetailPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to assign task');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to assign task');
       }
 
       setTask({ ...task, assigned_to: userId });
-    } catch (error) {
-      console.error('Error assigning task:', error);
-      alert(error instanceof Error ? error.message : 'Failed to assign task');
+      success('Task assigned successfully');
+    } catch (err) {
+      console.error('Error assigning task:', err);
+      error(err instanceof Error ? err.message : 'Failed to assign task', 'Assignment Failed');
     } finally {
       setActionLoading(null);
     }
-  }, [task, taskId]);
+  }, [task, taskId, success, error]);
 
   // Delete task via API
   const deleteTask = useCallback(async () => {
@@ -136,17 +188,38 @@ export default function TaskDetailPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete task');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete task');
       }
 
+      success('Task deleted successfully');
       router.push('/dashboard');
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      alert(error instanceof Error ? error.message : 'Failed to delete task');
+    } catch (err) {
+      console.error('Error deleting task:', err);
+      error(err instanceof Error ? err.message : 'Failed to delete task', 'Deletion Failed');
       setActionLoading(null);
     }
-  }, [task, taskId, router]);
+  }, [task, taskId, router, success, error]);
+
+  // Smart back navigation - try to use history, fall back to dashboard
+  const handleBack = useCallback(() => {
+    // Check if we have a valid referrer in sessionStorage
+    const referrer = sessionStorage.getItem('taskReferrer');
+    if (referrer) {
+      sessionStorage.removeItem('taskReferrer');
+      router.push(referrer);
+      return;
+    }
+
+    // Check if there's actual history to go back to
+    // If the user came directly to this page (e.g., via URL), history.length may be 1
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      // No history, go to dashboard
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   // Register task-specific actions
   useEffect(() => {
@@ -160,20 +233,8 @@ export default function TaskDetailPage() {
         context: 'task',
         keywords: ['status', 'change', 'update'],
         onSelect: () => {
-          const currentLabel = STATUS_LABELS[task.status as TaskStatus] || task.status;
-          const options = VALID_STATUSES.map(s => `${s} - ${STATUS_LABELS[s]}`).join('\n');
-          const input = prompt(
-            `Current status: ${currentLabel}\n\nEnter new status:\n${options}`,
-            task.status
-          );
-          if (input) {
-            const upperStatus = input.toUpperCase() as TaskStatus;
-            if (VALID_STATUSES.includes(upperStatus)) {
-              updateStatus(upperStatus);
-            } else {
-              alert(`Invalid status. Valid options: ${VALID_STATUSES.join(', ')}`);
-            }
-          }
+          setPendingStatus(task.status as TaskStatus);
+          setStatusDialogOpen(true);
         },
       },
       {
@@ -183,10 +244,8 @@ export default function TaskDetailPage() {
         context: 'task',
         keywords: ['assign', 'user', 'owner'],
         onSelect: () => {
-          const userId = prompt('Enter user ID to assign:');
-          if (userId) {
-            assignTask(userId);
-          }
+          setSelectedUserId(task.assigned_to || '');
+          setAssignDialogOpen(true);
         },
       },
       {
@@ -196,9 +255,7 @@ export default function TaskDetailPage() {
         context: 'task',
         keywords: ['delete', 'remove'],
         onSelect: () => {
-          if (confirm('Are you sure you want to delete this task?')) {
-            deleteTask();
-          }
+          setDeleteDialogOpen(true);
         },
       },
     ];
@@ -210,7 +267,40 @@ export default function TaskDetailPage() {
     return () => {
       actions.forEach(action => unregisterAction(action.id));
     };
-  }, [task, registerAction, unregisterAction, updateStatus, assignTask, deleteTask]);
+  }, [task, registerAction, unregisterAction]);
+
+  // Handle status change confirmation
+  const handleStatusChange = useCallback(() => {
+    if (pendingStatus && pendingStatus !== task?.status) {
+      updateStatus(pendingStatus);
+    }
+    setStatusDialogOpen(false);
+  }, [pendingStatus, task, updateStatus]);
+
+  // Handle assignment confirmation
+  const handleAssignChange = useCallback(async () => {
+    if (selectedUserId && selectedUserId !== task?.assigned_to) {
+      await assignTask(selectedUserId);
+    }
+    setAssignDialogOpen(false);
+  }, [selectedUserId, task, assignTask]);
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = useCallback(() => {
+    deleteTask();
+    setDeleteDialogOpen(false);
+  }, [deleteTask]);
+
+  // Get user initials for avatar
+  const getUserInitials = (email: string) => {
+    return email
+      .split('@')[0]
+      .split('.')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   if (loading) {
     return (
@@ -220,10 +310,20 @@ export default function TaskDetailPage() {
     );
   }
 
-  if (!task) {
+  if (loadError || !task) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-muted-foreground">Task not found</div>
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <div className="text-center">
+          <h2 className="text-lg font-semibold">Failed to load task</h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            {loadError || 'Task not found'}
+          </p>
+        </div>
+        <Button onClick={handleBack} variant="outline">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Go Back
+        </Button>
       </div>
     );
   }
@@ -236,7 +336,7 @@ export default function TaskDetailPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Button
           variant="ghost"
-          onClick={() => router.back()}
+          onClick={handleBack}
           className="mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -279,11 +379,152 @@ export default function TaskDetailPage() {
 
           <div className="mt-6 pt-6 border-t">
             <p className="text-xs text-muted-foreground">
-              Press ⌘K to open command palette for task actions
+              Press Cmd+K to open command palette for task actions
             </p>
           </div>
         </div>
       </div>
+
+      {/* Status Change Dialog */}
+      <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Task Status</DialogTitle>
+            <DialogDescription>
+              Select a new status for &ldquo;{task?.title}&rdquo;. Current status is {statusLabel}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="status-select">New Status</Label>
+            <Select
+              value={pendingStatus || task?.status}
+              onValueChange={(value) => setPendingStatus(value as TaskStatus)}
+            >
+              <SelectTrigger className="w-full mt-2">
+                <SelectValue placeholder="Select a status" />
+              </SelectTrigger>
+              <SelectContent>
+                {VALID_STATUSES.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    <div className="flex items-center gap-2">
+                      <div className={`h-2 w-2 rounded-full ${STATUS_COLORS[status].split(' ')[0]}`} />
+                      {STATUS_LABELS[status]}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStatusDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStatusChange}
+              disabled={!pendingStatus || pendingStatus === task?.status || actionLoading === 'status'}
+            >
+              {actionLoading === 'status' ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Update Status'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Task Dialog */}
+      <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Assign Task</DialogTitle>
+            <DialogDescription>
+              Select a user to assign &ldquo;{task?.title}&rdquo; to.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="assignee-select">Assignee</Label>
+            <Select
+              value={selectedUserId}
+              onValueChange={setSelectedUserId}
+              disabled={usersLoading}
+            >
+              <SelectTrigger className="w-full mt-2">
+                <SelectValue placeholder={usersLoading ? 'Loading users...' : 'Select a user'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">
+                  <span className="text-muted-foreground">Unassigned</span>
+                </SelectItem>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={user.id}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarFallback className="text-xs">
+                          {getUserInitials(user.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{user.email}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssignChange}
+              disabled={!selectedUserId || selectedUserId === task?.assigned_to || actionLoading === 'assign'}
+            >
+              {actionLoading === 'assign' ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Assigning...
+                </>
+              ) : (
+                'Assign Task'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Task Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &ldquo;{task?.title}&rdquo;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading === 'delete'}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={actionLoading === 'delete'}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {actionLoading === 'delete' ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -325,7 +325,7 @@ export default function TaskFlowCommandPalette({ triggerButton }: TaskFlowComman
       }
 
       try {
-        const response = await fetch(`/api/tasks?search=${encodeURIComponent(searchTerm)}`);
+        const response = await fetch(`/api/queries/tasks?search=${encodeURIComponent(searchTerm)}`);
         if (response.ok) {
           const data = await response.json();
           setTasks(data.tasks || []);
