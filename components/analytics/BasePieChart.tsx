@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { ReactNode } from 'react';
+import { PIE_CHART, TOOLTIP_STYLE } from '@/lib/constants/charts';
 
 export interface ChartDataPoint {
   name: string;
@@ -49,7 +50,7 @@ export function BasePieChart({
   data,
   emptyContent,
   height = 300,
-  outerRadius = 80,
+  outerRadius = PIE_CHART.OUTER_RADIUS,
 }: BasePieChartProps) {
   if (data.length === 0) {
     return (
@@ -88,11 +89,7 @@ export function BasePieChart({
               ))}
             </Pie>
             <Tooltip
-              contentStyle={{
-                backgroundColor: 'hsl(var(--background))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '6px',
-              }}
+              contentStyle={TOOLTIP_STYLE}
             />
             <Legend />
           </PieChart>

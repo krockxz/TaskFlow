@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/hooks/use-toast';
 import type { CommandAction, TaskStatus } from '@/lib/types';
@@ -291,17 +291,6 @@ export default function TaskDetailPage() {
     setDeleteDialogOpen(false);
   }, [deleteTask]);
 
-  // Get user initials for avatar
-  const getUserInitials = (email: string) => {
-    return email
-      .split('@')[0]
-      .split('.')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -462,11 +451,7 @@ export default function TaskDetailPage() {
                 {users.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-5 w-5">
-                        <AvatarFallback className="text-xs">
-                          {getUserInitials(user.email)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar email={user.email} className="h-5 w-5" fallbackClassName="text-xs" />
                       <span>{user.email}</span>
                     </div>
                   </SelectItem>

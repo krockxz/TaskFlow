@@ -9,13 +9,14 @@ import React, {
 import { AnimatePresence, motion, MotionProps } from "motion/react"
 
 import { cn } from "@/lib/utils"
+import { ANIMATION_DURATION, EASING } from "@/lib/constants/animations"
 
 export function AnimatedListItem({ children }: { children: React.ReactNode }) {
   const animations: MotionProps = {
     initial: { opacity: 0, y: 8 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -8 },
-    transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] as const },
+    transition: { duration: ANIMATION_DURATION.FAST / 1000, ease: EASING.DEFAULT },
   }
 
   return (

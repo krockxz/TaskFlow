@@ -6,24 +6,10 @@
  */
 
 import prisma from '@/lib/prisma';
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { requireAuth } from '@/lib/middleware/auth';
-import { customFieldsSchema } from '@/lib/validation/template';
-import { TaskStatus } from '@prisma/client';
-import { apiSuccess, notFound, unauthorized, validationError, badRequest, serverError, handleApiError, apiError } from '@/lib/api/errors';
-
-const createTaskSchema = z.object({
-  title: z.string().min(3).max(255),
-  description: z.string().optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
-  assignedTo: z.string().uuid().optional(),
-  dueDate: z.string().datetime().optional(),
-  templateId: z.string().uuid().optional(),
-  customFields: z.record(z.union([z.string(), z.number(), z.boolean(), z.null()])).optional(),
-  status: z.enum(['OPEN', 'IN_PROGRESS', 'READY_FOR_REVIEW', 'DONE']).optional(),
-  timezone: z.string().optional(),
-});
+import { apiSuccess, notFound, serverError, handleApiError, apiError, badRequest } from '@/lib/api/errors';
+import { createTaskSchema } from '@/lib/api/schemas';
+import { validateTemplateFields, TASK_INCLUDES } from '@/lib/api/handlers/task';
 
 export async function POST(request: Request) {
   try {
@@ -54,40 +40,18 @@ export async function POST(request: Request) {
         return notFound('Template not found');
       }
 
-      // Get the step for the initial status
-      const templateSteps = template.steps as Array<{
-        status: TaskStatus;
-        requiredFields: Array<{ name: string }>;
-      }>;
-      const initialStep = templateSteps.find((s) => s.status === (input.status || 'OPEN'));
+      const validation = await validateTemplateFields(
+        template,
+        input.status || 'OPEN',
+        input.customFields
+      );
 
-      if (initialStep && initialStep.requiredFields.length > 0) {
-        // Validate that all required fields are present
-        const requiredFieldNames = initialStep.requiredFields.map((f) => f.name);
-        const providedFields = input.customFields || {};
-
-        const missingFields = requiredFieldNames.filter(
-          (name) => !(name in providedFields) || providedFields[name] === '' || providedFields[name] === null
-        );
-
-        if (missingFields.length > 0) {
-          return apiError('Missing required fields for template', 400, undefined, {
-            missingFields,
-            requiredFields: initialStep.requiredFields,
-          });
-        }
-
-        // Validate custom fields against schema
-        try {
-          customFieldsSchema.parse(input.customFields);
-        } catch (error) {
-          return badRequest('Invalid custom fields');
-        }
+      if (!validation.isValid && validation.errorResponse) {
+        return validation.errorResponse;
       }
     }
 
     // Use transaction to ensure atomicity
-    // If any operation fails, all changes are rolled back
     const task = await prisma.$transaction(async (tx) => {
       // Create task
       const newTask = await tx.task.create({
@@ -103,10 +67,7 @@ export async function POST(request: Request) {
           status: input.status,
           timezone: input.timezone,
         },
-        include: {
-          createdBy: { select: { id: true, email: true } },
-          assignedToUser: { select: { id: true, email: true } },
-        },
+        include: TASK_INCLUDES,
       });
 
       // Create event log

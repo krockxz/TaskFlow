@@ -8,7 +8,7 @@
 import { redirect } from 'next/navigation';
 import { getAuthUser } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
-import { Header } from '@/components/layout/Header';
+import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
 import { TimeRangeSelector } from '@/components/analytics/TimeRangeSelector';
 import { TasksPerUserChart } from '@/components/analytics/TasksPerUserChart';
 import { StatusDistributionChart } from '@/components/analytics/StatusDistributionChart';
@@ -135,7 +135,8 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 
   return (
     <div className="min-h-screen bg-background">
-      <Header
+      <UnifiedHeader
+        variant="dashboard"
         userEmail={user.email ?? 'Unknown'}
         title="Analytics"
         description="Track team productivity and task distribution"

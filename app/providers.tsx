@@ -14,6 +14,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ThemeProvider } from 'next-themes';
 import { useState, type ReactNode } from 'react';
 import { ToastProvider, Toaster } from '@/components/toast/ToastProvider';
+import { CACHE_DURATION } from '@/lib/constants/time';
 
 export function Providers({ children }: { children: ReactNode }) {
   // Create QueryClient instance once and reuse
@@ -23,9 +24,9 @@ export function Providers({ children }: { children: ReactNode }) {
         defaultOptions: {
           queries: {
             // Data remains fresh for 5 seconds
-            staleTime: 5000,
+            staleTime: CACHE_DURATION.FIVE_SECONDS,
             // Cache data for 30 minutes (v5 uses gcTime instead of cacheTime)
-            gcTime: 30 * 60 * 1000,
+            gcTime: CACHE_DURATION.THIRTY_MINUTES,
             // Don't refetch on window focus by default
             refetchOnWindowFocus: false,
             // Retry failed requests once

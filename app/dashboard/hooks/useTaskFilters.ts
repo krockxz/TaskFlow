@@ -6,17 +6,14 @@ export function useTaskFilters() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // Get current filters from URL
     const statusFilter = searchParams.get('status')?.split(',') || [];
     const priorityFilter = searchParams.get('priority')?.split(',') || [];
     const assignedTo = searchParams.get('assignedTo') || undefined;
     const dateRange = searchParams.get('dateRange') as DateRangePreset | undefined;
     const search = searchParams.get('search') || undefined;
 
-    // Update URL with filters
     const updateFilters = useCallback((updates: Record<string, string | undefined>) => {
         const params = new URLSearchParams(searchParams.toString());
-
         Object.entries(updates).forEach(([key, value]) => {
             if (value) {
                 params.set(key, value);
@@ -24,11 +21,9 @@ export function useTaskFilters() {
                 params.delete(key);
             }
         });
-
         router.push(`/dashboard?${params.toString()}`);
     }, [router, searchParams]);
 
-    // Toggle status filter
     const toggleStatus = useCallback((status: TaskStatus) => {
         const currentStatus = searchParams.get('status')?.split(',') || [];
         const updated = currentStatus.includes(status)
@@ -37,7 +32,6 @@ export function useTaskFilters() {
         updateFilters({ status: updated.length > 0 ? updated.join(',') : undefined });
     }, [searchParams, updateFilters]);
 
-    // Toggle priority filter
     const togglePriority = useCallback((priority: TaskPriority) => {
         const currentPriority = searchParams.get('priority')?.split(',') || [];
         const updated = currentPriority.includes(priority)
@@ -63,20 +57,16 @@ export function useTaskFilters() {
     }, [router]);
 
     return {
-        filters: {
-            status: statusFilter,
-            priority: priorityFilter,
-            assignedTo,
-            dateRange,
-            search,
-        },
-        actions: {
-            toggleStatus,
-            togglePriority,
-            setAssignedTo,
-            setDateRange,
-            setSearch,
-            clearAll,
-        },
+        status: statusFilter,
+        priority: priorityFilter,
+        assignedTo,
+        dateRange,
+        search,
+        toggleStatus,
+        togglePriority,
+        setAssignedTo,
+        setDateRange,
+        setSearch,
+        clearAll,
     };
 }

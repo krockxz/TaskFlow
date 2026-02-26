@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { CHART_DIMENSIONS, CHART_MARGIN, TOOLTIP_STYLE } from '@/lib/constants/charts';
 
 interface TasksPerUserChartProps {
   data: { email: string; count: number }[];
@@ -47,8 +48,8 @@ export function TasksPerUserChart({ data }: TasksPerUserChartProps) {
         <CardTitle>Tasks per User</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+        <ResponsiveContainer width="100%" height={CHART_DIMENSIONS.DEFAULT_HEIGHT}>
+          <BarChart data={data} margin={CHART_MARGIN.DEFAULT}>
             <XAxis
               dataKey="email"
               angle={-45}
@@ -58,11 +59,7 @@ export function TasksPerUserChart({ data }: TasksPerUserChartProps) {
             />
             <YAxis />
             <Tooltip
-              contentStyle={{
-                backgroundColor: 'hsl(var(--background))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '6px',
-              }}
+              contentStyle={TOOLTIP_STYLE}
               cursor={{ fill: 'hsl(var(--muted) / 0.3)' }}
             />
             <Bar dataKey="count" radius={[4, 4, 0, 0]}>

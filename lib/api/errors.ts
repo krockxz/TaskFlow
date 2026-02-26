@@ -12,6 +12,7 @@
 
 import { NextResponse } from 'next/server';
 import type { ZodError } from 'zod';
+import { HTTP_STATUS } from '@/lib/constants/http';
 
 // ============================================================================
 // Types
@@ -44,7 +45,7 @@ export type ApiResponse<T = unknown> = ApiSuccess<T> | ApiError;
  */
 export function apiError(
   error: string,
-  status: number = 500,
+  status: number = HTTP_STATUS.INTERNAL_SERVER_ERROR,
   fieldErrors?: Record<string, string[]>,
   details?: unknown
 ): NextResponse<ApiError> {
@@ -71,35 +72,35 @@ export function badRequest(
   error: string = 'Bad request',
   fieldErrors?: Record<string, string[]>
 ): NextResponse<ApiError> {
-  return apiError(error, 400, fieldErrors);
+  return apiError(error, HTTP_STATUS.BAD_REQUEST, fieldErrors);
 }
 
 /**
  * Creates a 401 Unauthorized error response
  */
 export function unauthorized(error: string = 'Unauthorized'): NextResponse<ApiError> {
-  return apiError(error, 401);
+  return apiError(error, HTTP_STATUS.UNAUTHORIZED);
 }
 
 /**
  * Creates a 403 Forbidden error response
  */
 export function forbidden(error: string = 'Forbidden'): NextResponse<ApiError> {
-  return apiError(error, 403);
+  return apiError(error, HTTP_STATUS.FORBIDDEN);
 }
 
 /**
  * Creates a 404 Not Found error response
  */
 export function notFound(error: string = 'Resource not found'): NextResponse<ApiError> {
-  return apiError(error, 404);
+  return apiError(error, HTTP_STATUS.NOT_FOUND);
 }
 
 /**
  * Creates a 500 Internal Server Error response
  */
 export function serverError(error: string = 'An error occurred'): NextResponse<ApiError> {
-  return apiError(error, 500);
+  return apiError(error, HTTP_STATUS.INTERNAL_SERVER_ERROR);
 }
 
 /**
@@ -135,7 +136,7 @@ export function invalidJson(): NextResponse<ApiError> {
  */
 export function apiSuccess<T = unknown>(
   data?: T,
-  status: number = 200
+  status: number = HTTP_STATUS.OK
 ): NextResponse<ApiSuccess<T>> {
   const body: ApiSuccess<T> = {
     success: true,
@@ -152,7 +153,7 @@ export function apiSuccess<T = unknown>(
  * Creates a 201 Created response
  */
 export function created<T = unknown>(data: T): NextResponse<ApiSuccess<T>> {
-  return apiSuccess(data, 201);
+  return apiSuccess(data, HTTP_STATUS.CREATED);
 }
 
 // ============================================================================

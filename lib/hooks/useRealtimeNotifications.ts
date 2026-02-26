@@ -7,7 +7,9 @@
 
 'use client';
 
-import { useRealtimeSubscription } from './useRealtimeSubscription';
+import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
 
 /**
  * Subscribe to Supabase realtime for notifications.
@@ -29,12 +31,40 @@ import { useRealtimeSubscription } from './useRealtimeSubscription';
  * ```
  */
 export function useRealtimeNotifications(userId: string | undefined) {
-  useRealtimeSubscription({
-    channelName: 'notifications-realtime',
-    table: 'notifications',
-    filter: userId ? `userId=eq.${userId}` : undefined,
-    events: ['INSERT', 'UPDATE'],
-    queryKeys: [['notifications'], ['notifications', 'unread-count']],
-    logMessage: 'Connected to Supabase realtime for notifications',
-  });
+  const queryClient = useQueryClient();
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (!supabase || !userId) return;
+
+    const channel = supabase
+      .channel(`notifications-realtime-${userId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `userId=eq.${userId}`,
+      }, () => {
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'notifications',
+        filter: `userId=eq.${userId}`,
+      }, () => {
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] });
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Connected to Supabase realtime for notifications');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, queryClient, userId]);
 }

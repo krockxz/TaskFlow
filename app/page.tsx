@@ -14,12 +14,12 @@ import {
   CTASection,
   Footer,
 } from '@/components/landing';
-import { AppHeader } from '@/components/layout/AppHeader';
+import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
+      <UnifiedHeader variant="app" />
       <main>
         <HeroSection />
         <div className="section-divider max-w-6xl mx-auto" />

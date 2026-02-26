@@ -6,7 +6,7 @@
  */
 
 import { WebClient } from '@slack/web-api';
-import { EncryptionService } from '@/lib/crypto';
+import { decryptToken } from '@/lib/crypto';
 
 interface SlackTokens {
   botAccessToken: string;
@@ -51,9 +51,9 @@ export async function getSlackClientByTeam(teamId: string): Promise<WebClient | 
   }
 
   return getSlackClient(teamId, {
-    botAccessToken: EncryptionService.decryptToken(installation.botAccessToken),
+    botAccessToken: decryptToken(installation.botAccessToken),
     userAccessToken: installation.accessToken
-      ? EncryptionService.decryptToken(installation.accessToken)
+      ? decryptToken(installation.accessToken)
       : undefined,
   });
 }

@@ -5,48 +5,44 @@
  */
 
 import prisma from '@/lib/prisma';
-import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { requireAuth } from '@/lib/middleware/auth';
-import { apiSuccess, notFound, unauthorized, validationError, serverError, handleApiError } from '@/lib/api/errors';
-
-const updatePrioritySchema = z.object({
-  taskId: z.string().uuid(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH']),
-});
+import { apiSuccess, notFound, serverError, handleApiError } from '@/lib/api/errors';
+import { updatePriorityRequestSchema } from '@/lib/api/schemas';
+import { fetchTask, TASK_INCLUDES } from '@/lib/api/handlers/task';
 
 export async function POST(request: Request) {
   try {
     const user = await requireAuth();
+
     const body = await request.json();
-    const { taskId, priority } = updatePrioritySchema.parse(body);
+    const { taskId, priority } = updatePriorityRequestSchema.parse(body);
 
     // Get current task state
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-    });
+    const task = await fetchTask(taskId);
 
     if (!task) {
       return notFound('Task not found');
     }
 
-    // Update task priority
-    const updated = await prisma.task.update({
-      where: { id: taskId },
-      data: { priority },
-      include: {
-        createdBy: { select: { id: true, email: true } },
-        assignedToUser: { select: { id: true, email: true } },
-      },
-    });
+    // Update task priority and create event in transaction
+    const updated = await prisma.$transaction(async (tx) => {
+      const updatedTask = await tx.task.update({
+        where: { id: taskId },
+        data: { priority },
+        include: TASK_INCLUDES,
+      });
 
-    // Create event log
-    await prisma.taskEvent.create({
-      data: {
-        taskId,
-        eventType: 'PRIORITY_CHANGED',
-        changedById: user.id,
-      },
+      // Create event log
+      await tx.taskEvent.create({
+        data: {
+          taskId,
+          eventType: 'PRIORITY_CHANGED',
+          newPriority: priority,
+          changedById: user.id,
+        },
+      });
+
+      return updatedTask;
     });
 
     return apiSuccess(updated);

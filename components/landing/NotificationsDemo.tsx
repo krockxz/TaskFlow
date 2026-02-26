@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { AnimatedList } from "@/components/ui/animated-list";
+import { ANIMATION_DURATION } from "@/lib/constants/animations";
 
 interface Item {
   name: string;
@@ -51,7 +52,10 @@ const Notification = ({ name, description, icon, time }: Item) => {
       )}
     >
       {/* Hover effect */}
-      <div className="absolute inset-0 bg-foreground/[0.02] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div
+        className="absolute inset-0 bg-foreground/[0.02] opacity-0 group-hover:opacity-100"
+        style={{ transitionDuration: `${ANIMATION_DURATION.NORMAL}ms` }}
+      />
 
       <div className="relative flex items-center gap-4 px-4 py-3.5">
         {/* Icon */}
@@ -75,7 +79,10 @@ const Notification = ({ name, description, icon, time }: Item) => {
         </div>
 
         {/* Accent line on hover */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-0.5 bg-foreground/20 scale-y-0 transition-transform duration-300 group-hover:scale-y-100" />
+        <div
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-0.5 bg-foreground/20 scale-y-0 group-hover:scale-y-100"
+          style={{ transitionDuration: `${ANIMATION_DURATION.NORMAL}ms` }}
+        />
       </div>
     </figure>
   );

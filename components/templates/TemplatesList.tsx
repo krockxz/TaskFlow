@@ -9,8 +9,9 @@ import { HandoffTemplate } from '@prisma/client';
 import { TemplateBuilder } from './TemplateBuilder';
 import { motion } from 'motion/react';
 import { useToast } from '@/lib/hooks/use-toast';
-import type { HandoffTemplateStep } from '@/lib/types/template';
+import type { TemplateStep } from '@/lib/types/template';
 import { TaskStatus } from '@prisma/client';
+import { API_ENDPOINTS } from '@/lib/constants';
 
 interface TemplatesListProps {
   templates: HandoffTemplate[];
@@ -23,7 +24,7 @@ export function TemplatesList({ templates }: TemplatesListProps) {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this template?')) return;
 
-    const response = await fetch(`/api/templates/${id}`, { method: 'DELETE' });
+    const response = await fetch(API_ENDPOINTS.TEMPLATES_BY_ID(id), { method: 'DELETE' });
 
     if (response.ok) {
       success('Template deleted successfully');
@@ -66,7 +67,7 @@ export function TemplatesList({ templates }: TemplatesListProps) {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-1 mb-4">
-                {(template.steps as unknown as HandoffTemplateStep[])?.map((step) => (
+                {(template.steps as unknown as TemplateStep[])?.map((step) => (
                   <Badge key={step.status} variant="secondary">
                     {step.status.replace(/_/g, ' ')}
                   </Badge>

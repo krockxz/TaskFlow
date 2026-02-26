@@ -12,10 +12,11 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
 import { handoffTemplateSchema } from '@/lib/validation/template';
-import { TemplateStep, TemplateField } from '@/lib/types/template';
+import type { TemplateStep, TemplateField } from '@/lib/types/template';
 import { TaskStatus } from '@prisma/client';
 import { useToast } from '@/lib/hooks/use-toast';
 import type { FieldValues } from 'react-hook-form';
+import { API_ENDPOINTS } from '@/lib/constants';
 
 interface TemplateBuilderProps {
   open: boolean;
@@ -78,7 +79,7 @@ export function TemplateBuilder({ open, onOpenChange, onSuccess }: TemplateBuild
 
   const onSubmit = async (data: FieldValues) => {
     const payload = { ...data, steps };
-    const response = await fetch('/api/templates', {
+    const response = await fetch(API_ENDPOINTS.TEMPLATES, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

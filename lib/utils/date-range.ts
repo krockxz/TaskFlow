@@ -6,6 +6,7 @@
  */
 
 import type { DateRangePreset } from '@/lib/types';
+import { TIME_MS } from '@/lib/constants/time';
 
 /**
  * Creates a Prisma-compatible date filter for the given preset.
@@ -23,11 +24,11 @@ export const getDateRangeFilter = (
     case 'today':
       return { gte: startOfDay };
     case 'last_7_days':
-      return { gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) };
+      return { gte: new Date(now.getTime() - 7 * TIME_MS.DAY) };
     case 'last_30_days':
-      return { gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) };
+      return { gte: new Date(now.getTime() - TIME_MS.MONTH) };
     case 'last_90_days':
-      return { gte: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000) };
+      return { gte: new Date(now.getTime() - 3 * TIME_MS.MONTH) };
     case 'all_time':
     default:
       return undefined;

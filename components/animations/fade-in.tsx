@@ -9,8 +9,9 @@
 
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
+import { EASING, STAGGER, ANIMATION_DURATION } from '@/lib/constants/animations';
 
-interface FadeInProps {
+export interface FadeInProps {
   children: ReactNode;
   delay?: number;
   duration?: number;
@@ -21,7 +22,7 @@ interface FadeInProps {
 export function FadeIn({
   children,
   delay = 0,
-  duration = 0.4,
+  duration = ANIMATION_DURATION.SLOW / 1000,
   className = '',
   staggerChildren = false,
 }: FadeInProps) {
@@ -32,8 +33,8 @@ export function FadeIn({
       transition={{
         duration,
         delay,
-        ease: [0.4, 0, 0.2, 1],
-        staggerChildren: staggerChildren ? 0.1 : 0,
+        ease: EASING.DEFAULT,
+        staggerChildren: staggerChildren ? STAGGER.NORMAL : 0,
       }}
       className={className}
     >

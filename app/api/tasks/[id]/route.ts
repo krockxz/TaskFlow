@@ -2,14 +2,17 @@
  * Task Detail API Route
  *
  * GET - Returns a single task with full details and event history.
+ * DELETE - Deletes a task (only by creator).
  */
 
-import prisma from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/middleware/auth';
+import prisma from '@/lib/prisma';
 import type { Task, TaskEvent } from '@/lib/types';
 import type { TaskStatus, TaskPriority, EventType } from '@prisma/client';
-import { notFound, forbidden, unauthorized, serverError, handleApiError, apiSuccess } from '@/lib/api/errors';
+import { notFound, forbidden, serverError, handleApiError, apiSuccess } from '@/lib/api/errors';
+import { taskIdSchema } from '@/lib/api/schemas';
+import { TASK_WITH_EVENTS_INCLUDES } from '@/lib/api/handlers/task';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -27,25 +30,12 @@ export async function GET(_request: Request, context: RouteContext) {
     const user = await requireAuth();
     const { id } = await context.params;
 
+    // Validate task ID format
+    taskIdSchema.parse(id);
+
     const task = await prisma.task.findUnique({
       where: { id },
-      include: {
-        createdBy: {
-          select: { id: true, email: true },
-        },
-        assignedToUser: {
-          select: { id: true, email: true },
-        },
-        events: {
-          include: {
-            changedBy: {
-              select: { id: true, email: true },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-          take: 50, // Limit to most recent 50 events for performance
-        },
-      },
+      include: TASK_WITH_EVENTS_INCLUDES,
     });
 
     if (!task) {
@@ -87,7 +77,7 @@ export async function GET(_request: Request, context: RouteContext) {
       })),
     };
 
-    return NextResponse.json(serializedTask);
+    return Response.json(serializedTask);
   } catch (error) {
     const handled = handleApiError(error, 'GET /api/tasks/[id]');
     if (handled) return handled;
@@ -98,13 +88,15 @@ export async function GET(_request: Request, context: RouteContext) {
 
 /**
  * DELETE /api/tasks/[id]
- * Deletes a task (soft delete by updating status or hard delete).
- * For MVP, we'll do a hard delete.
+ * Deletes a task (only creator can delete).
  */
-export async function DELETE(request: Request, context: RouteContext) {
+export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const user = await requireAuth();
     const { id } = await context.params;
+
+    // Validate task ID format
+    taskIdSchema.parse(id);
 
     // First verify ownership
     const task = await prisma.task.findUnique({

@@ -10,16 +10,6 @@ export interface TemplateField {
   options?: string[];
 }
 
-/**
- * HandoffTemplateStep - Type for template steps stored in database
- * This matches the schema defined in lib/validation/template.ts
- */
-export interface HandoffTemplateStep {
-  status: TaskStatus;
-  requiredFields: TemplateField[];
-  allowedTransitions: TaskStatus[];
-}
-
 export interface TemplateStep {
   status: TaskStatus;
   requiredFields: TemplateField[];

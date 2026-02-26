@@ -3,7 +3,7 @@ import { getAuthUser } from '@/lib/middleware/auth';
 import prisma from '@/lib/prisma';
 import { TemplatesList } from '@/components/templates/TemplatesList';
 import { TemplatesGridSkeleton } from '@/components/skeletons/template-card-skeleton';
-import { Header } from '@/components/layout/Header';
+import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
 
 async function getTemplates(userId: string) {
   return prisma.handoffTemplate.findMany({
@@ -20,7 +20,8 @@ export default async function TemplatesPage() {
 
   return (
     <>
-      <Header
+      <UnifiedHeader
+        variant="dashboard"
         userEmail={user.email ?? 'Unknown'}
         title="Handoff Templates"
         description="Manage templates for standardized task workflows"

@@ -9,13 +9,15 @@
 import { Bell, BarChart3, Users, Zap, Search, LayoutDashboard, CheckSquare, Settings, Moon, MoreHorizontal } from 'lucide-react';
 import { motion, useInView, AnimatePresence } from 'motion/react';
 import { useRef, useState, useEffect } from 'react';
+import { SPRING_PRESETS, STAGGER } from '@/lib/constants/animations';
+import { Z_INDEX } from '@/lib/constants/layout';
 
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.08,
+            staggerChildren: STAGGER.FAST,
             delayChildren: 0.1
         }
     }
@@ -28,8 +30,7 @@ const itemVariants = {
         y: 0,
         transition: {
             type: "spring" as const,
-            stiffness: 100,
-            damping: 12
+            ...SPRING_PRESETS.SOFT
         }
     }
 } as const;
@@ -134,7 +135,7 @@ const StatCard = ({ label, value, change, icon: Icon, delay }: StatCardProps) =>
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
-        transition={{ delay, type: "spring", stiffness: 80, damping: 15 }}
+        transition={{ delay, type: "spring" as const, ...SPRING_PRESETS.SOFT }}
         className="bg-card rounded-xl border border-border p-4 relative overflow-hidden group"
     >
         <div className="flex items-center justify-between mb-3 relative">
@@ -214,7 +215,8 @@ export function Features() {
                     <div className="h-[540px] relative overflow-hidden rounded-xl bg-gradient-to-br from-background via-background to-secondary/30 border border-border">
                         {/* Browser Chrome */}
                         <motion.div
-                            className="absolute top-0 left-0 right-0 z-10 h-11 bg-secondary/30 border-b border-border flex items-center px-4 gap-3"
+                            className="absolute top-0 left-0 right-0 h-11 bg-secondary/30 border-b border-border flex items-center px-4 gap-3"
+                            style={{ zIndex: Z_INDEX.STICKY }}
                             initial={{ y: -20 }}
                             animate={isInView ? { y: 0 } : {}}
                             transition={{ delay: 0.5, type: "spring" }}
@@ -404,8 +406,11 @@ export function Features() {
                         </div>
                         {/* Fade-out overlay matching section background */}
                         <div
-                            className="absolute bottom-0 left-0 right-0 h-52 pointer-events-none z-20"
-                            style={{ background: 'linear-gradient(to bottom, transparent, hsl(var(--background)))' }}
+                            className="absolute bottom-0 left-0 right-0 h-52 pointer-events-none"
+                            style={{
+                                background: 'linear-gradient(to bottom, transparent, hsl(var(--background)))',
+                                zIndex: Z_INDEX.SIDEBAR
+                            }}
                         />
                     </div>
                 </motion.div>

@@ -1,22 +1,53 @@
 /**
  * Date Formatting Utilities
  *
- * Reusable date formatting functions for consistent date display across the app.
+ * Simple date formatting with a unified API.
  */
 
+type DateFormat = 'relative' | 'date' | 'datetime' | 'time';
+
 /**
- * Formats a date string as a relative time (e.g., "5m ago", "2h ago", "3d ago").
+ * Format a date string based on the specified format type.
  *
  * @param dateString - ISO date string to format
- * @returns Formatted relative time string
+ * @param format - The format type ('relative', 'date', 'datetime', 'time')
+ * @param locale - Locale to use for non-relative formats (default: 'en-US')
+ * @returns Formatted date string
  *
  * @example
  * ```ts
- * formatRelativeDate('2024-01-01T10:00:00Z'); // "2d ago" (depending on current time)
+ * formatDate('2024-01-01T10:00:00Z', 'relative');  // "2d ago"
+ * formatDate('2024-01-01T10:00:00Z', 'date');      // "1/1/2024"
+ * formatDate('2024-01-01T10:00:00Z', 'datetime');  // "1/1/2024, 10:00:00 AM"
+ * formatDate('2024-01-01T10:00:00Z', 'time');      // "10:00 AM"
  * ```
  */
-export function formatRelativeDate(dateString: string): string {
-  const date = new Date(dateString);
+export function formatDate(dateString: string | Date | null | undefined, format: DateFormat = 'date', locale = 'en-US'): string {
+  if (!dateString) return '-';
+
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+
+  switch (format) {
+    case 'relative':
+      return formatRelativeDate(date);
+    case 'date':
+      return date.toLocaleDateString(locale);
+    case 'datetime':
+      return date.toLocaleString(locale);
+    case 'time':
+      return date.toLocaleTimeString(locale, {
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+    default:
+      return date.toLocaleDateString(locale);
+  }
+}
+
+/**
+ * Formats a date as a relative time (e.g., "5m ago", "2h ago", "3d ago").
+ */
+function formatRelativeDate(date: Date): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
@@ -31,65 +62,9 @@ export function formatRelativeDate(dateString: string): string {
 }
 
 /**
- * Formats a date string as a localized date string.
- *
- * @param dateString - ISO date string to format
- * @param locale - Locale to use for formatting (default: 'en-US')
- * @returns Formatted date string
- *
- * @example
- * ```ts
- * formatDate('2024-01-01T10:00:00Z'); // "1/1/2024"
- * formatDate('2024-01-01T10:00:00Z', 'en-GB'); // "01/01/2024"
- * ```
- */
-export function formatDate(dateString: string, locale = 'en-US'): string {
-  return new Date(dateString).toLocaleDateString(locale);
-}
-
-/**
- * Formats a date string as a localized date and time string.
- *
- * @param dateString - ISO date string to format
- * @param locale - Locale to use for formatting (default: 'en-US')
- * @returns Formatted date and time string
- *
- * @example
- * ```ts
- * formatDateTime('2024-01-01T10:00:00Z'); // "1/1/2024, 10:00:00 AM"
- * ```
- */
-export function formatDateTime(dateString: string, locale = 'en-US'): string {
-  return new Date(dateString).toLocaleString(locale);
-}
-
-/**
- * Formats a date string as a short time (e.g., "10:30 AM").
- *
- * @param dateString - ISO date string to format
- * @param locale - Locale to use for formatting (default: 'en-US')
- * @returns Formatted time string
- *
- * @example
- * ```ts
- * formatTime('2024-01-01T10:30:00Z'); // "10:30 AM"
- * ```
- */
-export function formatTime(dateString: string, locale = 'en-US'): string {
-  return new Date(dateString).toLocaleTimeString(locale, {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
-
-/**
  * Checks if a date is today.
- *
- * @param dateString - ISO date string to check
- * @returns True if the date is today
  */
-export function isToday(dateString: string): boolean {
-  const date = new Date(dateString);
+export function isToday(date: Date): boolean {
   const today = new Date();
   return (
     date.getDate() === today.getDate() &&
@@ -99,16 +74,23 @@ export function isToday(dateString: string): boolean {
 }
 
 /**
- * Checks if a date is within the last N days.
- *
- * @param dateString - ISO date string to check
- * @param days - Number of days to look back
- * @returns True if the date is within the specified range
+ * Checks if a date is in the past.
  */
-export function isWithinLastDays(dateString: string, days: number): boolean {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / 86400000);
-  return diffDays >= 0 && diffDays <= days;
+export function isPast(date: Date): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const compareDate = new Date(date);
+  compareDate.setHours(0, 0, 0, 0);
+  return compareDate.getTime() < today.getTime();
+}
+
+/**
+ * Calculates the difference in days between two dates.
+ */
+export function differenceInDays(dateLeft: Date, dateRight: Date): number {
+  const left = new Date(dateLeft);
+  const right = new Date(dateRight);
+  left.setHours(0, 0, 0, 0);
+  right.setHours(0, 0, 0, 0);
+  return Math.round((left.getTime() - right.getTime()) / 86400000);
 }

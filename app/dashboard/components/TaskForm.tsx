@@ -39,6 +39,7 @@ import { TemplateSelector } from '@/components/templates/TemplateSelector';
 import type { HandoffTemplate } from '@prisma/client';
 import type { CustomFieldsData } from '@/lib/types/template';
 import { customFieldsSchema } from '@/lib/validation/template';
+import { API_ENDPOINTS } from '@/lib/constants';
 
 // Zod validation schema for task creation
 const taskSchema = z.object({
@@ -94,7 +95,7 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/tasks/create', {
+      const response = await fetch(API_ENDPOINTS.TASKS_CREATE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

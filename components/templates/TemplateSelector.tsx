@@ -7,8 +7,9 @@ import { HandoffTemplate } from '@prisma/client';
 import { CustomFieldsRenderer } from './CustomFieldsRenderer';
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Loader2, AlertCircle } from 'lucide-react';
-import type { HandoffTemplateStep } from '@/lib/types/template';
+import type { TemplateStep } from '@/lib/types/template';
 import type { Control } from 'react-hook-form';
+import { CACHE_DURATION, API_ENDPOINTS } from '@/lib/constants';
 
 interface TemplateSelectorProps {
   control: Control<any>; // Using any to support different form schemas
@@ -16,7 +17,7 @@ interface TemplateSelectorProps {
 }
 
 async function fetchTemplates(): Promise<HandoffTemplate[]> {
-  const response = await fetch('/api/templates');
+  const response = await fetch(API_ENDPOINTS.TEMPLATES);
   if (!response.ok) {
     throw new Error(`Failed to fetch templates: ${response.statusText}`);
   }
@@ -34,7 +35,7 @@ export function TemplateSelector({ control, onTemplateChange }: TemplateSelector
   } = useQuery<HandoffTemplate[], Error>({
     queryKey: ['templates'],
     queryFn: fetchTemplates,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: CACHE_DURATION.FIVE_MINUTES,
   });
 
   const handleTemplateChange = (templateId: string) => {
@@ -48,7 +49,7 @@ export function TemplateSelector({ control, onTemplateChange }: TemplateSelector
   };
 
   // Get required fields for current status
-  const templateSteps = selectedTemplate?.steps as unknown as HandoffTemplateStep[] | undefined;
+  const templateSteps = selectedTemplate?.steps as unknown as TemplateStep[] | undefined;
   const currentStep = templateSteps?.find(
     (step) => step.status === currentStatus
   );
@@ -119,7 +120,7 @@ export function TemplateSelector({ control, onTemplateChange }: TemplateSelector
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {(selectedTemplate.steps as unknown as HandoffTemplateStep[])?.map((step) => (
+                  {(selectedTemplate.steps as unknown as TemplateStep[])?.map((step) => (
                     <SelectItem key={step.status} value={step.status}>
                       {step.status.replace(/_/g, ' ').toLowerCase()}
                     </SelectItem>

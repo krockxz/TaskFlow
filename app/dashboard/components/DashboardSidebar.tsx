@@ -405,7 +405,6 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(["Status-0-Status", "Priority-0-Priority"]));
 
     const taskFilters = useTaskFilters();
-    const { filters, actions } = taskFilters;
 
     const toggleExpanded = (itemKey: string) => {
         setExpandedItems((prev) => {
@@ -429,8 +428,8 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                         {
                             label: "All Tasks",
                             icon: <LayoutDashboard size={18} />,
-                            isActive: !filters.status.length && !filters.priority.length && !filters.assignedTo && !filters.dateRange,
-                            onClick: actions.clearAll
+                            isActive: !taskFilters.status.length && !taskFilters.priority.length && !taskFilters.assignedTo && !taskFilters.dateRange,
+                            onClick: taskFilters.clearAll
                         }
                     ]
                 }
@@ -446,23 +445,23 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                             label: "Status",
                             icon: <CheckCircle2 size={18} />,
                             hasDropdown: true,
-                            isActive: filters.status.length > 0,
+                            isActive: taskFilters.status.length > 0,
                             children: [
-                                { label: "Open", onClick: () => actions.toggleStatus("OPEN"), isActive: filters.status.includes("OPEN") },
-                                { label: "In Progress", onClick: () => actions.toggleStatus("IN_PROGRESS"), isActive: filters.status.includes("IN_PROGRESS") },
-                                { label: "Review", onClick: () => actions.toggleStatus("READY_FOR_REVIEW"), isActive: filters.status.includes("READY_FOR_REVIEW") },
-                                { label: "Done", onClick: () => actions.toggleStatus("DONE"), isActive: filters.status.includes("DONE") },
+                                { label: "Open", onClick: () => taskFilters.toggleStatus("OPEN"), isActive: taskFilters.status.includes("OPEN") },
+                                { label: "In Progress", onClick: () => taskFilters.toggleStatus("IN_PROGRESS"), isActive: taskFilters.status.includes("IN_PROGRESS") },
+                                { label: "Review", onClick: () => taskFilters.toggleStatus("READY_FOR_REVIEW"), isActive: taskFilters.status.includes("READY_FOR_REVIEW") },
+                                { label: "Done", onClick: () => taskFilters.toggleStatus("DONE"), isActive: taskFilters.status.includes("DONE") },
                             ]
                         },
                         {
                             label: "Priority",
                             icon: <Flag size={18} />,
                             hasDropdown: true,
-                            isActive: filters.priority.length > 0,
+                            isActive: taskFilters.priority.length > 0,
                             children: [
-                                { label: "High", onClick: () => actions.togglePriority("HIGH"), isActive: filters.priority.includes("HIGH"), icon: <Flag size={12} className="text-red-500" /> },
-                                { label: "Medium", onClick: () => actions.togglePriority("MEDIUM"), isActive: filters.priority.includes("MEDIUM"), icon: <Flag size={12} className="text-yellow-500" /> },
-                                { label: "Low", onClick: () => actions.togglePriority("LOW"), isActive: filters.priority.includes("LOW"), icon: <Flag size={12} className="text-blue-500" /> },
+                                { label: "High", onClick: () => taskFilters.togglePriority("HIGH"), isActive: taskFilters.priority.includes("HIGH"), icon: <Flag size={12} className="text-red-500" /> },
+                                { label: "Medium", onClick: () => taskFilters.togglePriority("MEDIUM"), isActive: taskFilters.priority.includes("MEDIUM"), icon: <Flag size={12} className="text-yellow-500" /> },
+                                { label: "Low", onClick: () => taskFilters.togglePriority("LOW"), isActive: taskFilters.priority.includes("LOW"), icon: <Flag size={12} className="text-blue-500" /> },
                             ]
                         }
                     ]
@@ -474,13 +473,13 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                             label: "Assigned To",
                             icon: <Users size={18} />,
                             hasDropdown: true,
-                            isActive: !!filters.assignedTo,
+                            isActive: !!taskFilters.assignedTo,
                             children: [
-                                { label: "All Users", onClick: () => actions.setAssignedTo("all"), isActive: !filters.assignedTo },
+                                { label: "All Users", onClick: () => taskFilters.setAssignedTo("all"), isActive: !taskFilters.assignedTo },
                                 ...users.map(u => ({
                                     label: u.email,
-                                    onClick: () => actions.setAssignedTo(u.id),
-                                    isActive: filters.assignedTo === u.id
+                                    onClick: () => taskFilters.setAssignedTo(u.id),
+                                    isActive: taskFilters.assignedTo === u.id
                                 }))
                             ]
                         },
@@ -488,12 +487,12 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                             label: "Date Range",
                             icon: <CalendarIcon size={18} />,
                             hasDropdown: true,
-                            isActive: !!filters.dateRange,
+                            isActive: !!taskFilters.dateRange,
                             children: [
-                                { label: "Any time", onClick: () => actions.setDateRange("all_time"), isActive: !filters.dateRange },
-                                { label: "Today", onClick: () => actions.setDateRange("today"), isActive: filters.dateRange === 'today' },
-                                { label: "Last 7 days", onClick: () => actions.setDateRange("last_7_days"), isActive: filters.dateRange === 'last_7_days' },
-                                { label: "Last 30 days", onClick: () => actions.setDateRange("last_30_days"), isActive: filters.dateRange === 'last_30_days' },
+                                { label: "Any time", onClick: () => taskFilters.setDateRange("all_time"), isActive: !taskFilters.dateRange },
+                                { label: "Today", onClick: () => taskFilters.setDateRange("today"), isActive: taskFilters.dateRange === 'today' },
+                                { label: "Last 7 days", onClick: () => taskFilters.setDateRange("last_7_days"), isActive: taskFilters.dateRange === 'last_7_days' },
+                                { label: "Last 30 days", onClick: () => taskFilters.setDateRange("last_30_days"), isActive: taskFilters.dateRange === 'last_30_days' },
                             ]
                         }
                     ]
@@ -515,7 +514,7 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                 }
             ]
         }
-    }), [filters.status, filters.priority, filters.assignedTo, filters.dateRange, actions, users]) as Record<string, { title: string, sections: MenuSectionT[] }>;
+    }), [taskFilters, users]) as Record<string, { title: string, sections: MenuSectionT[] }>;
 
     const currentContent = sidebarContent[activeSection] || sidebarContent.filters;
 
@@ -561,8 +560,8 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                 {activeSection === 'filters' && (
                     <SearchContainer
                         isCollapsed={isCollapsed}
-                        onSearch={actions.setSearch}
-                        initialValue={filters.search}
+                        onSearch={taskFilters.setSearch}
+                        initialValue={taskFilters.search}
                     />
                 )}
 

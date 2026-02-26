@@ -364,9 +364,7 @@ Running `make db:seed` creates:
 - `GET /api/analytics/workload-balance`
 
 ### GitHub
-- `POST /api/github/connect` - Store OAuth token
-- `GET /api/github/repos` - List user repos
-- `POST /api/github/sync` - Import issues as tasks
+- `POST /api/github/webhook` - GitHub webhook handler
 
 ## Deployment
 

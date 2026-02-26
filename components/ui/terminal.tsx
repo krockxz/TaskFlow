@@ -12,6 +12,7 @@ import {
 import { motion, MotionProps, useInView } from "motion/react"
 
 import { cn } from "@/lib/utils"
+import { Z_INDEX } from "@/lib/constants/layout"
 
 interface SequenceContextValue {
   completeItem: (index: number) => void
@@ -231,9 +232,10 @@ export const Terminal = ({
     <div
       ref={containerRef}
       className={cn(
-        "border-border bg-background z-0 h-full max-h-[400px] w-full max-w-lg rounded-xl border",
+        'border-border bg-background h-full max-h-[400px] w-full max-w-lg rounded-xl border',
         className
       )}
+      style={{ zIndex: Z_INDEX.BASE }}
     >
       <div className="border-border flex flex-col gap-y-2 border-b p-4">
         <div className="flex flex-row gap-x-2">

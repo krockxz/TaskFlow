@@ -2,14 +2,7 @@
 
 import { BasePieChart, type ChartDataPoint } from './BasePieChart';
 import type { TaskStatus } from '@/lib/types';
-import { STATUS_LABELS } from '@/lib/constants/filters';
-
-const STATUS_COLORS: Record<TaskStatus, string> = {
-  OPEN: 'hsl(var(--secondary))',
-  IN_PROGRESS: 'hsl(var(--chart-3))',
-  READY_FOR_REVIEW: 'hsl(var(--chart-4))',
-  DONE: 'hsl(var(--chart-1))',
-};
+import { STATUS_COLORS, STATUS_LABELS } from '@/lib/constants/status';
 
 interface StatusDistributionChartProps {
   data: { status: TaskStatus; count: number }[];

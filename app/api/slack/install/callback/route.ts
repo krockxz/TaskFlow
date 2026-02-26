@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
 import prisma from '@/lib/prisma';
-import { EncryptionService } from '@/lib/crypto';
+import { encryptToken } from '@/lib/crypto';
 import { verifyOAuthState } from '@/lib/slack/oauth';
 
 /**
@@ -81,15 +81,15 @@ export async function GET(request: NextRequest) {
         enterpriseId: enterprise?.id,
         userId: taskFlowUserId,
         slackUserId: authed_user.id,
-        accessToken: access_token ? EncryptionService.encryptToken(access_token) : '',
-        botAccessToken: EncryptionService.encryptToken(bot?.token || ''),
+        accessToken: access_token ? encryptToken(access_token) : '',
+        botAccessToken: encryptToken(bot?.token || ''),
         scope: scope || '',
       },
       update: {
         userId: taskFlowUserId,
         slackUserId: authed_user.id,
-        accessToken: access_token ? EncryptionService.encryptToken(access_token) : '',
-        botAccessToken: EncryptionService.encryptToken(bot?.token || ''),
+        accessToken: access_token ? encryptToken(access_token) : '',
+        botAccessToken: encryptToken(bot?.token || ''),
         scope: scope || '',
       },
     });

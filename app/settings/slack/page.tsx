@@ -12,7 +12,7 @@ import { getAuthUser } from '@/lib/middleware/auth';
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { env } from '@/lib/env';
-import { Header } from '@/components/layout/Header';
+import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
 
 export default async function SlackSettingsPage() {
   const user = await getAuthUser();
@@ -24,7 +24,8 @@ export default async function SlackSettingsPage() {
 
   return (
     <>
-      <Header
+      <UnifiedHeader
+        variant="dashboard"
         userEmail={user.email ?? 'Unknown'}
         title="Slack Integration"
         description="Connect your Slack workspace for task notifications and AI summaries"

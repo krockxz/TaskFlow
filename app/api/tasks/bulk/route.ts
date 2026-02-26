@@ -1,38 +1,14 @@
+/**
+ * Bulk Task Operations API Route
+ *
+ * Handles bulk operations on multiple tasks at once.
+ * Supported actions: delete, changeStatus, changePriority, reassign
+ */
+
 import prisma from '@/lib/prisma';
-import { NextResponse } from 'next/server';
-import type { TaskStatus, TaskPriority } from '@prisma/client';
 import { requireAuth } from '@/lib/middleware/auth';
-import { z } from 'zod';
-import { apiSuccess, notFound, forbidden, unauthorized, validationError, badRequest, serverError, handleApiError } from '@/lib/api/errors';
-
-const bulkActionSchema = z.enum(['delete', 'changeStatus', 'changePriority', 'reassign']);
-
-const bulkRequestSchema = z.object({
-  taskIds: z.array(z.string().uuid()).min(1),
-  action: bulkActionSchema,
-  payload: z
-    .discriminatedUnion('action', [
-      z.object({
-        action: z.literal('changeStatus'),
-        status: z.enum(['OPEN', 'IN_PROGRESS', 'READY_FOR_REVIEW', 'DONE']),
-      }),
-      z.object({
-        action: z.literal('changePriority'),
-        priority: z.enum(['LOW', 'MEDIUM', 'HIGH']),
-      }),
-      z.object({
-        action: z.literal('reassign'),
-        assignedTo: z.string().min(1),
-      }),
-    ])
-    .optional()
-    .transform((val) => {
-      // Extract just the action-specific payload
-      if (!val) return undefined;
-      const { action, ...rest } = val;
-      return rest as { status?: TaskStatus; priority?: TaskPriority; assignedTo?: string };
-    }),
-});
+import { apiSuccess, notFound, forbidden, badRequest, serverError, handleApiError } from '@/lib/api/errors';
+import { bulkRequestSchema } from '@/lib/api/schemas';
 
 export async function POST(req: Request) {
   try {
@@ -64,8 +40,6 @@ export async function POST(req: Request) {
       case 'delete': {
         // Intentionally no task event creation for delete:
         // Events are foreign-keyed to tasks and would be cascaded away.
-        // The tasks themselves are permanently removed, so an audit trail
-        // within the task_events table would serve no purpose.
         await prisma.task.deleteMany({
           where: { id: { in: taskIds } },
         });
@@ -73,7 +47,7 @@ export async function POST(req: Request) {
       }
 
       case 'changeStatus': {
-        const status = payload?.status as TaskStatus;
+        const status = payload?.status;
         await prisma.task.updateMany({
           where: { id: { in: taskIds } },
           data: { status },
@@ -91,7 +65,7 @@ export async function POST(req: Request) {
       }
 
       case 'changePriority': {
-        const priority = payload?.priority as TaskPriority;
+        const priority = payload?.priority;
         await prisma.task.updateMany({
           where: { id: { in: taskIds } },
           data: { priority },
@@ -109,7 +83,7 @@ export async function POST(req: Request) {
       }
 
       case 'reassign': {
-        const assignedTo = payload?.assignedTo as string;
+        const assignedTo = payload?.assignedTo;
         // Verify assignee exists
         const assignee = await prisma.user.findUnique({
           where: { id: assignedTo },

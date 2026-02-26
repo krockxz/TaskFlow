@@ -3,6 +3,7 @@
 import * as React from "react"
 import { motion } from "motion/react"
 import { cn } from "@/lib/utils"
+import { ANIMATION_DURATION } from "@/lib/constants/animations"
 
 interface HoverLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   children: React.ReactNode
@@ -24,7 +25,8 @@ export function HoverLink({ children, href, showArrow = true, className, ...prop
       </span>
       {showArrow && (
         <motion.span
-          className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"
+          className="opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all"
+          style={{ transitionDuration: `${ANIMATION_DURATION.NORMAL}ms` }}
           initial={false}
           animate={{ opacity: 0, x: -4 }}
           whileHover={{ opacity: 1, x: 0 }}
@@ -36,7 +38,7 @@ export function HoverLink({ children, href, showArrow = true, className, ...prop
         className="absolute bottom-0 left-0 h-px bg-current opacity-0 group-hover:opacity-20"
         initial={{ width: 0 }}
         whileHover={{ width: "100%" }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: ANIMATION_DURATION.FAST / 1000 }}
       />
     </a>
   )

@@ -7,7 +7,9 @@
 
 'use client';
 
-import { useRealtimeSubscription } from './useRealtimeSubscription';
+import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
 import type { TaskFilters } from '@/lib/types';
 
 /**
@@ -19,17 +21,30 @@ import type { TaskFilters } from '@/lib/types';
  * @param currentPage - Optional current page number for pagination-aware invalidation
  */
 export function useRealtimeTasks(filters?: TaskFilters, currentPage?: number) {
-  // Build dynamic query keys based on filters and pagination
-  // This ensures that when filters change, the correct queries are invalidated
-  const queryKeys = filters
-    ? [['tasks', filters, currentPage]].filter(Boolean)
-    : [['tasks']];
+  const queryClient = useQueryClient();
+  const supabase = createClient();
 
-  useRealtimeSubscription({
-    channelName: 'tasks-realtime',
-    table: 'tasks',
-    events: ['*'],
-    queryKeys,
-    logMessage: 'Connected to Supabase realtime for tasks',
-  });
+  useEffect(() => {
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel('tasks-realtime')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'tasks',
+      }, () => {
+        // Invalidate all task queries with current filter context
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Connected to Supabase realtime for tasks');
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, queryClient]);
 }

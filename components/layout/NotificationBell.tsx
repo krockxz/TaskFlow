@@ -13,13 +13,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { getNotificationsQueryConfig, getUnreadCountQueryConfig } from '@/lib/query/config';
+import { queryConfig } from '@/lib/query/config';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRealtimeNotifications } from '@/lib/hooks/useRealtimeNotifications';
 import { useSession } from '@/lib/hooks/useSession';
-import { formatRelativeDate } from '@/lib/utils/date';
+import { formatDate } from '@/lib/utils/date';
 import type { Notification } from '@/lib/types';
+import { API_ENDPOINTS } from '@/lib/constants';
 
 interface UnreadCountResponse {
   count: number;
@@ -33,7 +34,7 @@ interface MarkReadResponse {
  * Fetches notifications for the current user.
  */
 async function fetchNotifications(): Promise<Notification[]> {
-  const response = await fetch('/api/notifications');
+  const response = await fetch(API_ENDPOINTS.NOTIFICATIONS);
   if (!response.ok) {
     throw new Error('Failed to fetch notifications');
   }
@@ -44,7 +45,7 @@ async function fetchNotifications(): Promise<Notification[]> {
  * Fetches the unread notification count for the current user.
  */
 async function fetchUnreadCount(): Promise<UnreadCountResponse> {
-  const response = await fetch('/api/notifications/unread-count');
+  const response = await fetch(API_ENDPOINTS.NOTIFICATIONS_UNREAD_COUNT);
   if (!response.ok) {
     return { count: 0 };
   }
@@ -55,7 +56,7 @@ async function fetchUnreadCount(): Promise<UnreadCountResponse> {
  * Marks all notifications as read for the current user.
  */
 async function markAllAsRead(): Promise<MarkReadResponse> {
-  const response = await fetch('/api/notifications/mark-read', {
+  const response = await fetch(API_ENDPOINTS.NOTIFICATIONS_MARK_READ, {
     method: 'POST',
   });
   if (!response.ok) {
@@ -101,7 +102,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
     isLoading: isLoadingNotifications,
     error: notificationsError,
   } = useQuery({
-    ...getNotificationsQueryConfig(),
+    ...queryConfig.notifications,
+    queryKey: ['notifications'],
     queryFn: fetchNotifications,
     enabled: !!user,
   });
@@ -111,7 +113,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
     data: unreadData = { count: 0 },
     isLoading: isLoadingCount,
   } = useQuery({
-    ...getUnreadCountQueryConfig(),
+    ...queryConfig.notifications,
+    queryKey: ['notifications', 'unread-count'],
     queryFn: fetchUnreadCount,
     enabled: !!user,
   });
@@ -204,7 +207,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
                       </span>
                     )}
                     <span className="text-xs text-muted-foreground ml-auto">
-                      {formatRelativeDate(notification.createdAt)}
+                      {formatDate(notification.createdAt, 'relative')}
                     </span>
                   </div>
                 </Link>

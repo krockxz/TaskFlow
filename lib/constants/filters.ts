@@ -3,9 +3,26 @@
  *
  * Shared constants for status, priority, and other filter options.
  * Used across components to maintain consistency and avoid duplication.
+ *
+ * NOTE: Status and priority labels are now exported from @/lib/constants/status
+ * This file re-exports them for backward compatibility.
  */
 
 import type { TaskStatus, TaskPriority } from '@/lib/types';
+
+// Re-export status/priority constants from centralized status module
+export {
+  STATUS_LABELS,
+  PRIORITY_LABELS,
+  STATUS_CONFIG,
+  PRIORITY_CONFIG,
+  STATUS_COLORS,
+  PRIORITY_COLORS,
+  STATUS_ICONS,
+  STATUS_VARIANTS,
+  PRIORITY_VARIANTS,
+  getPriorityVariant,
+} from './status';
 
 /**
  * Status options with labels for filters and selects.
@@ -25,25 +42,6 @@ export const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
   { value: 'MEDIUM', label: 'Medium' },
   { value: 'LOW', label: 'Low' },
 ] as const;
-
-/**
- * Status label lookup map.
- */
-export const STATUS_LABELS: Record<TaskStatus, string> = {
-  OPEN: 'Open',
-  IN_PROGRESS: 'In Progress',
-  READY_FOR_REVIEW: 'Ready for Review',
-  DONE: 'Done',
-} as const;
-
-/**
- * Priority label lookup map.
- */
-export const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  HIGH: 'High',
-  MEDIUM: 'Medium',
-  LOW: 'Low',
-} as const;
 
 /**
  * Date range preset labels.

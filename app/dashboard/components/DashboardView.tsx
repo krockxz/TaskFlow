@@ -3,7 +3,6 @@
 import { TaskTable } from './TaskTable';
 import FilterChips from './FilterChips';
 import { NewTaskDialog } from './NewTaskDialog';
-import { GitHubSettings } from '@/components/dashboard/GitHubSettings';
 import { ShiftBriefButton } from '@/components/shift-brief/ShiftBriefButton';
 import type { Task } from '@/lib/types';
 
@@ -56,7 +55,7 @@ export function DashboardView({
 
           <div className="relative flex-1 min-h-0">
             <div className="h-full overflow-y-auto px-6 pt-5 pb-16 max-w-3xl">
-              <GitHubSettings />
+              <p className="text-muted-foreground">Settings coming soon...</p>
             </div>
             <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
           </div>

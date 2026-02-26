@@ -16,7 +16,7 @@ import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { getTasksQueryConfig } from '@/lib/query/config';
+import { queryConfig } from '@/lib/query/config';
 import type { Task, TaskStatus, TaskPriority, DateRangePreset, TaskFilters } from '@/lib/types';
 import { useRealtimeTasks } from '@/lib/hooks/useRealtimeTasks';
 import {
@@ -39,25 +39,23 @@ import {
   Avatar,
   AvatarFallback,
 } from '@/components/ui/avatar';
+import { getInitials } from '@/components/ui/user-avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { BulkActionBar } from './BulkActionBar';
-import { CheckCircle2, Circle, Clock, AlertCircle, Github, Inbox, ChevronLeft, ChevronRight, Loader2, ChevronDown } from 'lucide-react';
+import { DueDate } from '@/components/ui/due-date';
+import { Github, Inbox, ChevronLeft, ChevronRight, Loader2, ChevronDown } from 'lucide-react';
 import { motion } from 'motion/react';
-import { STATUS_LABELS, normalizeStatus } from '@/lib/constants/filters';
+import { STATUS_LABELS, STATUS_CONFIG, getPriorityVariant } from '@/lib/constants/status';
+import { normalizeStatus } from '@/lib/constants/filters';
 import { useToast } from '@/lib/hooks/use-toast';
-import { format, formatDistanceToNow, isPast, isToday, differenceInDays } from 'date-fns';
 import {
   Card,
   CardContent,
   CardHeader,
 } from '@/components/ui/card';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { UnifiedTaskCard } from '@/components/tasks/TaskCard';
 
 interface TaskTableProps {
   initialTasks: Task[];
@@ -71,106 +69,6 @@ interface TasksResponse {
   pageSize: number;
   totalPages: number;
 }
-
-// Status configuration with icons and variants (labels from shared constants)
-const statusConfig = {
-  OPEN: {
-    label: STATUS_LABELS.OPEN,
-    variant: 'secondary' as const,
-    icon: Circle,
-  },
-  IN_PROGRESS: {
-    label: STATUS_LABELS.IN_PROGRESS,
-    variant: 'info' as const,
-    icon: Clock,
-  },
-  READY_FOR_REVIEW: {
-    label: STATUS_LABELS.READY_FOR_REVIEW,
-    variant: 'warning' as const,
-    icon: AlertCircle,
-  },
-  DONE: {
-    label: STATUS_LABELS.DONE,
-    variant: 'success' as const,
-    icon: CheckCircle2,
-  },
-} as const;
-
-// Priority badge variant
-const getPriorityVariant = (priority: string): 'default' | 'secondary' | 'outline' => {
-  switch (priority) {
-    case 'HIGH':
-      return 'default';
-    case 'MEDIUM':
-      return 'secondary';
-    case 'LOW':
-      return 'outline';
-    default:
-      return 'secondary';
-  }
-};
-
-// Get initials from email
-const getInitials = (email: string): string => {
-  const parts = email.split('@')[0].split('.');
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return email.substring(0, 2).toUpperCase();
-};
-
-// Due date utilities
-const getDueDateInfo = (dueDate: string | null) => {
-  if (!dueDate) return null;
-
-  const date = new Date(dueDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  if (isPast(date) && !isToday(date)) {
-    return {
-      text: format(date, 'MMM d'),
-      subtitle: `Overdue by ${differenceInDays(today, date)} day${differenceInDays(today, date) > 1 ? 's' : ''}`,
-      variant: 'overdue' as const,
-    };
-  }
-
-  if (isToday(date)) {
-    return {
-      text: 'Today',
-      subtitle: format(date, 'MMM d'),
-      variant: 'today' as const,
-    };
-  }
-
-  const daysUntil = differenceInDays(date, today);
-  if (daysUntil <= 3) {
-    return {
-      text: format(date, 'EEE, MMM d'),
-      subtitle: `In ${daysUntil} day${daysUntil > 1 ? 's' : ''}`,
-      variant: 'soon' as const,
-    };
-  }
-
-  return {
-    text: format(date, 'MMM d'),
-    subtitle: null,
-    variant: 'normal' as const,
-  };
-};
-
-const getDueDateVariant = (variant: 'overdue' | 'today' | 'soon' | 'normal') => {
-  switch (variant) {
-    case 'overdue':
-      return 'text-destructive';
-    case 'today':
-      return 'text-orange-500';
-    case 'soon':
-      return 'text-yellow-500 dark:text-yellow-400';
-    default:
-      return 'text-muted-foreground';
-  }
-};
 
 // Simplified row animation variants - no per-row delays for better performance
 const rowVariants = {
@@ -198,6 +96,11 @@ const emptyStateVariants = {
 
 // Pagination settings
 const ITEMS_PER_PAGE = 25;
+
+// Local wrapper for getPriorityVariant that accepts string (from API)
+const getPriorityVariantFromString = (priority: string): 'default' | 'secondary' | 'outline' => {
+  return getPriorityVariant(priority as TaskPriority);
+};
 
 export function TaskTable({ initialTasks, users }: TaskTableProps) {
   const queryClient = useQueryClient();
@@ -240,7 +143,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
 
   // Fetch tasks with TanStack Query - filter-aware query key
   const { data: response = { tasks: initialTasks, total: initialTasks.length, page: 1, pageSize: ITEMS_PER_PAGE, totalPages: 1 }, isLoading } = useQuery<TasksResponse>({
-    ...getTasksQueryConfig(filters),
+    ...queryConfig.tasks,
     queryKey: ['tasks', filters, currentPage],
     queryFn: async () => {
       const url = `/api/queries/tasks?${queryString}`;
@@ -508,7 +411,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
         <TableBody>
           {tasks.map((task, index) => {
             const isSelected = selectedIds.has(task.id);
-            const statusInfo = statusConfig[task.status] || statusConfig.OPEN;
+            const statusInfo = STATUS_CONFIG[task.status] || STATUS_CONFIG.OPEN;
             const StatusIcon = statusInfo.icon;
 
             return (
@@ -518,8 +421,8 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
                 index={index}
                 isSelected={isSelected}
                 StatusIcon={StatusIcon}
-                statusConfig={statusConfig}
-                getPriorityVariant={getPriorityVariant}
+                statusConfig={STATUS_CONFIG}
+                getPriorityVariant={getPriorityVariantFromString}
                 getInitials={getInitials}
                 updateStatus={updateStatus}
                 onToggle={() => toggleRow(task.id)}
@@ -532,28 +435,25 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
 
       {/* Mobile Cards - hidden on md+, shown on mobile */}
       <div className="md:hidden space-y-4">
-        {tasks.map((task, index) => {
+        {tasks.map((task) => {
           const isSelected = selectedIds.has(task.id);
-          const statusInfo = statusConfig[task.status] || statusConfig.OPEN;
-          const StatusIcon = statusInfo.icon;
-          const dueDateInfo = getDueDateInfo(task.dueDate);
 
           return (
-            <MobileTaskCard
+            <motion.div
               key={task.id}
-              task={task}
-              index={index}
-              isSelected={isSelected}
-              StatusIcon={StatusIcon}
-              statusConfig={statusConfig}
-              getPriorityVariant={getPriorityVariant}
-              getInitials={getInitials}
-              getDueDateInfo={getDueDateInfo}
-              getDueDateVariant={getDueDateVariant}
-              updateStatus={updateStatus}
-              onToggle={() => toggleRow(task.id)}
-              isUpdating={updatingTaskIds.has(task.id)}
-            />
+              variants={rowVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <UnifiedTaskCard
+                task={task as any}
+                variant="mobile"
+                isSelected={isSelected}
+                isUpdating={updatingTaskIds.has(task.id)}
+                onToggleSelection={() => toggleRow(task.id)}
+                onUpdateStatus={(status) => updateStatus({ taskId: task.id, status })}
+              />
+            </motion.div>
           );
         })}
       </div>
@@ -643,176 +543,6 @@ function MobileSkeleton() {
   );
 }
 
-// Mobile Task Card Component
-interface MobileTaskCardProps {
-  task: Task;
-  index: number;
-  isSelected: boolean;
-  StatusIcon: React.ComponentType<{ className?: string }>;
-  statusConfig: typeof statusConfig;
-  getPriorityVariant: (priority: string) => 'default' | 'secondary' | 'outline';
-  getInitials: (email: string) => string;
-  getDueDateInfo: (dueDate: string | null) => ReturnType<typeof getDueDateInfo>;
-  getDueDateVariant: (variant: 'overdue' | 'today' | 'soon' | 'normal') => string;
-  updateStatus: (params: { taskId: string; status: string }) => void;
-  onToggle: () => void;
-  isUpdating: boolean;
-}
-
-const MobileTaskCard = memo(function MobileTaskCard({
-  task,
-  index,
-  isSelected,
-  StatusIcon,
-  statusConfig,
-  getPriorityVariant,
-  getInitials,
-  getDueDateInfo,
-  getDueDateVariant,
-  updateStatus,
-  onToggle,
-  isUpdating,
-}: MobileTaskCardProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dueDateInfo = getDueDateInfo(task.dueDate);
-
-  return (
-    <motion.div
-      variants={rowVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <Card className={isSelected ? 'bg-muted/50' : ''}>
-        <CardHeader className="pb-3">
-          <div className="flex items-start gap-3">
-            {/* Selection Checkbox */}
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={onToggle}
-              aria-label={`Select task ${task.title}`}
-              className="mt-0.5"
-            />
-
-            {/* Title and GitHub Link */}
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Link
-                  href={`/tasks/${task.id}`}
-                  className="font-medium text-primary hover:underline"
-                >
-                  {task.title}
-                </Link>
-                {task.githubIssueUrl && (
-                  <a
-                    href={task.githubIssueUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    title="Linked to GitHub Issue"
-                    aria-label="Open GitHub issue"
-                  >
-                    <Github className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
-
-              {/* Status Dropdown - Inline Editable */}
-              <Select
-                value={task.status.toLowerCase()}
-                onValueChange={(value) =>
-                  updateStatus({ taskId: task.id, status: value })
-                }
-                disabled={isUpdating}
-              >
-                <SelectTrigger className="h-7 w-fit gap-1.5">
-                  {isUpdating ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                  ) : (
-                    <StatusIcon className="h-3.5 w-3.5" />
-                  )}
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="open">Open</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="ready_for_review">Ready for Review</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-3">
-          {/* Priority Badge */}
-          <div className="flex items-center gap-2">
-            <Badge variant={getPriorityVariant(task.priority)} className="capitalize">
-              {task.priority.toLowerCase()}
-            </Badge>
-
-            {/* Due Date with Color Coding */}
-            {dueDateInfo ? (
-              <div className="flex flex-col">
-                <span className={`text-sm font-medium ${getDueDateVariant(dueDateInfo.variant)}`}>
-                  {dueDateInfo.text}
-                </span>
-                {dueDateInfo.subtitle && (
-                  <span className="text-xs text-muted-foreground">
-                    {dueDateInfo.subtitle}
-                  </span>
-                )}
-              </div>
-            ) : (
-              <span className="text-sm text-muted-foreground">No due date</span>
-            )}
-          </div>
-
-          {/* Assigned User */}
-          {task.assignedToUser ? (
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                <AvatarFallback className="text-xs">
-                  {getInitials(task.assignedToUser.email)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm text-muted-foreground">
-                {task.assignedToUser.email}
-              </span>
-            </div>
-          ) : (
-            <span className="text-sm text-muted-foreground">Unassigned</span>
-          )}
-
-          {/* Expandable Details Section */}
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-full justify-between hover:bg-muted/50 mt-2">
-                <span className="text-sm">Details</span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-3 space-y-2">
-              {/* Description */}
-              {task.description && (
-                <div className="text-sm text-muted-foreground">
-                  <span className="font-medium text-foreground">Description: </span>
-                  {task.description}
-                </div>
-              )}
-
-              {/* Updated Date */}
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">Updated: </span>
-                {new Date(task.updatedAt).toLocaleDateString()}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-});
-
 // Animated Checkbox Component with spring animation
 interface AnimatedCheckboxProps {
   checked: boolean;
@@ -837,7 +567,7 @@ interface AnimatedTableRowProps {
   index: number;
   isSelected: boolean;
   StatusIcon: React.ComponentType<{ className?: string }>;
-  statusConfig: typeof statusConfig;
+  statusConfig: typeof STATUS_CONFIG;
   getPriorityVariant: (priority: string) => 'default' | 'secondary' | 'outline';
   getInitials: (email: string) => string;
   updateStatus: (params: { taskId: string; status: string }) => void;
@@ -929,20 +659,7 @@ const AnimatedTableRow = memo(function AnimatedTableRow({
       </TableCell>
 
       <TableCell>
-        {task.dueDate ? (
-          <div className="flex flex-col">
-            <span className={`text-sm font-medium ${getDueDateVariant(getDueDateInfo(task.dueDate)?.variant || 'normal')}`}>
-              {getDueDateInfo(task.dueDate)?.text}
-            </span>
-            {getDueDateInfo(task.dueDate)?.subtitle && (
-              <span className="text-xs text-muted-foreground">
-                {getDueDateInfo(task.dueDate)?.subtitle}
-              </span>
-            )}
-          </div>
-        ) : (
-          <span className="text-sm text-muted-foreground">-</span>
-        )}
+        <DueDate dueDate={task.dueDate} showSubtitle={false} />
       </TableCell>
 
       <TableCell>
