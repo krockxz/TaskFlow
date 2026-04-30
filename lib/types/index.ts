@@ -31,10 +31,14 @@ export interface Task {
   githubIssueNumber?: number | null;
   githubPrUrl?: string | null;
   githubRepo?: string | null;
+  // Handoff Template fields
+  templateId?: string | null;
+  customFields?: Record<string, string | number | boolean | null> | null;
   // Relations
   createdBy: UserPreview;
   assignedToUser: UserPreview | null;
   events?: TaskEvent[];
+  template?: any; // Consider adding a HandoffTemplate type later
 }
 
 export interface UserPreview {

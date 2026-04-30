@@ -33,23 +33,27 @@ export function CustomFieldsRenderer({ fields, control, values }: CustomFieldsRe
                 {field.label}
                 {field.required && <span className="text-destructive ml-1">*</span>}
               </FormLabel>
-              <FormControl>
-                {field.type === 'text' && (
+              {field.type === 'text' && (
+                <FormControl>
                   <Input
                     {...formField}
                     placeholder={field.label}
                     required={field.required}
                   />
-                )}
-                {field.type === 'textarea' && (
+                </FormControl>
+              )}
+              {field.type === 'textarea' && (
+                <FormControl>
                   <Textarea
                     {...formField}
                     placeholder={field.label}
                     required={field.required}
                     rows={3}
                   />
-                )}
-                {field.type === 'number' && (
+                </FormControl>
+              )}
+              {field.type === 'number' && (
+                <FormControl>
                   <Input
                     {...formField}
                     type="number"
@@ -57,32 +61,37 @@ export function CustomFieldsRenderer({ fields, control, values }: CustomFieldsRe
                     required={field.required}
                     onChange={(e) => formField.onChange(parseFloat(e.target.value) || 0)}
                   />
-                )}
-                {field.type === 'date' && (
+                </FormControl>
+              )}
+              {field.type === 'date' && (
+                <FormControl>
                   <Input
                     {...formField}
                     type="date"
                     required={field.required}
                   />
-                )}
-                {field.type === 'select' && (
-                  <Select
-                    onValueChange={formField.onChange}
-                    defaultValue={formField.value}
-                  >
+                </FormControl>
+              )}
+              {field.type === 'select' && (
+                <Select
+                  onValueChange={formField.onChange}
+                  defaultValue={formField.value}
+                >
+                  <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder={`Select ${field.label}`} />
                     </SelectTrigger>
-                    <SelectContent>
-                      {field.options?.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </FormControl>
+                  </FormControl>
+                  <SelectContent>
+                    {field.options?.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
               <FormMessage />
             </FormItem>
           )}

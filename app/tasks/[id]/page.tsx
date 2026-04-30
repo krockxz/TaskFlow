@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCommand } from '@/components/command/CommandContext';
-import { CheckCircle, UserPlus, Trash2, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle, UserPlus, Trash2, ArrowLeft, Loader2, AlertCircle, Calendar, Shield, Clock, Github, MessageSquare, History, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,9 +32,15 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { UserAvatar } from '@/components/ui/user-avatar';
-import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/lib/hooks/use-toast';
-import type { CommandAction, TaskStatus } from '@/lib/types';
+import type { CommandAction, TaskStatus, Task, TaskEvent } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { getInitials } from '@/components/ui/user-avatar';
+import { STATUS_CONFIG, getPriorityVariant } from '@/lib/constants/status';
+import { StatusUpdateDialog } from '@/components/tasks/StatusUpdateDialog';
 
 // Valid task status values matching the Prisma enum
 const VALID_STATUSES: TaskStatus[] = ['OPEN', 'IN_PROGRESS', 'READY_FOR_REVIEW', 'DONE'];
@@ -63,7 +69,7 @@ export default function TaskDetailPage() {
   const taskId = params.id as string;
 
   // Fetch task data
-  const [task, setTask] = useState<any>(null);
+  const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -79,25 +85,35 @@ export default function TaskDetailPage() {
   const [usersLoading, setUsersLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
 
+  // State for status update dialog (template fields)
+  const [statusDialogData, setStatusDialogData] = useState<{
+    isOpen: boolean;
+    taskId: string;
+    targetStatus: string;
+    requiredFields: any[];
+  }>({
+    isOpen: false,
+    taskId: '',
+    targetStatus: '',
+    requiredFields: [],
+  });
+
   useEffect(() => {
-    const supabase = createClient();
-
     async function loadTask() {
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('id', taskId)
-        .single();
-
-      if (error) {
-        console.error('Error loading task:', error);
-        setLoadError(error.message || 'Failed to load task');
+      try {
+        const response = await fetch(`/api/tasks/${taskId}`);
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to load task');
+        }
+        const data = await response.json();
+        setTask(data);
+      } catch (err: any) {
+        console.error('Error loading task:', err);
+        setLoadError(err.message || 'Failed to load task');
+      } finally {
         setLoading(false);
-        return;
       }
-
-      setTask(data);
-      setLoading(false);
     }
 
     loadTask();
@@ -129,20 +145,37 @@ export default function TaskDetailPage() {
     setActionLoading('status');
 
     try {
-      const response = await fetch('/api/tasks/update-status', {
-        method: 'POST',
+      const response = await fetch('/api/tasks/set-status', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ taskId, status: newStatus }),
+        body: JSON.stringify({ id: taskId, status: newStatus }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update status');
+        if (response.status === 400 && data.details?.requiredFields) {
+          setStatusDialogData({
+            isOpen: true,
+            taskId,
+            targetStatus: newStatus,
+            requiredFields: data.details.requiredFields,
+          });
+          return;
+        }
+        throw new Error(data.error || 'Failed to update status');
       }
 
       setTask({ ...task, status: newStatus });
       success(`Status updated to ${STATUS_LABELS[newStatus]}`);
-    } catch (err) {
+      
+      // Refresh to get new events
+      const refreshRes = await fetch(`/api/tasks/${taskId}`);
+      if (refreshRes.ok) {
+        const freshData = await refreshRes.json();
+        setTask(freshData);
+      }
+    } catch (err: any) {
       console.error('Error updating status:', err);
       error(err instanceof Error ? err.message : 'Failed to update status', 'Status Update Failed');
     } finally {
@@ -317,62 +350,258 @@ export default function TaskDetailPage() {
     );
   }
 
-  const statusColor = STATUS_COLORS[task.status as TaskStatus] || STATUS_COLORS.OPEN;
-  const statusLabel = STATUS_LABELS[task.status as TaskStatus] || task.status;
+  const statusInfo = STATUS_CONFIG[task.status as TaskStatus] || STATUS_CONFIG.OPEN;
+  const StatusIcon = statusInfo.icon;
+
+  // Get custom fields that have values
+  const hasCustomFields = task.customFields && Object.keys(task.customFields).length > 0;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background pb-20">
+      <div className="max-w-5xl mx-auto px-4 py-8">
         <Button
           variant="ghost"
           onClick={handleBack}
-          className="mb-4"
+          className="mb-6 hover:bg-muted"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          Back to Dashboard
         </Button>
 
-        <div className="bg-card rounded-lg border p-6">
-          <div className="flex items-start justify-between mb-4">
-            <h1 className="text-2xl font-bold">{task.title}</h1>
-            <div className="flex items-center gap-2">
-              {actionLoading === 'status' && <Loader2 className="h-4 w-4 animate-spin" />}
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor}`}>
-                {statusLabel}
-              </span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content Area */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-card rounded-xl border shadow-sm p-6 sm:p-8">
+              <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      Task Detail
+                    </span>
+                    <span>•</span>
+                    <span>ID: {task.id.slice(0, 8)}</span>
+                  </div>
+                  <h1 className="text-3xl font-bold tracking-tight break-words">{task.title}</h1>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge variant={getPriorityVariant(task.priority)} className="h-7 px-3 capitalize">
+                    {task.priority.toLowerCase()}
+                  </Badge>
+                  <div 
+                    className="flex items-center gap-2 px-3 py-1 rounded-full border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => setStatusDialogOpen(true)}
+                  >
+                    <StatusIcon className={`h-4 w-4 ${statusInfo.color}`} />
+                    <span className="text-sm font-medium">{STATUS_LABELS[task.status as TaskStatus]}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-8">
+                {/* Description Section */}
+                <section>
+                  <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
+                    <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                    Description
+                  </h3>
+                  <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap break-words">
+                    {task.description || (
+                      <span className="italic opacity-60 text-sm">No description provided for this task.</span>
+                    )}
+                  </div>
+                </section>
+
+                <Separator />
+
+                {/* Handoff Data Section (Custom Fields) */}
+                {hasCustomFields && (
+                  <section>
+                    <h3 className="text-sm font-semibold flex items-center gap-2 mb-4">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      Handoff Details
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-muted/20 rounded-lg p-5 border border-dashed">
+                      {Object.entries(task.customFields!).map(([key, value]) => (
+                        <div key={key} className="space-y-1">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground/70 tracking-widest">{key.replace(/([A-Z])/g, ' $1')}</p>
+                          <p className="text-sm font-medium break-words">
+                            {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value || '—')}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Activity Log / Events */}
+                <section>
+                  <h3 className="text-sm font-semibold flex items-center gap-2 mb-4">
+                    <History className="h-4 w-4 text-muted-foreground" />
+                    Activity History
+                  </h3>
+                  <div className="space-y-6 relative before:absolute before:left-[17px] before:top-2 before:bottom-2 before:w-[2px] before:bg-muted">
+                    {task.events?.length === 0 ? (
+                      <p className="text-xs text-muted-foreground italic pl-8">No activity recorded yet.</p>
+                    ) : (
+                      task.events?.map((event) => (
+                        <div key={event.id} className="relative pl-10">
+                          <div className="absolute left-0 top-1 w-[34px] h-[34px] rounded-full bg-background border-2 border-muted flex items-center justify-center z-10 shadow-sm">
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                          </div>
+                          <div className="flex flex-col">
+                            <p className="text-sm text-foreground break-words flex flex-wrap gap-1">
+                              <span className="font-semibold truncate max-w-[200px]">{event.changedBy?.email}</span>
+                              {' '}
+                              <span className="text-muted-foreground">
+                                {event.eventType === 'STATUS_CHANGED' && (
+                                  <>changed status to <span className="font-medium text-foreground">{event.newStatus?.replace(/_/g, ' ')}</span></>
+                                )}
+                                {event.eventType === 'CREATED' && 'created this task'}
+                                {event.eventType === 'ASSIGNED' && 'reassigned this task'}
+                                {event.eventType === 'PRIORITY_CHANGED' && 'updated the priority'}
+                              </span>
+                            </p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              {new Date(event.createdAt).toLocaleString(undefined, { 
+                                dateStyle: 'medium', 
+                                timeStyle: 'short' 
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </section>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">Description</h3>
-              <p className="text-sm">{task.description || 'No description'}</p>
-            </div>
+          {/* Sidebar / Meta Data */}
+          <div className="space-y-6">
+            <Card className="border-none shadow-sm bg-muted/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <UserPlus className="h-4 w-4 text-muted-foreground" />
+                  Stakeholders
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col gap-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Assignee</p>
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-background border hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => setAssignDialogOpen(true)}>
+                      <Avatar className="h-7 w-7">
+                        <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                          {task.assignedToUser ? getInitials(task.assignedToUser.email) : 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm font-medium truncate flex-1 min-w-0">
+                        {task.assignedToUser?.email || 'Unassigned'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Creator</p>
+                    <div className="flex items-center gap-2 p-2 opacity-80">
+                      <Avatar className="h-7 w-7">
+                        <AvatarFallback className="text-[10px] bg-muted text-muted-foreground">
+                          {getInitials(task.createdBy?.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm truncate flex-1 min-w-0">
+                        {task.createdBy?.email}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Priority</h3>
-                <p className="text-sm capitalize">{task.priority?.toLowerCase() || 'No priority'}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Assigned To</h3>
-                <p className="text-sm">{task.assigned_to || 'Unassigned'}</p>
-              </div>
-            </div>
+            <Card className="border-none shadow-sm bg-muted/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  Important Dates
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Due Date</span>
+                  <span className="font-medium">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No date set'}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Created</span>
+                  <span className="font-medium">{new Date(task.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Last Updated</span>
+                  <span className="font-medium">{new Date(task.updatedAt).toLocaleDateString()}</span>
+                </div>
+              </CardContent>
+            </Card>
 
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">Created</h3>
-              <p className="text-sm">{new Date(task.created_at).toLocaleDateString()}</p>
-            </div>
-          </div>
+            {task.githubIssueUrl && (
+              <Card className="border-none shadow-sm bg-muted/10 overflow-hidden">
+                <div className="bg-foreground/[0.03] p-3 border-b flex items-center justify-between">
+                  <span className="text-xs font-bold flex items-center gap-2">
+                    <Github className="h-3.5 w-3.5" />
+                    GitHub Sync
+                  </span>
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 uppercase bg-background">Active</Badge>
+                </div>
+                <CardContent className="p-4 space-y-3">
+                  <a 
+                    href={task.githubIssueUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium hover:text-primary transition-colors block underline-offset-4 hover:underline"
+                  >
+                    Issue #{task.githubIssueNumber} in {task.githubRepo}
+                  </a>
+                  {task.githubPrUrl && (
+                    <a 
+                      href={task.githubPrUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-500 hover:underline flex items-center gap-1.5"
+                    >
+                      <Shield className="h-3 w-3" />
+                      View Linked Pull Request
+                    </a>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-          <div className="mt-6 pt-6 border-t">
-            <p className="text-xs text-muted-foreground">
-              Press Cmd+K to open command palette for task actions
-            </p>
+            <div className="pt-4 space-y-3">
+              <Button 
+                variant="destructive" 
+                className="w-full justify-start text-xs h-9 bg-destructive/10 hover:bg-destructive/20 text-destructive border-none shadow-none"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-2" />
+                Delete Task
+              </Button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Status Update Dialog for required fields */}
+      <StatusUpdateDialog
+        isOpen={statusDialogData.isOpen}
+        onOpenChange={(open) => setStatusDialogData(prev => ({ ...prev, isOpen: open }))}
+        taskId={statusDialogData.taskId}
+        targetStatus={statusDialogData.targetStatus}
+        requiredFields={statusDialogData.requiredFields}
+        onSuccess={() => {
+          success('Task updated with required information');
+          // Reload task to get new events and fields
+          fetch(`/api/tasks/${taskId}`).then(res => res.json()).then(setTask);
+        }}
+      />
 
       {/* Status Change Dialog */}
       <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
@@ -380,7 +609,7 @@ export default function TaskDetailPage() {
           <DialogHeader>
             <DialogTitle>Change Task Status</DialogTitle>
             <DialogDescription>
-              Select a new status for &ldquo;{task?.title}&rdquo;. Current status is {statusLabel}.
+              Select a new status for &ldquo;{task?.title}&rdquo;. Current status is {STATUS_LABELS[task.status as TaskStatus]}.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">

@@ -8,6 +8,7 @@ import { CustomFieldsRenderer } from './CustomFieldsRenderer';
 import { FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
 import { Loader2, AlertCircle } from 'lucide-react';
 import type { TemplateStep } from '@/lib/types/template';
+import { useFormContext } from 'react-hook-form';
 import type { Control } from 'react-hook-form';
 import { CACHE_DURATION, API_ENDPOINTS } from '@/lib/constants';
 
@@ -25,8 +26,11 @@ async function fetchTemplates(): Promise<HandoffTemplate[]> {
 }
 
 export function TemplateSelector({ control, onTemplateChange }: TemplateSelectorProps) {
+  const { watch, setValue } = useFormContext();
   const [selectedTemplate, setSelectedTemplate] = useState<HandoffTemplate | null>(null);
-  const [currentStatus, setCurrentStatus] = useState<string | null>(null);
+  
+  // Watch the status field from the form
+  const currentStatus = watch('status') || 'OPEN';
 
   const {
     data: templates = [],
@@ -42,11 +46,13 @@ export function TemplateSelector({ control, onTemplateChange }: TemplateSelector
     const template = templates.find((t) => t.id === templateId) || null;
     setSelectedTemplate(template);
     onTemplateChange?.(template);
+    
+    // Ensure status is set to OPEN if no status is currently set
+    if (!watch('status')) {
+      setValue('status', 'OPEN');
+    }
   };
 
-  const handleStatusChange = (status: string) => {
-    setCurrentStatus(status);
-  };
 
   // Get required fields for current status
   const templateSteps = selectedTemplate?.steps as unknown as TemplateStep[] | undefined;
@@ -110,7 +116,6 @@ export function TemplateSelector({ control, onTemplateChange }: TemplateSelector
               <Select
                 onValueChange={(value) => {
                   field.onChange(value);
-                  handleStatusChange(value);
                 }}
                 defaultValue={field.value || 'OPEN'}
               >

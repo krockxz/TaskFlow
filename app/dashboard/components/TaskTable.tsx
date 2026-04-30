@@ -45,11 +45,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { BulkActionBar } from './BulkActionBar';
 import { DueDate } from '@/components/ui/due-date';
-import { Github, Inbox, ChevronLeft, ChevronRight, Loader2, ChevronDown } from 'lucide-react';
+import { Github, Inbox, ChevronLeft, ChevronRight, Loader2, ChevronDown, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { STATUS_LABELS, STATUS_CONFIG, getPriorityVariant } from '@/lib/constants/status';
 import { normalizeStatus } from '@/lib/constants/filters';
 import { useToast } from '@/lib/hooks/use-toast';
+import { StatusUpdateDialog } from '@/components/tasks/StatusUpdateDialog';
 import {
   Card,
   CardContent,
@@ -168,6 +169,19 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
   // Track individual task status updates for loading states
   const [updatingTaskIds, setUpdatingTaskIds] = useState<Set<string>>(new Set());
 
+  // State for status update dialog (template fields)
+  const [statusDialogData, setStatusDialogData] = useState<{
+    isOpen: boolean;
+    taskId: string;
+    targetStatus: string;
+    requiredFields: any[];
+  }>({
+    isOpen: false,
+    taskId: '',
+    targetStatus: '',
+    requiredFields: [],
+  });
+
   // Memoized handlers with useCallback
   const toggleRow = useCallback((id: string) => {
     setSelectedIds(prev => {
@@ -200,13 +214,30 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
 
   // Mutation for status updates - filter-aware query key
   const { mutate: updateStatus } = useMutation({
-    mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
-      fetch('/api/tasks/update-status', {
-        method: 'POST',
+    mutationFn: async ({ taskId, status }: { taskId: string; status: string }) => {
+      const res = await fetch('/api/tasks/set-status', {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        // Normalize status to uppercase enum value
-        body: JSON.stringify({ taskId, status: normalizeStatus(status) }),
-      }).then((res) => res.json()),
+        body: JSON.stringify({ id: taskId, status: normalizeStatus(status) }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        // If missing required fields or invalid transition, throw a custom error object
+        if (res.status === 400 && data.details?.requiredFields) {
+          throw { 
+            type: 'MISSING_FIELDS', 
+            taskId, 
+            status: normalizeStatus(status), 
+            fields: data.details.requiredFields 
+          };
+        }
+        throw new Error(data.error || 'Failed to update status');
+      }
+      
+      return data;
+    },
 
     // Optimistic update
     onMutate: async (variables) => {
@@ -229,9 +260,20 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
     },
 
     // Rollback on error
-    onError: (err, variables, context) => {
+    onError: (err: any, variables, context) => {
       queryClient.setQueryData(['tasks', filters, currentPage], context?.previous);
-      toastError('Failed to update task status');
+      
+      if (err.type === 'MISSING_FIELDS') {
+        // Open the dialog instead of showing error toast
+        setStatusDialogData({
+          isOpen: true,
+          taskId: err.taskId,
+          targetStatus: err.status,
+          requiredFields: err.fields,
+        });
+      } else {
+        toastError(err.message || 'Failed to update task status');
+      }
     },
 
     // Show success toast and refetch
@@ -400,7 +442,7 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
                 aria-label="Select all tasks"
               />
             </TableHead>
-            <TableHead>Title</TableHead>
+            <TableHead className="w-full">Title</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Priority</TableHead>
             <TableHead>Due Date</TableHead>
@@ -457,6 +499,19 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
           );
         })}
       </div>
+
+      {/* Status Update Dialog for required fields */}
+      <StatusUpdateDialog
+        isOpen={statusDialogData.isOpen}
+        onOpenChange={(open) => setStatusDialogData(prev => ({ ...prev, isOpen: open }))}
+        taskId={statusDialogData.taskId}
+        targetStatus={statusDialogData.targetStatus}
+        requiredFields={statusDialogData.requiredFields}
+        onSuccess={() => {
+          success('Task updated with required information');
+          queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        }}
+      />
 
       {/* Pagination Controls */}
       {totalPages > 1 && (

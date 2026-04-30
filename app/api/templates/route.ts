@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
     const user = await requireAuth();
 
     const templates = await prisma.handoffTemplate.findMany({
-      where: { createdById: user.id },
       orderBy: { createdAt: 'desc' },
     });
 

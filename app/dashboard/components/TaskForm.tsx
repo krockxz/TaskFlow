@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useQueryClient } from '@tanstack/react-query';
 import type { User } from '@/lib/types';
 import {
   Form,
@@ -71,6 +72,7 @@ interface TaskFormProps {
 
 export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,6 +120,9 @@ export function TaskForm({ users, onSuccess, onCancel }: TaskFormProps) {
 
       // Show success toast
       success('Task created successfully');
+
+      // Invalidate tasks query to update the UI
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
 
       if (onSuccess) {
         onSuccess();
