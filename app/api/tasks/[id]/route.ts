@@ -68,7 +68,7 @@ export async function GET(_request: Request, context: RouteContext) {
       githubPrUrl: task.githubPrUrl,
       githubRepo: task.githubRepo,
       templateId: task.templateId,
-      customFields: task.customFields as Record<string, any> | null,
+      customFields: task.customFields as Record<string, string | number | boolean | null> | null,
       createdBy: task.createdBy,
       assignedToUser: task.assignedToUser,
       template: task.template,

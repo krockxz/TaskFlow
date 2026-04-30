@@ -9,7 +9,6 @@ import type { Task } from '@/lib/types';
 interface DashboardViewProps {
   initialTasks: Task[];
   users: { id: string; email: string }[];
-  templates?: any[];
   userEmail: string;
   activeView?: 'dashboard' | 'filters' | 'settings';
 }
@@ -17,7 +16,6 @@ interface DashboardViewProps {
 export function DashboardView({
   initialTasks,
   users,
-  templates,
   activeView = 'dashboard',
 }: DashboardViewProps) {
   // Common dashboard/filters view logic
@@ -36,7 +34,7 @@ export function DashboardView({
 
             <div className="flex items-center gap-2">
               <ShiftBriefButton />
-              <NewTaskDialog users={users} templates={templates} />
+              <NewTaskDialog users={users} />
             </div>
           </header>
 

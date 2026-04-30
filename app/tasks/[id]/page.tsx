@@ -201,7 +201,7 @@ export default function TaskDetailPage() {
         throw new Error(errorData.error || 'Failed to assign task');
       }
 
-      setTask({ ...task, assigned_to: userId });
+      setTask({ ...task, assignedTo: userId });
       success('Task assigned successfully');
     } catch (err) {
       console.error('Error assigning task:', err);
@@ -278,7 +278,7 @@ export default function TaskDetailPage() {
         context: 'task',
         keywords: ['assign', 'user', 'owner'],
         onSelect: () => {
-          setSelectedUserId(task.assigned_to || '');
+          setSelectedUserId(task.assignedTo || '');
           setAssignDialogOpen(true);
         },
       },
@@ -313,7 +313,7 @@ export default function TaskDetailPage() {
 
   // Handle assignment confirmation
   const handleAssignChange = useCallback(async () => {
-    if (selectedUserId && selectedUserId !== task?.assigned_to) {
+    if (selectedUserId && selectedUserId !== task?.assignedTo) {
       await assignTask(selectedUserId);
     }
     setAssignDialogOpen(false);
@@ -695,7 +695,7 @@ export default function TaskDetailPage() {
             </Button>
             <Button
               onClick={handleAssignChange}
-              disabled={!selectedUserId || selectedUserId === task?.assigned_to || actionLoading === 'assign'}
+              disabled={!selectedUserId || selectedUserId === task?.assignedTo || actionLoading === 'assign'}
             >
               {actionLoading === 'assign' ? (
                 <>

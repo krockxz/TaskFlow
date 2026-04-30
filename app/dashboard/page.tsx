@@ -97,6 +97,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     dueDate: task.dueDate ? task.dueDate.toISOString() : null,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
+    customFields: task.customFields as Record<string, string | number | boolean | null> | null,
   }));
 
   // Fetch all users for filter dropdown and bulk reassign functionality

@@ -10,6 +10,7 @@ import { requireAuth } from '@/lib/middleware/auth';
 import { apiSuccess, notFound, serverError, handleApiError, apiError, badRequest } from '@/lib/api/errors';
 import { createTaskSchema } from '@/lib/api/schemas';
 import { validateTemplateFields, TASK_INCLUDES } from '@/lib/api/handlers/task';
+import type { Task, TaskStatus, TaskPriority } from '@/lib/types';
 
 export async function POST(request: Request) {
   try {
@@ -94,7 +95,18 @@ export async function POST(request: Request) {
       return newTask;
     });
 
-    return apiSuccess(task);
+    // Convert Date objects to strings for type compatibility
+    const serializedTask: Task = {
+      ...task,
+      status: task.status as TaskStatus,
+      priority: task.priority as TaskPriority,
+      dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+      createdAt: task.createdAt.toISOString(),
+      updatedAt: task.updatedAt.toISOString(),
+      customFields: task.customFields as Record<string, string | number | boolean | null> | null,
+    };
+
+    return apiSuccess(serializedTask);
   } catch (error) {
     const handled = handleApiError(error, 'POST /api/tasks/create');
     if (handled) return handled;

@@ -25,7 +25,7 @@ interface ShiftBriefSlideoverProps {
  * Custom components for ReactMarkdown to provide a premium, themed look.
  */
 const markdownComponents = {
-  h2: ({ children }: { children: React.ReactNode }) => {
+  h2: ({ children }: { children?: React.ReactNode }) => {
     const text = children?.toString() || '';
     let Icon = Activity;
     if (text.toLowerCase().includes('completed')) Icon = CheckCircle2;
@@ -42,19 +42,19 @@ const markdownComponents = {
       </h2>
     );
   },
-  p: ({ children }: { children: React.ReactNode }) => (
+  p: ({ children }: { children?: React.ReactNode }) => (
     <p className="text-muted-foreground leading-relaxed mb-4 last:mb-0">{children}</p>
   ),
-  li: ({ children }: { children: React.ReactNode }) => (
+  li: ({ children }: { children?: React.ReactNode }) => (
     <li className="flex items-start gap-2 mb-2 last:mb-0 text-muted-foreground">
       <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary/30 shrink-0" />
       <span className="flex-1">{children}</span>
     </li>
   ),
-  ul: ({ children }: { children: React.ReactNode }) => (
+  ul: ({ children }: { children?: React.ReactNode }) => (
     <ul className="mb-6 mt-2 space-y-1 list-none p-0">{children}</ul>
   ),
-  strong: ({ children }: { children: React.ReactNode }) => (
+  strong: ({ children }: { children?: React.ReactNode }) => (
     <strong className="font-semibold text-foreground">{children}</strong>
   ),
 };
@@ -167,7 +167,7 @@ export function ShiftBriefSlideover({ open, onOpenChange }: ShiftBriefSlideoverP
                 
                 <h3 className="text-lg font-semibold mb-2">Ready for your summary?</h3>
                 <p className="text-muted-foreground text-sm max-w-[280px] mb-8 leading-relaxed">
-                  We'll analyze your recent activity and generate a concise brief of your progress and key updates.
+                  We&apos;ll analyze your recent activity and generate a concise brief of your progress and key updates.
                 </p>
                 
                 <Button 

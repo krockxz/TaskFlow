@@ -112,6 +112,7 @@ export async function GET(req: Request) {
       dueDate: task.dueDate ? task.dueDate.toISOString() : null,
       createdAt: task.createdAt.toISOString(),
       updatedAt: task.updatedAt.toISOString(),
+      customFields: task.customFields as Record<string, string | number | boolean | null> | null,
     }));
 
     const response: TasksResponse = {
