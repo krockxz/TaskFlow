@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
 import { useCommand } from '@/components/command/CommandContext';
 import { CheckCircle, UserPlus, Trash2, ArrowLeft, Loader2, AlertCircle, Calendar, Shield, Clock, Github, MessageSquare, History, CheckCircle2 } from 'lucide-react';
@@ -529,15 +530,15 @@ export default function TaskDetailPage() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Due Date</span>
-                  <span className="font-medium">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No date set'}</span>
+                  <span className="font-medium">{task.dueDate ? format(new Date(task.dueDate), 'MMM d, yyyy') : 'No date set'}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Created</span>
-                  <span className="font-medium">{new Date(task.createdAt).toLocaleDateString()}</span>
+                  <span className="font-medium">{format(new Date(task.createdAt), 'MMM d, yyyy')}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Last Updated</span>
-                  <span className="font-medium">{new Date(task.updatedAt).toLocaleDateString()}</span>
+                  <span className="font-medium">{format(new Date(task.updatedAt), 'MMM d, yyyy')}</span>
                 </div>
               </CardContent>
             </Card>

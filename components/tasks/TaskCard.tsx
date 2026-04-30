@@ -336,7 +336,7 @@ export function UnifiedTaskCard({
               {/* Updated Date */}
               <div className="text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">Updated: </span>
-                {new Date(task.updatedAt).toLocaleDateString()}
+                {format(new Date(task.updatedAt), 'MMM d, yyyy')}
               </div>
             </CollapsibleContent>
           </Collapsible>

@@ -189,7 +189,6 @@ function IconNavigation({
     const navItems: NavItemT[] = [
         { id: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
         { id: "timezone-lanes", icon: <Globe size={20} />, label: "Timezone Lanes", href: "/dashboard/timezone-lanes" },
-        { id: "filters", icon: <Filter size={20} />, label: "Filters" },
         { id: "settings", icon: <Settings size={20} />, label: "Settings" },
     ];
 
@@ -400,7 +399,7 @@ interface DashboardSidebarProps {
 }
 
 export function DashboardSidebar({ children, users, userEmail }: DashboardSidebarProps) {
-    const [activeSection, setActiveSection] = useState("filters");
+    const [activeSection, setActiveSection] = useState("dashboard");
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(["Status-0-Status", "Priority-0-Priority"]));
 
@@ -432,14 +431,9 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                             onClick: taskFilters.clearAll
                         }
                     ]
-                }
-            ]
-        },
-        filters: {
-            title: "Filters",
-            sections: [
+                },
                 {
-                    title: "Properties",
+                    title: "Filters",
                     items: [
                         {
                             label: "Status",
@@ -516,7 +510,7 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
         }
     }), [taskFilters, users]) as Record<string, { title: string, sections: MenuSectionT[] }>;
 
-    const currentContent = sidebarContent[activeSection] || sidebarContent.filters;
+    const currentContent = sidebarContent[activeSection] || sidebarContent.dashboard;
 
     // Pass activeSection as activeView to children (DashboardView)
     const childrenWithProps = React.Children.map(children, (child) => {
@@ -557,7 +551,7 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                     isCollapsed={isCollapsed}
                 />
 
-                {activeSection === 'filters' && (
+                {activeSection === 'dashboard' && (
                     <SearchContainer
                         isCollapsed={isCollapsed}
                         onSearch={taskFilters.setSearch}

@@ -13,6 +13,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
+import { format } from 'date-fns';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -734,8 +735,8 @@ const AnimatedTableRow = memo(function AnimatedTableRow({
         )}
       </TableCell>
 
-      <TableCell className="text-sm text-muted-foreground">
-        {new Date(task.updatedAt).toLocaleDateString()}
+      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+        {format(new Date(task.updatedAt), 'MMM d, yyyy')}
       </TableCell>
     </motion.tr>
   );
