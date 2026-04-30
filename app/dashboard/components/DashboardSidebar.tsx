@@ -24,12 +24,19 @@ import { cn } from "@/lib/utils";
 // Smooth easing — no overshoot
 const softSpringEasing = "cubic-bezier(0.4, 0, 0.2, 1)";
 
+import Image from "next/image";
+
 /* ----------------------------- Brand / Logos ----------------------------- */
 
 function InterfacesLogoSquare() {
     return (
-        <div className="flex items-center justify-center font-bold text-xl text-white tracking-tighter">
-            TF
+        <div className="relative size-8 rounded-full overflow-hidden border border-neutral-700 shadow-lg group-hover:scale-110 transition-transform duration-300">
+            <Image
+                src="/logo.jpg"
+                alt="TaskFlow"
+                fill
+                className="object-cover"
+            />
         </div>
     );
 }
@@ -510,7 +517,7 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
         }
     }), [taskFilters, users]) as Record<string, { title: string, sections: MenuSectionT[] }>;
 
-    const currentContent = sidebarContent[activeSection] || sidebarContent.dashboard;
+    const currentContent = sidebarContent[activeSection as keyof typeof sidebarContent];
 
     // Pass activeSection as activeView to children (DashboardView)
     const childrenWithProps = React.Children.map(children, (child) => {

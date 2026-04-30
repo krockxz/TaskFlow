@@ -21,7 +21,7 @@ export function DashboardView({
   activeView = 'dashboard',
 }: DashboardViewProps) {
   // Common dashboard/filters view logic
-  const isListView = activeView === 'dashboard' || activeView === 'filters';
+  const isListView = activeView === 'dashboard';
 
   return (
     <div className="flex flex-col h-full">
@@ -30,15 +30,10 @@ export function DashboardView({
           {/* Solid header */}
           <header className="border-b px-6 py-4 flex items-center justify-between shrink-0 bg-background z-10">
             <div>
-              <h1 className="text-xl font-semibold tracking-tight">
-                {activeView === 'dashboard' ? 'Dashboard' : 'Filters'}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {activeView === 'dashboard' 
-                  ? 'Manage your tasks and track progress' 
-                  : 'Filter and search tasks'}
-              </p>
+              <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
+              <p className="text-sm text-muted-foreground">Manage your tasks and track progress</p>
             </div>
+
             <div className="flex items-center gap-2">
               <ShiftBriefButton />
               <NewTaskDialog users={users} templates={templates} />
