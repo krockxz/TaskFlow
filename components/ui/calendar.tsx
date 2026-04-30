@@ -20,10 +20,10 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         caption_label: "text-sm font-medium text-foreground",
         nav: "space-x-1 flex items-center",
         button_previous: cn(
-          "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 disabled:opacity-30"
+          "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-7 w-7 bg-transparent p-0 text-white opacity-100 hover:opacity-100 disabled:opacity-30 [&_svg]:fill-white"
         ),
         button_next: cn(
-          "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 disabled:opacity-30"
+          "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-7 w-7 bg-transparent p-0 text-white opacity-100 hover:opacity-100 disabled:opacity-30 [&_svg]:fill-white"
         ),
         month_grid: "w-full border-collapse space-x-1 space-y-1",
         weekdays: "flex",
