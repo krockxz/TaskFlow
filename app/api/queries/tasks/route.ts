@@ -24,6 +24,24 @@ interface TasksResponse {
   totalPages: number;
 }
 
+function serializeCustomFields(value: unknown): Record<string, string | number | boolean | null> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+
+  const result: Record<string, string | number | boolean | null> = {};
+  for (const [key, entryValue] of Object.entries(value as Record<string, unknown>)) {
+    if (
+      entryValue === null ||
+      typeof entryValue === 'string' ||
+      typeof entryValue === 'number' ||
+      typeof entryValue === 'boolean'
+    ) {
+      result[key] = entryValue;
+    }
+  }
+
+  return result;
+}
+
 export async function GET(req: Request) {
   try {
     const user = await getAuthUser();
@@ -112,7 +130,7 @@ export async function GET(req: Request) {
       dueDate: task.dueDate ? task.dueDate.toISOString() : null,
       createdAt: task.createdAt.toISOString(),
       updatedAt: task.updatedAt.toISOString(),
-      customFields: task.customFields as Record<string, string | number | boolean | null> | null,
+      customFields: serializeCustomFields(task.customFields),
     }));
 
     const response: TasksResponse = {

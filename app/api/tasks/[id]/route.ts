@@ -18,6 +18,24 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+function serializeCustomFields(value: unknown): Record<string, string | number | boolean | null> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+
+  const result: Record<string, string | number | boolean | null> = {};
+  for (const [key, entryValue] of Object.entries(value as Record<string, unknown>)) {
+    if (
+      entryValue === null ||
+      typeof entryValue === 'string' ||
+      typeof entryValue === 'number' ||
+      typeof entryValue === 'boolean'
+    ) {
+      result[key] = entryValue;
+    }
+  }
+
+  return result;
+}
+
 /**
  * GET /api/tasks/[id]
  * Returns a task with full details including:
@@ -68,7 +86,7 @@ export async function GET(_request: Request, context: RouteContext) {
       githubPrUrl: task.githubPrUrl,
       githubRepo: task.githubRepo,
       templateId: task.templateId,
-      customFields: task.customFields as Record<string, string | number | boolean | null> | null,
+      customFields: serializeCustomFields(task.customFields),
       createdBy: task.createdBy,
       assignedToUser: task.assignedToUser,
       template: task.template,
