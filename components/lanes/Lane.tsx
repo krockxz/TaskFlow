@@ -1,24 +1,31 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Task } from '@prisma/client';
 import { formatInTimeZone } from 'date-fns-tz';
 import { TaskCard } from './TaskCard';
-import { OnlineIndicator } from './OnlineIndicator';
 import { cn } from '@/lib/utils';
+
+export interface LaneTask {
+  id: string;
+  title: string;
+  status: string | null;
+  priority: string | null;
+  dueDate: Date | null;
+  assignedTo: string | null;
+  githubIssueNumber: number | null;
+}
 
 interface LaneProps {
   user: { id: string; email: string; timezone?: string | null };
-  tasks: Task[];
+  tasks: LaneTask[];
 }
 
 function isValidTimezone(timezone: string): boolean {
   try {
-    Intl.DateTimeFormat().resolvedOptions().timeZone;
-    // Try formatting a date with the timezone - this will throw if invalid
     new Date().toLocaleString('en-US', { timeZone: timezone });
     return true;
   } catch {
@@ -27,13 +34,26 @@ function isValidTimezone(timezone: string): boolean {
 }
 
 export function Lane({ user, tasks }: LaneProps) {
+  const [now, setNow] = useState(() => new Date());
   const { setNodeRef, isOver } = useDroppable({
     id: user.id,
   });
 
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setNow(new Date());
+    }, 60_000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   const userInitial = user.email.charAt(0).toUpperCase();
-  const userTimezone = user.timezone && isValidTimezone(user.timezone) ? user.timezone : 'UTC';
-  const localTime = formatInTimeZone(new Date(), userTimezone, 'HH:mm');
+  const userTimezone = useMemo(() => {
+    if (!user.timezone) return 'UTC';
+    return isValidTimezone(user.timezone) ? user.timezone : 'UTC';
+  }, [user.timezone]);
+
+  const localTime = useMemo(() => formatInTimeZone(now, userTimezone, 'HH:mm'), [now, userTimezone]);
 
   return (
     <Card className={cn(
@@ -51,14 +71,13 @@ export function Lane({ user, tasks }: LaneProps) {
               {userTimezone} ({localTime})
             </p>
           </div>
-          <OnlineIndicator userId={user.id} />
         </div>
       </CardHeader>
       <CardContent>
         <div
           ref={setNodeRef}
           className={cn(
-            "space-y-2 min-h-[200px] max-h-[calc(100vh-300px)] sm:max-h-[calc(100vh-300px)] overflow-y-auto rounded-md transition-colors duration-200",
+            "space-y-2 min-h-[200px] max-h-[calc(100vh-300px)] sm:max-h-[calc(100vh-300px)] overflow-y-auto overflow-x-hidden rounded-md transition-colors duration-200",
             isOver && "bg-primary/5"
           )}
         >

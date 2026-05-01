@@ -6,7 +6,7 @@
 
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/middleware/auth';
-import { apiSuccess, notFound, serverError, handleApiError } from '@/lib/api/errors';
+import { apiSuccess, notFound, forbidden, serverError, handleApiError } from '@/lib/api/errors';
 import { reassignRequestSchema } from '@/lib/api/schemas';
 import { fetchTask, verifyUserExists, TASK_INCLUDES } from '@/lib/api/handlers/task';
 
@@ -30,6 +30,11 @@ export async function POST(request: Request) {
 
     if (!task) {
       return notFound('Task not found');
+    }
+
+    const canMutateTask = task.createdById === user.id || task.assignedTo === user.id;
+    if (!canMutateTask) {
+      return forbidden('You do not have permission to reassign this task');
     }
 
     // Update task assignment, create event, and send notification in transaction

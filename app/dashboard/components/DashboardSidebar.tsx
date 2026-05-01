@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
     LogOut,
@@ -399,6 +400,18 @@ function MenuSection({
 
 /* --------------------------------- Layout -------------------------------- */
 
+function getActiveSectionFromPath(pathname?: string) {
+    if (pathname?.includes("/timezone-lanes")) {
+        return "timezone-lanes";
+    }
+
+    if (pathname?.includes("/dashboard")) {
+        return "dashboard";
+    }
+
+    return "dashboard";
+}
+
 interface DashboardSidebarProps {
     children: React.ReactNode;
     users: { id: string; email: string }[];
@@ -406,11 +419,16 @@ interface DashboardSidebarProps {
 }
 
 export function DashboardSidebar({ children, users, userEmail }: DashboardSidebarProps) {
-    const [activeSection, setActiveSection] = useState("dashboard");
+    const pathname = usePathname();
+    const [activeSection, setActiveSection] = useState(() => getActiveSectionFromPath(pathname));
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(["Status-0-Status", "Priority-0-Priority"]));
 
     const taskFilters = useTaskFilters();
+
+    useEffect(() => {
+        setActiveSection(getActiveSectionFromPath(pathname));
+    }, [pathname]);
 
     const toggleExpanded = (itemKey: string) => {
         setExpandedItems((prev) => {
@@ -517,7 +535,7 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
         }
     }), [taskFilters, users]) as Record<string, { title: string, sections: MenuSectionT[] }>;
 
-    const currentContent = sidebarContent[activeSection as keyof typeof sidebarContent];
+    const currentContent = sidebarContent[activeSection as keyof typeof sidebarContent] ?? sidebarContent.dashboard;
 
     // Pass activeSection as activeView to children (DashboardView)
     const childrenWithProps = React.Children.map(children, (child) => {

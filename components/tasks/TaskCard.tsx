@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -57,7 +57,19 @@ export interface UnifiedTaskCardProps {
   /**
    * The task to display
    */
-  task: Task & { assignedToUser?: { id: string; email: string } | null };
+  task: {
+    id: string;
+    title: string;
+    status: TaskStatus | string | null;
+    priority: TaskPriority | string | null;
+    dueDate: Date | string | null;
+    description?: string | null;
+    updatedAt?: Date | string;
+    assignedToUser?: { id: string; email: string } | null;
+    githubIssueUrl?: string | null;
+    githubIssueNumber?: number | null;
+    githubRepo?: string | null;
+  };
   /**
    * Visual variant
    */
@@ -139,7 +151,7 @@ function getDueDateVariant(variant: 'overdue' | 'today' | 'soon' | 'normal') {
   }
 }
 
-export function UnifiedTaskCard({
+function UnifiedTaskCardComponent({
   task,
   variant = 'lane',
   isSelected = false,
@@ -166,8 +178,7 @@ export function UnifiedTaskCard({
     const DraggableWrapper = draggable ? motion.div : 'div';
     const dragProps = draggable
       ? {
-          whileHover: { scale: 1.02, y: -2 },
-          whileDrag: { scale: 1.05, rotate: 2 },
+          whileDrag: { scale: 1.03, rotate: 1 },
           transition: { type: 'spring' as const, ...SPRING_PRESETS.NORMAL },
         }
       : {};
@@ -177,30 +188,40 @@ export function UnifiedTaskCard({
         <DraggableWrapper {...dragProps}>
           <Card
             className={cn(
-              'cursor-grab active:cursor-grabbing transition-opacity',
+              'group cursor-grab active:cursor-grabbing border border-border/70 bg-card/95 shadow-sm transition-[box-shadow,border-color,background-color] duration-200 hover:border-primary/40 hover:bg-card hover:shadow-md',
               isDragging && 'opacity-50 shadow-xl'
             )}
           >
-            <CardHeader className="p-3 pb-2">
+            <CardHeader className="px-3 pb-2 pt-3">
               <div className="flex items-start justify-between gap-2">
-                <h4 className="font-medium text-sm line-clamp-2">{task.title}</h4>
-                <StatusIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <h4 className="truncate text-sm font-semibold leading-5">{task.title}</h4>
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5">
+                      <StatusIcon className="h-3.5 w-3.5" />
+                      {task.status?.toLowerCase().replaceAll('_', ' ')}
+                    </span>
+                    {task.dueDate && (
+                      <span className="truncate">
+                        Due {format(new Date(task.dueDate), 'MMM d')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <StatusIcon className="h-4 w-4 flex-shrink-0 text-muted-foreground/80" />
               </div>
             </CardHeader>
-            <CardContent className="p-3 pt-0 space-y-2">
-              {task.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2">
-                  {task.description}
-                </p>
-              )}
-              <div className="flex items-center justify-between">
-                <Badge variant={priority.variant} className="text-xs">
+            <CardContent className="px-3 pb-3 pt-0">
+              <div className="flex items-center justify-between gap-2">
+                <Badge variant={priority.variant} className="h-5 rounded-full px-2 text-[11px] font-medium">
                   {priority.label}
                 </Badge>
-                {task.dueDate && (
-                  <span className="text-xs text-muted-foreground">
-                    {format(new Date(task.dueDate), 'MMM d')}
+                {task.assignedToUser ? (
+                  <span className="truncate text-[11px] text-muted-foreground">
+                    {task.assignedToUser.email}
                   </span>
+                ) : (
+                  <span className="text-[11px] text-muted-foreground">Unassigned</span>
                 )}
               </div>
             </CardContent>
@@ -369,3 +390,8 @@ export function UnifiedTaskCard({
     </Card>
   );
 }
+
+const MemoizedUnifiedTaskCard = memo(UnifiedTaskCardComponent);
+MemoizedUnifiedTaskCard.displayName = 'UnifiedTaskCard';
+
+export { MemoizedUnifiedTaskCard as UnifiedTaskCard };
