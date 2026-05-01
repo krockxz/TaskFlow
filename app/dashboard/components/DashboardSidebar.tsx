@@ -8,15 +8,15 @@ import {
     LogOut,
     Search,
     ChevronDown,
-    Filter,
     Calendar as CalendarIcon,
     Flag,
     CheckCircle2,
     Users,
     Loader2,
     Settings,
-    Github,
     Globe,
+    FileText,
+    MessageSquare,
 } from "lucide-react";
 import { useTaskFilters } from "@/app/dashboard/hooks/useTaskFilters";
 import { useSignOut } from "@/lib/auth/sign-out";
@@ -123,6 +123,7 @@ interface MenuItemT {
     id?: string;
     icon?: React.ReactNode;
     label: string;
+    href?: string;
     hasDropdown?: boolean;
     isActive?: boolean;
     onClick?: () => void;
@@ -289,50 +290,58 @@ function MenuItem({
     onToggle?: () => void;
     isCollapsed?: boolean;
 }) {
-    const handleClick = () => {
-        if (item.hasDropdown && onToggle) onToggle();
-        else item.onClick?.();
-    };
-
     // Active state styling
     const isActive = item.isActive;
+
+    const itemBody = (
+        <div
+            className={cn(
+                "rounded-md cursor-pointer transition-all duration-200 flex items-center relative select-none",
+                isActive ? "bg-neutral-800 text-white" : "text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200",
+                isCollapsed ? "size-10 justify-center" : "w-full min-h-[40px] px-3 py-2"
+            )}
+            onClick={() => {
+                if (item.hasDropdown && onToggle) onToggle();
+                else item.onClick?.();
+            }}
+            title={isCollapsed ? item.label : undefined}
+        >
+            <div className={cn("flex items-center justify-center shrink-0", isActive ? "text-primary-foreground" : "")}>
+                {item.icon}
+            </div>
+
+            <div
+                className={`flex-1 relative transition-opacity duration-300 overflow-hidden ${isCollapsed ? "opacity-0 w-0" : "opacity-100 ml-3"
+                    }`}
+            >
+                <div className="text-[14px] font-medium truncate">
+                    {item.label}
+                </div>
+            </div>
+
+            {!isCollapsed && item.hasDropdown && (
+                <div className="shrink-0 ml-2">
+                    <ChevronDown
+                        size={14}
+                        className={cn("transition-transform duration-300", isExpanded ? "rotate-180" : "")}
+                    />
+                </div>
+            )}
+        </div>
+    );
 
     return (
         <div
             className={`relative shrink-0 transition-all duration-500 ${isCollapsed ? "w-full flex justify-center" : "w-full"
                 }`}
         >
-            <div
-                className={cn(
-                    "rounded-md cursor-pointer transition-all duration-200 flex items-center relative select-none",
-                    isActive ? "bg-neutral-800 text-white" : "text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200",
-                    isCollapsed ? "size-10 justify-center" : "w-full min-h-[40px] px-3 py-2"
-                )}
-                onClick={handleClick}
-                title={isCollapsed ? item.label : undefined}
-            >
-                <div className={cn("flex items-center justify-center shrink-0", isActive ? "text-primary-foreground" : "")}>
-                    {item.icon}
-                </div>
-
-                <div
-                    className={`flex-1 relative transition-opacity duration-300 overflow-hidden ${isCollapsed ? "opacity-0 w-0" : "opacity-100 ml-3"
-                        }`}
-                >
-                    <div className="text-[14px] font-medium truncate">
-                        {item.label}
-                    </div>
-                </div>
-
-                {!isCollapsed && item.hasDropdown && (
-                    <div className="shrink-0 ml-2">
-                        <ChevronDown
-                            size={14}
-                            className={cn("transition-transform duration-300", isExpanded ? "rotate-180" : "")}
-                        />
-                    </div>
-                )}
-            </div>
+            {item.href && !item.hasDropdown ? (
+                <Link href={item.href}>
+                    {itemBody}
+                </Link>
+            ) : (
+                itemBody
+            )}
 
             {/* Submenu */}
             {!isCollapsed && isExpanded && item.children && (
@@ -526,15 +535,22 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                     title: "Integrations",
                     items: [
                         {
-                            label: "GitHub",
-                            icon: <Github size={18} />,
-                            isActive: false,
-                        }
+                            label: "Handoff Templates",
+                            icon: <FileText size={18} />,
+                            href: "/settings/templates",
+                            isActive: pathname === "/settings/templates",
+                        },
+                        {
+                            label: "Slack Integration",
+                            icon: <MessageSquare size={18} />,
+                            href: "/settings/slack",
+                            isActive: pathname === "/settings/slack",
+                        },
                     ]
                 }
             ]
         }
-    }), [taskFilters, users]) as Record<string, { title: string, sections: MenuSectionT[] }>;
+    }), [pathname, taskFilters, users]) as Record<string, { title: string, sections: MenuSectionT[] }>;
 
     const currentContent = sidebarContent[activeSection as keyof typeof sidebarContent] ?? sidebarContent.dashboard;
 
@@ -549,7 +565,7 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
     });
 
     return (
-        <div className="flex h-screen w-full bg-black">
+        <div className="relative flex h-screen w-full bg-black overflow-hidden">
             {/* 1. Icon Rail */}
             <IconNavigation
                 activeSection={activeSection}
@@ -559,9 +575,11 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
             {/* 2. Collapsible Sidebar Panel */}
             <aside
                 className={cn(
-                    "bg-black flex flex-col pt-4 pb-4 px-4 w-64 border-r border-neutral-800 shrink-0 overflow-hidden",
-                    "transition-transform duration-200",
-                    isCollapsed ? "-translate-x-full opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
+                    "bg-black flex flex-col pt-4 pb-4 border-r border-neutral-800 shrink-0 overflow-hidden",
+                    "transition-[width,padding,opacity] duration-300",
+                    isCollapsed
+                        ? "w-0 px-0 opacity-0 pointer-events-none border-r-0"
+                        : "w-64 px-4 opacity-100 pointer-events-auto"
                 )}
                 style={{
                     transitionTimingFunction: softSpringEasing,
@@ -594,15 +612,21 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
                 </div>
 
                 {/* Re-expand toggle — inline, no absolute overlap */}
-                {isCollapsed && (
-                    <button
-                        onClick={toggleCollapse}
-                        className="mt-2 mx-auto p-2 rounded-md text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
-                    >
-                        <ChevronDown size={16} className="-rotate-90" />
-                    </button>
-                )}
             </aside>
+
+            {isCollapsed && (
+                <button
+                    type="button"
+                    onClick={toggleCollapse}
+                    aria-label="Expand sidebar"
+                    className="absolute left-16 top-4 z-30 -translate-x-1/2 rounded-r-md border border-l-0 border-neutral-800 bg-black px-2 py-2 text-neutral-500 shadow-lg transition-colors hover:text-neutral-200 hover:bg-neutral-900"
+                    style={{
+                        transitionTimingFunction: softSpringEasing,
+                    }}
+                >
+                    <ChevronDown size={16} className="-rotate-90" />
+                </button>
+            )}
 
             {/* 3. Main Content Area */}
             <main className="flex-1 bg-background rounded-tl-xl my-2 mr-2 flex flex-col overflow-hidden shadow-xl border border-border/50">

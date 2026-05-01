@@ -19,7 +19,19 @@
 
   /* Focus visible styles for accessibility */
   *:focus-visible {
-    @apply outline-none ring-1 ring-foreground ring-offset-2 ring-offset-background;
+    @apply outline-none;
+  }
+
+  :where(
+    button,
+    a,
+    summary,
+    [role="button"],
+    [type="checkbox"],
+    [type="radio"],
+    [tabindex]:not([tabindex="-1"])
+  ):focus-visible {
+    @apply ring-1 ring-foreground ring-offset-2 ring-offset-background;
   }
 
   /* Global Scrollbar Styles - Premium Floating Pill Design */

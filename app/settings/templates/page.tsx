@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { getAuthUser } from '@/lib/middleware/auth';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { TemplatesList } from '@/components/templates/TemplatesList';
 import { TemplatesGridSkeleton } from '@/components/skeletons/template-card-skeleton';
@@ -19,7 +20,9 @@ async function getTemplates(userId: string) {
 
 export default async function TemplatesPage() {
   const user = await getAuthUser();
-  if (!user) return null;
+  if (!user) {
+    redirect('/login');
+  }
 
   const templates = await getTemplates(user.id);
 
