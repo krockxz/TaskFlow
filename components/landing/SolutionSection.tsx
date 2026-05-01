@@ -154,15 +154,9 @@ function SolutionSection() {
               </div>
 
               {/* Headline - split-color with brutalist emphasis */}
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground leading-[1.1] tracking-tight mb-8">
-                Work happens.<br />
-                <span className="relative">
-                  <span className="text-foreground/40">You sleep.</span>
-                  {/* Diagonal strike-through for brutalist edge */}
-                  <svg className="absolute -top-1 -left-1 w-full h-full" viewBox="0 0 200 40" preserveAspectRatio="none">
-                    <line x1="0" y1="0" x2="200" y2="40" stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" />
-                  </svg>
-                </span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground leading-[1.04] tracking-tight mb-8">
+                <span className="block">Work happens.</span>
+                <span className="block mt-1 text-foreground/40">You sleep.</span>
               </h2>
 
               {/* Description */}

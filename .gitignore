@@ -42,6 +42,8 @@ prisma/migrations/
 
 # Claude AI assistant files
 CLAUDE.md
+AGENTS.md
+.codex/config.toml
 
 # Local configuration files
 *.local.json
