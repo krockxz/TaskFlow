@@ -7,13 +7,10 @@ import { UnifiedTaskCard } from '@/components/tasks/TaskCard';
 import { useToast } from '@/lib/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import type { LaneTask } from '@/components/lanes/Lane';
+import type { User } from '@prisma/client';
 
 interface TimezoneLanesContentProps {
-  users: {
-    id: string;
-    email: string;
-    timezone: string | null;
-  }[];
+  users: User[];
   tasks: {
     id: string;
     title: string;

@@ -196,7 +196,7 @@ function IconNavigation({
     const navItems: NavItemT[] = [
         { id: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard", href: "/dashboard" },
         { id: "timezone-lanes", icon: <Globe size={20} />, label: "Timezone Lanes", href: "/dashboard/timezone-lanes" },
-        { id: "settings", icon: <Settings size={20} />, label: "Settings", href: "/settings/templates" },
+        { id: "settings", icon: <Settings size={20} />, label: "Settings", href: "/settings" },
     ];
 
     return (
@@ -532,8 +532,14 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
             title: "Settings",
             sections: [
                 {
-                    title: "Integrations",
+                    title: "Workspace",
                     items: [
+                        {
+                            label: "Settings Home",
+                            icon: <Settings size={18} />,
+                            href: "/settings",
+                            isActive: pathname === "/settings",
+                        },
                         {
                             label: "Handoff Templates",
                             icon: <FileText size={18} />,

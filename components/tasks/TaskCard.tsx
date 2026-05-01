@@ -162,8 +162,10 @@ function UnifiedTaskCardComponent({
 }: UnifiedTaskCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const StatusIcon = statusIcons[task.status || TaskStatus.OPEN];
-  const priority = priorityConfig[task.priority || TaskPriority.MEDIUM];
+  const resolvedStatus = (task.status && task.status in statusIcons ? task.status : TaskStatus.OPEN) as TaskStatus;
+  const resolvedPriority = (task.priority && task.priority in priorityConfig ? task.priority : TaskPriority.MEDIUM) as TaskPriority;
+  const StatusIcon = statusIcons[resolvedStatus];
+  const priority = priorityConfig[resolvedPriority];
   const dueDateInfo = getDueDateInfo(task.dueDate ? task.dueDate.toString() : null);
 
   // Always call hook unconditionally (React rule)
@@ -357,7 +359,7 @@ function UnifiedTaskCardComponent({
               {/* Updated Date */}
               <div className="text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">Updated: </span>
-                {format(new Date(task.updatedAt), 'MMM d, yyyy')}
+                {format(new Date(task.updatedAt ?? Date.now()), 'MMM d, yyyy')}
               </div>
             </CollapsibleContent>
           </Collapsible>

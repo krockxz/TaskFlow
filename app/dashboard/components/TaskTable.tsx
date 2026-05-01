@@ -522,10 +522,10 @@ export function TaskTable({ initialData, users }: TaskTableProps) {
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-2 py-4">
           <div className="text-sm text-muted-foreground hidden sm:block">
-            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, response.total)} of {response.total} tasks
+            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, resolvedResponse.total)} of {resolvedResponse.total} tasks
           </div>
           <div className="text-sm text-muted-foreground sm:hidden">
-            {Math.min(currentPage * ITEMS_PER_PAGE, response.total)} of {response.total} tasks
+            {Math.min(currentPage * ITEMS_PER_PAGE, resolvedResponse.total)} of {resolvedResponse.total} tasks
           </div>
           <div className="flex items-center gap-2">
             <Button

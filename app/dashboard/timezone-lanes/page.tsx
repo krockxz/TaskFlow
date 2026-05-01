@@ -14,6 +14,8 @@ async function getTeamData() {
     prisma.user.findMany({
       select: {
         id: true,
+        createdAt: true,
+        updatedAt: true,
         email: true,
         timezone: true,
       },
