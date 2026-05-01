@@ -5,16 +5,17 @@ import FilterChips from './FilterChips';
 import { NewTaskDialog } from './NewTaskDialog';
 import { ShiftBriefButton } from '@/components/shift-brief/ShiftBriefButton';
 import type { Task } from '@/lib/types';
+import type { TasksResponse } from './TaskTable';
 
 interface DashboardViewProps {
-  initialTasks: Task[];
+  initialTasksResponse: TasksResponse;
   users: { id: string; email: string }[];
   userEmail: string;
   activeView?: 'dashboard' | 'filters' | 'settings';
 }
 
 export function DashboardView({
-  initialTasks,
+  initialTasksResponse,
   users,
   activeView = 'dashboard',
 }: DashboardViewProps) {
@@ -40,10 +41,10 @@ export function DashboardView({
 
           {/* Scrollable content with fade at bottom */}
           <div className="relative flex-1 min-h-0">
-            <div className="h-full overflow-y-auto px-6 pt-5 pb-16">
-              <FilterChips users={users} />
-              <TaskTable initialTasks={initialTasks} users={users} />
-            </div>
+              <div className="h-full overflow-y-auto px-6 pt-5 pb-16">
+                <FilterChips users={users} />
+                <TaskTable initialData={initialTasksResponse} users={users} />
+              </div>
             {/* Blur fade mask at bottom */}
             <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
           </div>

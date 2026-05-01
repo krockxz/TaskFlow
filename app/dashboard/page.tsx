@@ -14,6 +14,9 @@ import { DashboardView } from './components/DashboardView';
 import type { TaskStatus, TaskPriority, DateRangePreset } from '@/lib/types';
 import { getDateRangeFilter } from '@/lib/utils/date-range';
 import { FadeIn } from '@/components/animations/fade-in';
+import type { TasksResponse } from './components/TaskTable';
+
+const ITEMS_PER_PAGE = 25;
 
 interface DashboardPageProps {
   searchParams: Promise<{
@@ -82,17 +85,22 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }
   }
 
-  // Limit initial server-side load to first 50 tasks for performance
-  // Client-side pagination will handle additional data via API
-  const tasks = await prisma.task.findMany({
-    where,
-    include: {
-      createdBy: { select: { id: true, email: true } },
-      assignedToUser: { select: { id: true, email: true } },
-    },
-    orderBy: { updatedAt: 'desc' },
-    take: 50,
-  });
+  const [tasks, total, users] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      include: {
+        createdBy: { select: { id: true, email: true } },
+        assignedToUser: { select: { id: true, email: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: ITEMS_PER_PAGE,
+    }),
+    prisma.task.count({ where }),
+    prisma.user.findMany({
+      select: { id: true, email: true },
+      orderBy: { email: 'asc' },
+    }),
+  ]);
 
   // Convert Date objects to strings for type compatibility
   const serializedTasks = tasks.map((task) => ({
@@ -105,17 +113,19 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     customFields: task.customFields as Record<string, string | number | boolean | null> | null,
   }));
 
-  // Fetch all users for filter dropdown and bulk reassign functionality
-  const users = await prisma.user.findMany({
-    select: { id: true, email: true },
-    orderBy: { email: 'asc' },
-  });
+  const initialTasksResponse: TasksResponse = {
+    tasks: serializedTasks,
+    total,
+    page: 1,
+    pageSize: ITEMS_PER_PAGE,
+    totalPages: Math.max(1, Math.ceil(total / ITEMS_PER_PAGE)),
+  };
 
   return (
     <FadeIn>
       <DashboardSidebar users={users} userEmail={user.email ?? 'Unknown'}>
         <DashboardView
-          initialTasks={serializedTasks}
+          initialTasksResponse={initialTasksResponse}
           users={users}
           userEmail={user.email ?? 'Unknown'}
         />

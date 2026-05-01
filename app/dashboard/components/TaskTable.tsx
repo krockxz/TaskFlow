@@ -60,11 +60,11 @@ import {
 import { UnifiedTaskCard } from '@/components/tasks/TaskCard';
 
 interface TaskTableProps {
-  initialTasks: Task[];
+  initialData: TasksResponse;
   users: { id: string; email: string }[];
 }
 
-interface TasksResponse {
+export interface TasksResponse {
   tasks: Task[];
   total: number;
   page: number;
@@ -104,7 +104,7 @@ const getPriorityVariantFromString = (priority: string): 'default' | 'secondary'
   return getPriorityVariant(priority as TaskPriority);
 };
 
-export function TaskTable({ initialTasks, users }: TaskTableProps) {
+export function TaskTable({ initialData, users }: TaskTableProps) {
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
   const searchParams = useSearchParams();
@@ -144,7 +144,9 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
   }, [filters, currentPage]);
 
   // Fetch tasks with TanStack Query - filter-aware query key
-  const { data: response = { tasks: initialTasks, total: initialTasks.length, page: 1, pageSize: ITEMS_PER_PAGE, totalPages: 1 }, isLoading } = useQuery<TasksResponse>({
+  const initialPageData = currentPage === 1 ? initialData : undefined;
+
+  const { data: response, isLoading } = useQuery<TasksResponse>({
     ...queryConfig.tasks,
     queryKey: ['tasks', filters, currentPage],
     queryFn: async () => {
@@ -153,11 +155,13 @@ export function TaskTable({ initialTasks, users }: TaskTableProps) {
       if (!res.ok) throw new Error('Failed to fetch tasks');
       return res.json();
     },
-    initialData: { tasks: initialTasks, total: initialTasks.length, page: 1, pageSize: ITEMS_PER_PAGE, totalPages: 1 },
+    initialData: initialPageData,
+    refetchOnMount: false,
   });
 
-  const tasks = response.tasks;
-  const totalPages = response.totalPages;
+  const resolvedResponse = response ?? initialPageData ?? { tasks: [], total: 0, page: currentPage, pageSize: ITEMS_PER_PAGE, totalPages: 0 };
+  const tasks = resolvedResponse.tasks;
+  const totalPages = resolvedResponse.totalPages;
 
   // Reset to page 1 when filters change
   useEffect(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -183,11 +183,9 @@ function IconNavButton({
 
 function IconNavigation({
     activeSection,
-    onSectionChange,
     userEmail
 }: {
     activeSection: string;
-    onSectionChange: (section: string) => void;
     userEmail: string;
 }) {
     const { handleSignOut, isPending } = useSignOut();
@@ -195,9 +193,9 @@ function IconNavigation({
     const handleLogout = () => handleSignOut();
 
     const navItems: NavItemT[] = [
-        { id: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+        { id: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard", href: "/dashboard" },
         { id: "timezone-lanes", icon: <Globe size={20} />, label: "Timezone Lanes", href: "/dashboard/timezone-lanes" },
-        { id: "settings", icon: <Settings size={20} />, label: "Settings" },
+        { id: "settings", icon: <Settings size={20} />, label: "Settings", href: "/settings/templates" },
     ];
 
     return (
@@ -213,7 +211,6 @@ function IconNavigation({
                     <IconNavButton
                         key={item.id}
                         isActive={activeSection === item.id}
-                        onClick={() => !item.href && onSectionChange(item.id)}
                         tooltip={item.label}
                         href={item.href}
                     >
@@ -401,11 +398,19 @@ function MenuSection({
 /* --------------------------------- Layout -------------------------------- */
 
 function getActiveSectionFromPath(pathname?: string) {
-    if (pathname?.includes("/timezone-lanes")) {
+    if (!pathname) {
+        return "dashboard";
+    }
+
+    if (pathname.startsWith("/settings")) {
+        return "settings";
+    }
+
+    if (pathname === "/dashboard/timezone-lanes" || pathname.startsWith("/dashboard/timezone-lanes/")) {
         return "timezone-lanes";
     }
 
-    if (pathname?.includes("/dashboard")) {
+    if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) {
         return "dashboard";
     }
 
@@ -420,15 +425,11 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ children, users, userEmail }: DashboardSidebarProps) {
     const pathname = usePathname();
-    const [activeSection, setActiveSection] = useState(() => getActiveSectionFromPath(pathname));
+    const activeSection = getActiveSectionFromPath(pathname);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(["Status-0-Status", "Priority-0-Priority"]));
 
     const taskFilters = useTaskFilters();
-
-    useEffect(() => {
-        setActiveSection(getActiveSectionFromPath(pathname));
-    }, [pathname]);
 
     const toggleExpanded = (itemKey: string) => {
         setExpandedItems((prev) => {
@@ -552,10 +553,6 @@ export function DashboardSidebar({ children, users, userEmail }: DashboardSideba
             {/* 1. Icon Rail */}
             <IconNavigation
                 activeSection={activeSection}
-                onSectionChange={(s) => {
-                    setActiveSection(s);
-                    if (isCollapsed) setIsCollapsed(false);
-                }}
                 userEmail={userEmail}
             />
 

@@ -60,10 +60,6 @@ function AuthModal({
         show: { opacity: 1, y: 0 }
     }
 
-    const socialButtons = [
-        { icon: GitHubIcon, provider: "github" as OAuthProvider, label: "GitHub" },
-    ]
-
     const handleOAuthLogin = async (provider: OAuthProvider) => {
         setIsLoading(provider)
         setError(null)
@@ -150,7 +146,7 @@ function AuthModal({
                                             Get started with TaskFlow
                                         </h2>
                                         <p className="mt-1.5 text-sm text-muted-foreground">
-                                            Sign in to track your team&apos;s handoffs
+                                            Continue with GitHub or email magic link. Password login is available on the /login page.
                                         </p>
                                     </motion.div>
 
@@ -246,27 +242,13 @@ function AuthModal({
                                                         <Loader2 className="h-4 w-4 animate-spin" />
                                                     ) : (
                                                         <>
-                                                            <span>Continue</span>
+                                                            <span>Send link</span>
                                                             <ArrowRight className="h-3.5 w-3.5" />
                                                         </>
                                                     )}
                                                 </button>
                                             </div>
                                         </form>
-                                    </motion.div>
-
-                                    {/* Terms */}
-                                    <motion.div variants={item} className="mt-6 text-center">
-                                        <p className="text-xs text-muted-foreground/60">
-                                            By continuing, you agree to our{" "}
-                                            <a href="#" className="underline hover:text-foreground transition-colors">
-                                                Terms
-                                            </a>{" "}
-                                            and{" "}
-                                            <a href="#" className="underline hover:text-foreground transition-colors">
-                                                Privacy Policy
-                                            </a>
-                                        </p>
                                     </motion.div>
                                 </div>
                             </motion.div>

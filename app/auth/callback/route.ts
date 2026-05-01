@@ -61,7 +61,20 @@ export async function GET(request: NextRequest) {
           }
         } catch (dbError) {
           console.error('Error syncing user to Prisma:', dbError);
+          return NextResponse.redirect(`${origin}/login?error=profile-sync-failed`);
         }
+
+        // Defensive fallback: if sync path ran but profile still missing, treat as failure.
+        const syncedUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { id: true },
+        });
+
+        if (!syncedUser) {
+          return NextResponse.redirect(`${origin}/login?error=profile-sync-failed`);
+        }
+      } else {
+        return NextResponse.redirect(`${origin}/login?error=profile-sync-failed`);
       }
 
       // Redirect to the intended destination

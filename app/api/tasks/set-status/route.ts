@@ -9,7 +9,7 @@ import { requireAuth } from '@/lib/middleware/auth';
 import prisma from '@/lib/prisma';
 import { setStatusWithCustomFieldsSchema } from '@/lib/api/schemas';
 import { fetchTaskWithTemplate, validateTemplateFields, validateTemplateTransition } from '@/lib/api/handlers/task';
-import { apiSuccess, notFound, serverError, handleApiError } from '@/lib/api/errors';
+import { apiSuccess, notFound, forbidden, serverError, handleApiError } from '@/lib/api/errors';
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -23,6 +23,11 @@ export async function PATCH(request: NextRequest) {
 
     if (!task) {
       return notFound('Task not found');
+    }
+
+    // Only task creator or assignee can update status
+    if (task.createdById !== user.id && task.assignedTo !== user.id) {
+      return forbidden('You do not have permission to update this task');
     }
 
     // If task has a template, validate required fields for the new status

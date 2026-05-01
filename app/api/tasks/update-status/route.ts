@@ -9,7 +9,7 @@
 
 import prisma from '@/lib/prisma';
 import { requireAuth } from '@/lib/middleware/auth';
-import { apiSuccess, notFound, serverError, handleApiError } from '@/lib/api/errors';
+import { apiSuccess, notFound, forbidden, serverError, handleApiError } from '@/lib/api/errors';
 import { updateStatusRequestSchema } from '@/lib/api/schemas';
 import { fetchTask, TASK_INCLUDES } from '@/lib/api/handlers/task';
 
@@ -25,6 +25,11 @@ export async function POST(request: Request) {
 
     if (!task) {
       return notFound('Task not found');
+    }
+
+    // Only task creator or assignee can update status
+    if (task.createdById !== user.id && task.assignedTo !== user.id) {
+      return forbidden('You do not have permission to update this task');
     }
 
     // Update task status and create event in transaction

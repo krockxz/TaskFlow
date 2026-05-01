@@ -10,23 +10,20 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 import { CheckCircle, Zap, Star } from 'lucide-react';
+import Link from 'next/link';
 import { NotificationsDemo } from './NotificationsDemo';
-import { AuthModal } from "@/components/ui/auth-modal";
 
 const words = ['in sync.', 'shipping.', 'focused.', 'happy.'];
 
 export function HeroSection() {
   const [currentWord, setCurrentWord] = useState(0);
-  const [isExiting, setIsExiting] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIsExiting(true);
       setTimeout(() => {
         setCurrentWord((prev) => (prev + 1) % words.length);
-        setIsExiting(false);
       }, 300);
     }, 3000);
 
@@ -126,11 +123,12 @@ export function HeroSection() {
               transition={{ delay: 0.3, duration: 0.5 }}
               className="flex flex-wrap items-center gap-4 pt-2"
             >
-              <AuthModal
-                triggerText="Get started free"
-                redirectTo="/dashboard"
-                triggerClassName="rounded-xl px-8 py-3.5 bg-foreground hover:bg-foreground/90 text-background h-auto font-medium text-sm tracking-tight transition-all hover:scale-[1.02] active:scale-[0.98]"
-              />
+              <Link
+                href="/login"
+                className="inline-flex rounded-xl px-8 py-3.5 bg-foreground hover:bg-foreground/90 text-background h-auto font-medium text-sm tracking-tight transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Get started free
+              </Link>
               <a
                 href="https://github.com/krockxz/TaskFlow"
                 target="_blank"

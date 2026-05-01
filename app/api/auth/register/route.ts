@@ -33,7 +33,8 @@ export async function POST(request: Request) {
       return badRequest(error?.message || 'Registration failed');
     }
 
-    // Create corresponding user record in our database
+    // Create corresponding user record in our database.
+    // If create fails, only proceed when the user already exists (idempotent case).
     try {
       await prisma.user.create({
         data: {
@@ -42,9 +43,16 @@ export async function POST(request: Request) {
         },
       });
     } catch (dbError) {
-      // If user already exists in database, that's okay
-      // (they might have been created via trigger or previous signup)
       console.error('Error creating user record:', dbError);
+
+      const existingUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { id: true },
+      });
+
+      if (!existingUser) {
+        return serverError('Registration succeeded but profile sync failed. Please try again.');
+      }
     }
 
     return NextResponse.json({ success: true });
