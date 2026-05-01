@@ -6,6 +6,7 @@
  */
 
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
 import { getAuthUser } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { DashboardSidebar } from './components/DashboardSidebar';
@@ -23,6 +24,10 @@ interface DashboardPageProps {
     search?: string;
   }>;
 }
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+};
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const user = await getAuthUser();

@@ -6,6 +6,7 @@
  */
 
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
 import { getAuthUser } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
@@ -21,6 +22,10 @@ interface AnalyticsPageProps {
     range?: 'last_7_days' | 'last_30_days' | 'last_90_days' | 'all_time';
   }>;
 }
+
+export const metadata: Metadata = {
+  title: 'Analytics',
+};
 
 export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
   const user = await getAuthUser();

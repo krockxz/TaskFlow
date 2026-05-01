@@ -1,9 +1,14 @@
 import { Suspense } from 'react';
 import { getAuthUser } from '@/lib/middleware/auth';
+import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { TemplatesList } from '@/components/templates/TemplatesList';
 import { TemplatesGridSkeleton } from '@/components/skeletons/template-card-skeleton';
 import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
+
+export const metadata: Metadata = {
+  title: 'Templates',
+};
 
 async function getTemplates(userId: string) {
   return prisma.handoffTemplate.findMany({

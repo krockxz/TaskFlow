@@ -10,9 +10,14 @@
 
 import { getAuthUser } from '@/lib/middleware/auth';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { env } from '@/lib/env';
 import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
+
+export const metadata: Metadata = {
+  title: 'Slack Settings',
+};
 
 export default async function SlackSettingsPage() {
   const user = await getAuthUser();

@@ -100,6 +100,11 @@ export default function TaskDetailPage() {
   });
 
   useEffect(() => {
+    const pageTitle = task?.title ? `${task.title} | TaskFlow` : 'Task Details | TaskFlow';
+    document.title = pageTitle;
+  }, [task?.title]);
+
+  useEffect(() => {
     async function loadTask() {
       try {
         const response = await fetch(`/api/tasks/${taskId}`);

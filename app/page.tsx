@@ -14,7 +14,12 @@ import {
   CTASection,
   Footer,
 } from '@/components/landing';
+import type { Metadata } from 'next';
 import { UnifiedHeader } from '@/components/layout/UnifiedHeader';
+
+export const metadata: Metadata = {
+  title: 'Home',
+};
 
 export default function LandingPage() {
   return (

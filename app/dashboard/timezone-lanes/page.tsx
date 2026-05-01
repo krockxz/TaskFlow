@@ -1,11 +1,16 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next';
 import { getAuthUser } from '@/lib/supabase/server';
 import prisma from '@/lib/prisma';
 import { DashboardSidebar } from '../components/DashboardSidebar';
 import { TimezoneLanesContent } from './TimezoneLanesContent';
 import { FadeIn } from '@/components/animations/fade-in';
 import { TimezoneLanesSkeletonGrid } from '@/components/skeletons/timezone-lane-skeleton';
+
+export const metadata: Metadata = {
+  title: 'Timezone Lanes',
+};
 
 async function getTeamData() {
   const users = await prisma.user.findMany({

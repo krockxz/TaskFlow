@@ -9,10 +9,14 @@
 import { Providers } from './providers';
 import TaskFlowCommandPalette from '@/components/ui/command-palette';
 import { CommandProvider } from '@/components/command/CommandContext';
+import type { Metadata } from 'next';
 import './globals.css';
 
-export const metadata = {
-  title: 'TaskFlow - Async Team Coordination',
+export const metadata: Metadata = {
+  title: {
+    default: 'TaskFlow',
+    template: '%s | TaskFlow',
+  },
   description: 'Simple task management and notifications for remote teams',
   icons: {
     icon: '/logo.jpg',

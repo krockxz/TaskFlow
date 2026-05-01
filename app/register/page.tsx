@@ -7,6 +7,11 @@
 
 import { AuthForm } from '../login/components/AuthForm';
 import { AuthLayout } from '../login/components/AuthLayout';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Register',
+};
 
 export default function RegisterPage() {
   return (

@@ -7,6 +7,11 @@
 
 import { AuthForm } from './components/AuthForm';
 import { AuthLayout } from './components/AuthLayout';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Login',
+};
 
 export default async function LoginPage({
   searchParams,
